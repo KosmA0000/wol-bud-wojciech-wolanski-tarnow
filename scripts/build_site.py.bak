@@ -1,0 +1,787 @@
+#!/usr/bin/env python3
+"""Build the static WOL-BUD site from the captured, UTF-8 source corpus."""
+
+from __future__ import annotations
+
+import html
+import json
+import re
+import unicodedata
+from collections import Counter
+from pathlib import Path
+from urllib.parse import quote
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA_FILE = ROOT / "docs" / "source-content.json"
+ASSET_ROOT = ROOT / "public" / "assets" / "source"
+
+MAIN_CATEGORIES = [
+    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/"),
+    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/"),
+    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/"),
+    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/"),
+    ("Bramy garażowe", "/kategorie/bramy-garazowe/"),
+    ("Parapety i blaty", "/kategorie/parapety-blaty/"),
+    ("Moskitiery", "/kategorie/moskitiery/"),
+    ("Rolety", "/kategorie/rolety/"),
+    ("Rolety wewnętrzne", "/kategorie/wewnetrzne/"),
+    ("Rolety zewnętrzne", "/kategorie/zewnetrzne/"),
+    ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"),
+]
+
+TOP_CATEGORIES = MAIN_CATEGORIES[:8] + [MAIN_CATEGORIES[-1]]
+
+SERVICE_ANCHORS = {
+    "Pomiar, doradztwo i wycena": "pomiar-doradztwo-i-wycena",
+    "Ciepły montaż": "cieply-montaz",
+    "Serwis": "serwis",
+    "Kompleksowa obsługa inwestycji": "kompleksowa-obsluga-inwestycji",
+    "Prace wykończeniowe i murarskie": "prace-wykonczeniowe-i-murarskie",
+    "Układanie kostki brukowej": "ukladanie-kostki-brukowej",
+    "Daszki poliwęglanowe": "daszki-poliweglanowe",
+}
+
+PRODUCT_GROUPS = [
+    ("Okna PCV", ["infinity-passive-83md", "energetic-83md", "vector-82md", "fusion", "synergic"]),
+    ("Drzwi wewnętrzne", ["drzwi-wewnetrzne-intenso"]),
+    ("Drzwi zewnętrzne", ["wiked-drzwi-zewnetrzne-stalowe"]),
+    ("Stolarka aluminiowa", ["ogrody-zimowe", "fasady", "okna-drzwi-alu"]),
+    ("Bramy garażowe", ["segmentowe", "rolowane", "uchylne"]),
+    ("Aglomarmur", ["venus", "new-marfil", "olimpo", "botticino", "breccia-aurora", "breccia-oniciata", "travertino", "calacata", "nero-portoro", "giallo-reale", "rosa-del-garda", "rosso-asiago", "espaniola", "polare", "carrara-micro", "aglomarmur"]),
+    ("Granit", ["baltic-brown", "star-galaxy", "kashmir-gold", "nero-zimbabwe", "multicolor-red", "santiago-red", "new-impala", "yellow-pink", "new-bianco-cristal", "granit"]),
+    ("Marmur", ["perlato", "nero-marquina", "forest-green", "forest-brown", "emperador-dark", "crema-marphil", "marmur"]),
+    ("Parapety PCV wewnętrzne", ["pcv-nakladka", "pcv-wewnetrzne"]),
+    ("Parapety stalowe i aluminiowe zewnętrzne", ["aluminiowe-linia-zaokraglona", "aluminiowe-linia-standard", "stalowe-linia-zaokraglona", "stalowe-linia-standard"]),
+    ("Moskitiery", ["drzwiowe", "moskitiery-okienne"]),
+    ("Rolety wewnętrzne", ["dzien-noc-2", "do-okien-dachowych-dekolux", "w-kasecie-alu-klaudia", "w-kasecie-alu-vegas-profil", "w-kasecie-alu-vegas-classic", "w-kasecie-pcv-vegas-classic", "mini-vegas", "mini-slim"]),
+    ("Rolety zewnętrzne", ["podtynkowe-integro", "adaptacyjne"]),
+    ("Żaluzje i plisy", ["zaluzje-drewniane", "zaluzje-poziome-aluminiowe", "plisy"]),
+]
+
+GOOGLE_PROFILE = "https://www.google.com/maps/place/WOL-BUD+Wojciech+Wola%C5%84ski/@50.018426,20.948448,17z/data=!4m8!3m7!1s0x473d849d210e031b:0x4f5e253fc57bd81d!8m2!3d50.018426!4d20.948448!9m1!1b1!16s%2Fg%2F1pv5tkfkh?hl=pl"
+
+
+def esc(value: str) -> str:
+    return html.escape(str(value), quote=True)
+
+
+def normalize(value: str) -> str:
+    value = value.casefold().replace("ł", "l")
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(char for char in value if not unicodedata.combining(char))
+    return re.sub(r"[^a-z0-9]+", " ", value).strip()
+
+
+def slugify(value: str) -> str:
+    return normalize(value).replace(" ", "-") or "sekcja"
+
+
+def route_for(url: str) -> str:
+    path = re.sub(r"\?.*$", "", url.split("wol-bud.com.pl", 1)[-1])
+    if not path or path == "/":
+        return "/"
+    return "/" + path.strip("/") + "/"
+
+
+def output_path(route: str) -> Path:
+    if route == "/":
+        return ROOT / "index.html"
+    return ROOT.joinpath(*route.strip("/").split("/"), "index.html")
+
+
+def asset_prefix(route: str) -> str:
+    depth = 0 if route == "/" else len(route.strip("/").split("/"))
+    return "../" * depth
+
+
+def route_url(route: str) -> str:
+    return route if route.endswith("/") else route + "/"
+
+
+def sort_priority(page: dict) -> tuple:
+    route = route_for(page["url"])
+    if route == "/":
+        priority = 0
+    elif route in ("/o-firmie/", "/uslugi/", "/nasze-sklepy/", "/kontakt/"):
+        priority = 1
+    elif route.startswith("/kategorie/"):
+        priority = 2
+    elif route.startswith("/promocje"):
+        priority = 3
+    elif route.startswith("/produkty/"):
+        priority = 4
+    else:
+        priority = 5
+    return priority, route
+
+
+def body_blocks(page: dict) -> list[dict]:
+    blocks = page.get("blocks", [])
+    first_h1 = next((i for i, block in enumerate(blocks)
+                     if block.get("type") == "heading" and block.get("level") == 1), None)
+    if first_h1 is not None:
+        blocks = blocks[first_h1:]
+    footer_start = next((i for i, block in enumerate(blocks)
+                         if block.get("type") == "heading"
+                         and block.get("level") == 3
+                         and normalize(block.get("text", "")) == "oferta"), None)
+    if footer_start is not None:
+        blocks = blocks[:footer_start]
+    if route_for(page["url"]) == "/kontakt/":
+        form_index = next((i for i, block in enumerate(blocks)
+                           if block.get("type") == "heading"
+                           and normalize(block.get("text", "")) == "formularz kontaktowy"), None)
+        if form_index is not None:
+            blocks = blocks[:form_index]
+    if route_for(page["url"]) == "/o-firmie/":
+        updated = []
+        for block in blocks:
+            text = block.get("text", "") if block.get("type") == "paragraph" else ""
+            if "od 25 lat" in text:
+                block = dict(block)
+                block["text"] = "Sprzedażą i montażem stolarki okiennej i drzwiowej zajmujemy się od 1995 roku, zdobywając zaufanie inwestorów indywidualnych oraz instytucji, o czym świadczą liczne referencje i klienci z polecenia."
+            if block.get("type") == "list":
+                block = dict(block)
+                block["items"] = [
+                    "Doświadczenie w branży okien i drzwi" if "25-letnie doświadczenie" in item else item
+                    for item in block.get("items", [])
+                ]
+            updated.append(block)
+        blocks = updated
+    return blocks
+
+
+def block_signature(block: dict) -> str | None:
+    kind = block.get("type")
+    if kind == "paragraph":
+        text = re.sub(r"\s+", " ", (block.get("text") or "")).strip()
+        return "p:" + normalize(text) if text else None
+    if kind == "list":
+        values = [re.sub(r"\s+", " ", str(item)).strip() for item in block.get("items", [])]
+        values = [value for value in values if value]
+        return "list:" + "|".join(normalize(value) for value in values) if values else None
+    return None
+
+
+def build_unique_content(pages: list[dict]) -> tuple[dict[str, list[dict]], list[tuple[str, str]]]:
+    seen: set[str] = set()
+    body_by_route: dict[str, list[dict]] = {}
+    removed: list[tuple[str, str]] = []
+    for page in sorted(pages, key=sort_priority):
+        route = route_for(page["url"])
+        unique_blocks: list[dict] = []
+        local_seen: set[str] = set()
+        for block in body_blocks(page):
+            signature = block_signature(block)
+            if signature and (signature in seen or signature in local_seen):
+                removed.append((route, signature[:90]))
+                continue
+            if signature:
+                seen.add(signature)
+                local_seen.add(signature)
+            unique_blocks.append(block)
+        body_by_route[route] = unique_blocks
+    return body_by_route, removed
+
+
+def heading_for(page: dict, blocks: list[dict]) -> str:
+    h1 = next((block.get("text", "") for block in blocks
+               if block.get("type") == "heading" and block.get("level") == 1), "")
+    if h1:
+        return h1.strip()
+    title = page.get("title", "WOL-BUD")
+    return re.sub(r"^[^\wŁŚŻŹĆĄĘÓŃłśżźćąęóń]+", "", title).split(" | ")[0].strip()
+
+
+def target_for_label(label: str, pages_by_route: dict[str, dict]) -> str | None:
+    wanted = normalize(label)
+    candidates: list[tuple[int, str]] = []
+    for route, page in pages_by_route.items():
+        if not (route.startswith("/produkty/") or route.startswith("/kategorie/")):
+            continue
+        blocks = page.get("blocks", [])
+        h1 = next((b.get("text", "") for b in blocks if b.get("type") == "heading" and b.get("level") == 1), "")
+        values = {normalize(h1), normalize(route.strip("/").split("/")[-1].replace("-", " "))}
+        source_title = normalize(page.get("title", "").split(" | ")[0])
+        values.add(source_title)
+        if wanted in values:
+            return route_url(route)
+        for candidate in values:
+            if candidate and len(wanted) > 3 and (wanted in candidate or candidate in wanted):
+                score = min(len(wanted), len(candidate))
+                candidates.append((score, route))
+    if candidates:
+        candidates.sort(reverse=True)
+        best_score, best_route = candidates[0]
+        if best_score >= max(6, len(wanted) * .62):
+            return route_url(best_route)
+    aliases = {
+        "cieply montaz warstwowy okien i drzwi": "/promocje/cieply-montaz-warstwowy-okien-drzwi/",
+        "okna pcv firmy domel": "/kategorie/okna-pcv-domel/",
+        "okna pcv": "/kategorie/okna-pcv-domel/",
+        "drzwi wewnetrzne": "/kategorie/drzwi-wewnetrzne/",
+        "drzwi zewnetrzne": "/kategorie/drzwi-zewnetrzne/",
+        "stolarka aluminiowa": "/kategorie/stolarka-aluminiowa/",
+        "bramy garazowe": "/kategorie/bramy-garazowe/",
+        "parapety i blaty": "/kategorie/parapety-blaty/",
+        "moskitiery": "/kategorie/moskitiery/",
+        "rolety": "/kategorie/rolety/",
+        "rolety wewnetrzne": "/kategorie/wewnetrzne/",
+        "rolety zewnetrzne": "/kategorie/zewnetrzne/",
+        "zaluzje i plisy": "/kategorie/zaluzje-plisy/",
+        "o firmie kim jestesmy": "/o-firmie/",
+        "oferta nasze produkty": "/oferta/",
+        "uslugi co wykonujemy": "/uslugi/",
+        "nasze sklepy gdzie jestesmy": "/nasze-sklepy/",
+        "kontakt skontaktuj sie": "/kontakt/",
+    }
+    return aliases.get(wanted)
+
+
+def render_block(block: dict, pages_by_route: dict[str, dict]) -> str:
+    kind = block.get("type")
+    if kind == "heading":
+        level = int(block.get("level") or 2)
+        if level <= 1:
+            return ""
+        level = min(max(level, 2), 4)
+        return f"<h{level}>{esc(block.get('text', ''))}</h{level}>"
+    if kind == "paragraph":
+        text = re.sub(r"\s+", " ", (block.get("text") or "")).strip()
+        if not text:
+            return ""
+        # The source scraper flattened dash-led benefit/service lists into a paragraph.
+        # Restore list structure only when an introductory colon clearly starts the list.
+        intro = re.match(r"^(.*?):\s*[–−]\s*(.+)$", text)
+        if intro and re.search(r"\s+[–−]\s+", intro.group(2)):
+            items = re.split(r"\s+[–−]\s+", intro.group(2))
+            rows = "".join(f"<li>{esc(item.strip())}</li>" for item in items if item.strip())
+            return f"<p>{esc(intro.group(1))}:</p><ul>{rows}</ul>"
+        return f"<p>{esc(text)}</p>"
+    if kind == "list":
+        items = [str(item).strip() for item in block.get("items", []) if str(item).strip()]
+        if not items:
+            return ""
+        tag = "ol" if block.get("listType") == "ordered" else "ul"
+        rows = []
+        linked_count = 0
+        for item in items:
+            target = target_for_label(item, pages_by_route)
+            if target:
+                linked_count += 1
+            text = f'<a href="{esc(target)}">{esc(item)}</a>' if target else esc(item)
+            rows.append(f"<li>{text}</li>")
+        list_class = ' class="directory-list"' if linked_count == len(items) else ""
+        return f"<{tag}{list_class}>" + "".join(rows) + f"</{tag}>"
+    return ""
+
+
+def sectionize(blocks: list[dict]) -> tuple[list[dict], list[list[dict]]]:
+    intro: list[dict] = []
+    groups: list[list[dict]] = []
+    current: list[dict] | None = None
+    for block in blocks:
+        if block.get("type") == "heading" and int(block.get("level") or 1) >= 2:
+            current = [block]
+            groups.append(current)
+        elif current is None:
+            intro.append(block)
+        else:
+            current.append(block)
+    return intro, groups
+
+
+def html_blocks(blocks: list[dict], pages_by_route: dict[str, dict]) -> str:
+    return "\n".join(render_block(block, pages_by_route) for block in blocks if render_block(block, pages_by_route))
+
+
+def accordion_markup(groups: list[list[dict]], route: str, pages_by_route: dict[str, dict], include_gallery: bool = False) -> tuple[str, list[tuple[str, str]]]:
+    rendered: list[str] = []
+    toc: list[tuple[str, str]] = []
+    for index, group in enumerate(groups):
+        heading = group[0].get("text", "Sekcja")
+        section_id = slugify(heading)
+        if section_id in (value for _, value in toc):
+            section_id += f"-{index + 1}"
+        toc.append((heading, section_id))
+        panel_id = f"panel-{slugify(route)}-{index + 1}"
+        body = html_blocks(group[1:], pages_by_route)
+        if include_gallery and normalize(heading) == normalize("Ciepły montaż"):
+            back_url = quote(route_url(route) + "#" + section_id, safe="")
+            body += f'<a class="detail-gallery-link" data-gallery-link href="/galeria/?kategoria=montaz&amp;powrot={back_url}">Zobacz zdjęcia</a>'
+        rendered.append(
+            f'<details class="accordion-item" data-accordion-item id="{esc(section_id)}">'
+            f'<summary class="accordion-trigger" data-accordion-trigger aria-controls="{esc(panel_id)}">'
+            f'<span class="accordion-trigger__label" role="heading" aria-level="2">{esc(heading)}</span>'
+            f'<span class="accordion-trigger__icon" aria-hidden="true"></span></summary>'
+            f'<div class="accordion-panel article-copy" id="{esc(panel_id)}">{body}</div></details>'
+        )
+    group_attr = f'<div class="accordion-list" data-accordion-group>{"".join(rendered)}</div>' if rendered else ""
+    return group_attr, toc
+
+
+def toc_markup(toc: list[tuple[str, str]]) -> str:
+    if not toc:
+        return ""
+    links = "".join(f'<li><a href="#{esc(anchor)}">{esc(title)}</a></li>' for title, anchor in toc)
+    return (f'<nav class="toc" aria-label="Spis treści"><p class="toc__title">Spis treści</p><ul class="toc__list">{links}</ul></nav>'
+            f'<details class="toc-mobile"><summary>Spis treści</summary><ul class="toc__list">{links}</ul></details>')
+
+
+def header(prefix: str) -> str:
+    links = [
+        ("Oferta", "/oferta/"), ("Usługi", "/uslugi/"), ("Zdjęcia", "/galeria/"),
+        ("O firmie", "/o-firmie/"), ("Nasze sklepy", "/nasze-sklepy/"), ("Kontakt", "/kontakt/"),
+    ]
+    menu_links = "".join(f'<a class="menu-panel__link" href="{href}"><span>{label}</span></a>' for label, href in links)
+    return f'''<a class="skip-link" href="#main">Przejdź do treści</a>
+<header class="site-header"><div class="site-header__inner">
+  <a class="brand-logo" href="/" aria-label="WOL-BUD — strona główna"></a>
+  <div class="header-actions">
+    <a class="header-phone" href="tel:+48534091021" aria-label="Zadzwoń: 534 091 021">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.2 3.5h2.1l1.4 4-1.8 1.5a14 14 0 0 0 6.1 6.1l1.5-1.8 4 1.4v2.1c0 1.1-.9 2-2 2A15.5 15.5 0 0 1 5.2 5.5c0-1.1.9-2 2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="header-phone__text">534 091 021</span></a>
+    <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-menu" aria-label="Otwórz menu"><span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span></span><span>Menu</span></button>
+  </div>
+</div><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><div class="menu-panel__inner">{menu_links}<div class="menu-panel__contact"><a href="tel:+48534091021">534 091 021</a><a href="mailto:biuro@wol-bud.com.pl">biuro@wol-bud.com.pl</a></div></div></nav></header>'''
+
+
+def footer() -> str:
+    return '''<footer class="site-footer"><div class="container site-footer__inner">
+<nav class="site-footer__nav" aria-label="Stopka"><a href="/oferta/">Oferta</a><a href="/uslugi/">Usługi</a><a href="/galeria/">Zdjęcia</a><a href="/o-firmie/">O firmie</a><a href="/nasze-sklepy/">Nasze sklepy</a><a href="/kontakt/">Kontakt</a></nav>
+<a class="site-footer__copy" href="tel:+48534091021">WOL-BUD · 534 091 021</a></div></footer>'''
+
+
+def document(route: str, title: str, description: str, body: str) -> str:
+    prefix = asset_prefix(route)
+    safe_description = esc(description[:220])
+    return f'''<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f3f1ea"><meta name="description" content="{safe_description}">
+<title>{esc(title)}</title><link rel="stylesheet" href="{prefix}assets/css/site.css"><script defer src="{prefix}assets/js/site.js"></script></head>
+<body>{header(prefix)}{body}{footer()}</body></html>'''
+
+
+def page_template(route: str, title: str, blocks: list[dict], pages_by_route: dict[str, dict], source_title: str = "", extra_gallery: bool = False) -> str:
+    intro, groups = sectionize([block for block in blocks if not (block.get("type") == "heading" and block.get("level") == 1)])
+    heading = title
+    intro_html = html_blocks(intro, pages_by_route)
+    intro_fragments = []
+    if intro_html:
+        # The first source paragraph sits beside the title, while every remaining block stays in its reading order below.
+        first_paragraph = next((b for b in intro if b.get("type") == "paragraph" and (b.get("text") or "").strip()), None)
+        if first_paragraph and not groups:
+            intro_fragments.append(f'<p class="page-heading__lead">{esc(first_paragraph.get("text", ""))}</p>')
+            rest = list(intro)
+            rest.remove(first_paragraph)
+            intro_rest = html_blocks(rest, pages_by_route)
+        else:
+            intro_rest = intro_html
+    else:
+        intro_rest = ""
+    accordion, toc = accordion_markup(groups, route, pages_by_route, include_gallery=extra_gallery)
+    if not groups and intro_rest:
+        # Long flat product copy remains available in one compact, keyboard-native disclosure.
+        text_size = sum(len(b.get("text", "")) for b in intro if b.get("type") == "paragraph")
+        if text_size > 700:
+            first_para = next((b for b in intro if b.get("type") == "paragraph"), None)
+            remaining = [b for b in intro if b is not first_para]
+            lead_html = f'<p class="page-heading__lead">{esc(first_para.get("text", ""))}</p>' if first_para else ""
+            intro_rest = f'<div class="article-copy">{lead_html}</div><div class="accordion-list" data-accordion-group><details class="accordion-item" data-accordion-item id="pelny-opis"><summary class="accordion-trigger" data-accordion-trigger aria-controls="panel-pelny-opis"><span class="accordion-trigger__label" role="heading" aria-level="2">Pełny opis</span><span class="accordion-trigger__icon" aria-hidden="true"></span></summary><div class="accordion-panel article-copy" id="panel-pelny-opis">{html_blocks(remaining, pages_by_route)}</div></details></div>'
+            intro_fragments = []
+    crumb = '<nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">' + esc(title) + '</span></nav>'
+    toc_part = toc_markup(toc)
+    body_copy = f'<div class="article-copy">{intro_rest}</div>' if intro_rest and groups else intro_rest
+    main = f'''<main id="main" class="page-main"><div class="container">{crumb}
+<header class="page-heading"><h1>{esc(heading)}</h1>{''.join(intro_fragments)}</header>
+<div class="page-actions"><a class="button button--dark" href="tel:+48534091021">Zadzwoń: 534 091 021</a></div>
+<div class="content-layout">{toc_part}<div class="content-main">{body_copy}{accordion}{page_gallery_link(route)}</div></div>
+{detail_pagination(route, pages_by_route)}</div></main>'''
+    description = next((b.get("text", "") for b in blocks if b.get("type") == "paragraph"), title)
+    return document(route, (source_title.split(" | ")[0] or title).lstrip("»›✦★ ") + " | WOL-BUD", description, main)
+
+
+def page_gallery_link(route: str) -> str:
+    product_photo_routes = {
+        "infinity-passive-83md", "wiked-drzwi-zewnetrzne-stalowe", "drzwi-wewnetrzne-intenso", "ogrody-zimowe", "fasady",
+        "segmentowe", "rolowane", "uchylne", "moskitiery-okienne", "dzien-noc-2", "plisy", "zaluzje-drewniane",
+    }
+    slug = route.strip("/").split("/")[-1]
+    if route.startswith("/produkty/") and slug in product_photo_routes:
+        return f'<a class="detail-gallery-link" data-gallery-link href="/galeria/?kategoria=produkty&amp;powrot={quote(route_url(route), safe="")}">Zobacz zdjęcia</a>'
+    return ""
+
+
+def detail_pagination(route: str, pages_by_route: dict[str, dict]) -> str:
+    if route.startswith("/produkty/"):
+        siblings = ["/produkty/" + slug + "/" for _, slugs in PRODUCT_GROUPS for slug in slugs]
+        seen = set()
+        siblings = [item for item in siblings if item in pages_by_route and not (item in seen or seen.add(item))]
+        slug = route.rstrip("/").split("/")[-1]
+        if slug == "effectline" and route in siblings:
+            siblings.remove(route)
+        if route not in siblings:
+            siblings.append(route)
+        siblings.sort(key=lambda item: (next((i for i, (_, group) in enumerate(PRODUCT_GROUPS) if item.rstrip("/").split("/")[-1] in group), 999), item))
+    elif route.startswith("/kategorie/"):
+        if route in ("/kategorie/aglomarmur/", "/kategorie/aglomarmur/page/2/"):
+            siblings = ["/kategorie/aglomarmur/", "/kategorie/aglomarmur/page/2/"]
+        else:
+            siblings = [route_url(path) for _, path in TOP_CATEGORIES]
+    else:
+        return ""
+    try:
+        index = siblings.index(route_url(route))
+    except ValueError:
+        return ""
+    previous = siblings[index - 1] if index > 0 else None
+    following = siblings[index + 1] if index + 1 < len(siblings) else None
+    def label(path: str) -> str:
+        page = pages_by_route.get(path)
+        if not page:
+            return path.rstrip("/").split("/")[-1].replace("-", " ").title()
+        h1 = next((b.get("text", "") for b in page.get("blocks", []) if b.get("type") == "heading" and b.get("level") == 1), "")
+        return h1 or page.get("title", "")
+    left = f'<a href="{previous}"><small>Poprzednia pozycja</small><span>← {esc(label(previous))}</span></a>' if previous else '<span></span>'
+    right = f'<a href="{following}"><small>Następna pozycja</small><span>{esc(label(following))} →</span></a>' if following else '<span></span>'
+    return f'<nav class="detail-pagination" aria-label="Nawigacja między pozycjami">{left}{right}</nav>'
+
+
+def category_card(label: str, href: str, small: str = "") -> str:
+    details = f'<span class="service-card__summary">{esc(small)}</span>' if small else ""
+    return f'<a class="category-link" href="{esc(href)}"><span>{esc(label)}{details}</span></a>'
+
+
+def home_page(home_blocks: list[dict], pages_by_route: dict[str, dict]) -> str:
+    # This concise introduction paraphrases only the source pages and is the only copy shown on the first screen.
+    intro = "WOL-BUD to firma Wojciecha Wolańskiego, założona w 1995 roku. Oferuje okna PCV i aluminiowe, drzwi, bramy garażowe, rolety, parapety, doradztwo i montaż."
+    product_links = "".join(f'<li><a href="{href}">{esc(label)}</a></li>' for label, href in MAIN_CATEGORIES)
+    services = [b.get("text", "") for b in pages_by_route.get("/uslugi/", {}).get("blocks", []) if b.get("type") == "heading" and b.get("level") == 2]
+    services_markup = "".join(f'<li><a href="/uslugi/#{SERVICE_ANCHORS.get(item, slugify(item))}">{esc(item)}</a></li>' for item in services)
+    recommended = [
+        ("Infinity Passive 83MD", "/produkty/infinity-passive-83md/"),
+        ("Wikęd – drzwi zewnętrzne stalowe", "/produkty/wiked-drzwi-zewnetrzne-stalowe/"),
+    ]
+    recommended_markup = "".join(f'<li><a href="{href}">{esc(label)}</a></li>' for label, href in recommended)
+    homepage_h2 = next((b.get("text", "") for b in home_blocks if b.get("type") == "heading" and b.get("level") == 2), "Inteligentny dom Tarnów")
+    body = f'''<main id="main"><section class="home-hero"><div class="container home-hero__inner">
+<div class="home-intro"><p class="home-intro__place">{esc(homepage_h2)}</p><h1>Okna i drzwi w szerokim wyborze</h1>
+<p class="home-intro__text">{esc(intro)}</p><a class="button button--dark" href="tel:+48534091021"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.2 3.5h2.1l1.4 4-1.8 1.5a14 14 0 0 0 6.1 6.1l1.5-1.8 4 1.4v2.1c0 1.1-.9 2-2 2A15.5 15.5 0 0 1 5.2 5.5c0-1.1.9-2 2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Zadzwoń: 534 091 021</a></div>
+</div></section>
+<section class="home-offer" aria-label="Oferta i usługi"><div class="container home-offer__grid"><section class="directory" aria-labelledby="home-offer"><div class="directory__heading"><h2 id="home-offer">Oferta</h2><a href="/oferta/">Pełna oferta</a></div><ul class="directory-list">{product_links}</ul></section>
+<section class="directory" aria-labelledby="home-services"><div class="directory__heading"><h2 id="home-services">Usługi</h2><a href="/uslugi/">Wszystkie usługi</a></div><ul class="directory-list">{services_markup}</ul></section></div></section>
+<section class="section section--dark reviews" aria-labelledby="reviews-title"><div class="container"><div class="reviews__top"><div class="section-heading"><div><p class="eyebrow">Google Maps</p><h2 id="reviews-title">Opinie klientów</h2></div><p>Ocena 4,3/5 na podstawie 47 opinii.</p></div><a class="reviews__source" href="{GOOGLE_PROFILE}" target="_blank" rel="noopener">Otwórz profil w Google Maps ↗</a></div>
+<div class="reviews__track" data-review-track aria-label="Opinie Google przewijane poziomo">
+<article class="review-card" data-review-card><p class="review-card__rating" aria-label="Ocena 5 na 5">★★★★★</p><blockquote>Okna bardzo dobrej jakości. Fachowa obsługa, potrafią doradzić, montaż bez żadnych problemów.</blockquote><p class="review-card__author">Damian Machalski · 5/5 · rok temu</p></article>
+<article class="review-card" data-review-card><p class="review-card__rating" aria-label="Ocena 5 na 5">★★★★★</p><blockquote>Firma z wieloletnim doświadczeniem i super ekipa. Polecam serdecznie</blockquote><p class="review-card__author">Stanislaw Tyrka · 5/5 · miesiąc temu</p></article>
+<article class="review-card" data-review-card><p class="review-card__rating" aria-label="Ocena 5 na 5">★★★★★</p><blockquote>Serdecznie polecam ta firmę, dokładne wykonanie ,pełna profesjonalnosc . Jestem zadowolona montażem okiem polecam każdemu .</blockquote><p class="review-card__author">Martyna Olszowka · 5/5 · rok temu</p></article></div>
+<div class="reviews__controls"><button type="button" data-review-previous aria-label="Poprzednia opinia">←</button><button type="button" data-review-next aria-label="Następna opinia">→</button></div></div></section>
+{listing_section("Polecane produkty", recommended_markup)}{home_gallery_section()}{partner_section()}
+<section class="section section--soft"><div class="container split-feature"><div class="split-feature__image"><img src="/public/assets/source/stores/salon-tarnow-chyszow.jpg" alt="Salon Tarnów-Chyszów, ul. Giełdowa 5" loading="lazy" decoding="async"></div><div><p class="eyebrow">WOL-BUD</p><h2>Nasze sklepy</h2><p>Salony sprzedaży okien i drzwi w Tarnowie i Radłowie.</p><a class="button button--dark" href="/nasze-sklepy/">Zobacz sklepy</a><a class="button button--light" href="/kontakt/">Kontakt</a></div></div></section>
+</main>'''
+    return document("/", "Okna i drzwi w szerokim wyborze | WOL-BUD Tarnów", intro, body)
+
+
+def partner_section() -> str:
+    logos = [
+        ("partner-domel.jpg", "DOMEL"), ("partner-fill.png", "FILL"), ("partner-wiked.jpg", "WIKĘD"),
+        ("partner-erkado.jpg", "ERKADO"), ("partner-intenso.jpg", "INTENSO"), ("partner-lagrus.jpg", "LAGRUS"),
+    ]
+    entries = "".join(f'<div class="partner-logo"><img src="/public/assets/source/partners/{file}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in logos)
+    return f'<section class="section"><div class="container"><div class="section-heading"><div><p class="eyebrow">Dostawcy</p><h2>Partnerzy</h2></div></div><div class="partner-row">{entries}</div></div></section>'
+
+
+def listing_section(title: str, markup: str) -> str:
+    return f'<section class="section section--soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">WOL-BUD</p><h2>{esc(title)}</h2></div></div><ul class="directory-list">{markup}</ul></div></section>'
+
+
+def home_gallery_section() -> str:
+    return '''<section class="section"><div class="container split-feature"><div><p class="eyebrow">Zdjęcia</p><h2>Produkty, salony i etapy montażu</h2><a class="button button--dark" href="/galeria/">Przejdź do zdjęć</a></div><div class="split-feature__image"><img src="/public/assets/source/montage/termoparapet-okienny.jpg" alt="Etap montażu termoparapetu okiennego" loading="lazy" decoding="async"></div></div></section>'''
+
+
+def listing_page(route: str, title: str, groups: list[tuple[str, list[tuple[str, str]]]], description: str) -> str:
+    sections = []
+    for heading, items in groups:
+        links = "".join(f'<li><a href="{href}">{esc(label)}</a></li>' for label, href in items)
+        sections.append(f'<section class="directory"><div class="directory__heading"><h2>{esc(heading)}</h2></div><ul class="directory-list">{links}</ul></section>')
+    body = f'''<main id="main" class="page-main"><div class="container"><nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">{esc(title)}</span></nav>
+<header class="page-heading"><h1>{esc(title)}</h1><p class="page-heading__lead">{esc(description)}</p></header><div class="page-actions"><a class="button button--dark" href="tel:+48534091021">Zadzwoń: 534 091 021</a></div><div class="listing-sections">{''.join(sections)}</div></div></main>'''
+    return document(route, title + " | WOL-BUD", description, body)
+
+
+def product_index_page(product_groups: list[tuple[str, list[tuple[str, str]]]]) -> str:
+    by_name = dict(product_groups)
+    grouped = [
+        ("Okna PCV", [("", by_name.get("Okna PCV", []))]),
+        ("Drzwi", [("", by_name.get("Drzwi wewnętrzne", []) + by_name.get("Drzwi zewnętrzne", []))]),
+        ("Stolarka aluminiowa", [("", by_name.get("Stolarka aluminiowa", []))]),
+        ("Bramy garażowe", [("", by_name.get("Bramy garażowe", []))]),
+        ("Parapety i blaty", [(name, by_name.get(name, [])) for name in (
+            "Aglomarmur", "Granit", "Marmur", "Parapety PCV wewnętrzne", "Parapety stalowe i aluminiowe zewnętrzne")]),
+        ("Moskitiery", [("", by_name.get("Moskitiery", []))]),
+        ("Rolety", [(name, by_name.get(name, [])) for name in ("Rolety wewnętrzne", "Rolety zewnętrzne")]),
+        ("Żaluzje i plisy", [("", by_name.get("Żaluzje i plisy", []))]),
+    ]
+    if "Pozostałe strony produktów" in by_name:
+        grouped.append(("Effectline", [("", by_name["Pozostałe strony produktów"])]))
+
+    cards = []
+    accordion_number = 0
+    for title, subgroups in grouped:
+        subcontent = []
+        for subtitle, items in subgroups:
+            if not items:
+                continue
+            links = "".join(f'<li><a href="{href}">{esc(label)}</a></li>' for label, href in items)
+            h3 = f"<h3>{esc(subtitle)}</h3>" if subtitle else ""
+            subcontent.append(f"{h3}<ul class=\"directory-list\">{links}</ul>")
+        if not subcontent:
+            continue
+        accordion_number += 1
+        panel_id = f"panel-products-{accordion_number}"
+        cards.append(f'<details class="accordion-item" data-accordion-item id="{slugify(title)}"><summary class="accordion-trigger" data-accordion-trigger aria-controls="{panel_id}"><span class="accordion-trigger__label" role="heading" aria-level="2">{esc(title)}</span><span class="accordion-trigger__icon" aria-hidden="true"></span></summary><div class="accordion-panel article-copy" id="{panel_id}">{"".join(subcontent)}</div></details>')
+
+    description = "Nasze produkty"
+    body = f'''<main id="main" class="page-main"><div class="container"><nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">Nasze produkty</span></nav>
+<header class="page-heading"><h1>Nasze produkty</h1><p class="page-heading__lead">{description}</p></header><div class="page-actions"><a class="button button--dark" href="tel:+48534091021">Zadzwoń: 534 091 021</a></div>
+<div class="accordion-list" data-accordion-group>{''.join(cards)}</div></div></main>'''
+    return document("/produkty/", "Nasze produkty | WOL-BUD", description, body)
+
+
+def gallery_assets() -> list[tuple[str, str, str]]:
+    groups = []
+    categories = {"products": "produkty", "stores": "salony", "wolbud": "firma", "montage": "montaz", "references": "referencje"}
+    labels = {
+        "salon-radlow.jpg": "Punkt w Radłowie",
+        "salon-tarnow-chyszow.jpg": "Salon Tarnów-Chyszów, ul. Giełdowa 5",
+        "salon-tarnow-szkotnik.jpg": "Salon w Tarnowie, ul. Szkotnik 2b",
+        "wolbud-siedziba.jpg": "Siedziba WOL-BUD — wnętrze hali/magazynu",
+        "termoparapet-balkonowy.jpg": "Montaż termoparapetu balkonowego",
+        "termoparapet-drzwi-hst.jpg": "Montaż przy drzwiach HST",
+        "termoparapet-okienny.jpg": "Montaż termoparapetu okiennego",
+        "wyklejanie-folii-01.jpg": "Przyklejanie folii montażowej",
+        "wyklejanie-folii-02.jpg": "Przyklejanie folii montażowej",
+        "wyrownanie-otworow-01.jpg": "Etap przygotowania otworu",
+        "wyrownanie-otworow-02.jpg": "Etap przygotowania otworu",
+        "zabezpieczenie-folii-01.jpg": "Zabezpieczenie folii montażowej",
+        "zabezpieczenie-folii-02.jpg": "Zabezpieczenie folii montażowej",
+        "zabezpieczenie-folii-od-zewnatrz-01.jpg": "Zabezpieczenie folii od zewnętrznej strony",
+        "zabezpieczenie-folii-od-zewnatrz-02.jpg": "Zabezpieczenie folii od zewnętrznej strony",
+        "brama-rolowana.jpg": "Brama garażowa rolowana",
+        "brama-segmentowa.jpg": "Brama garażowa segmentowa",
+        "brama-uchylna.jpg": "Brama garażowa uchylna",
+        "drzwi-wewnetrzne-malaga-w5.png": "INTENSO Malaga W-5 — drzwi wewnętrzne",
+        "drzwi-zewnetrzne-wiked.jpg": "Drzwi zewnętrzne WIKĘD",
+        "fasada-aluminiowa.jpg": "Fasada aluminiowa",
+        "moskitiera-okienna.jpg": "Moskitiera okienna",
+        "moskitiera-przeciw-owadom.jpg": "Moskitiera okienna — detal",
+        "ogrod-zimowy.jpg": "Ogród zimowy",
+        "okno-infinity-passive-83md.jpg": "Okno DOMEL Infinity Passive 83MD",
+        "plisy.png": "Plisy",
+        "roleta-dzien-noc.jpg": "Rolety wewnętrzne dzień i noc",
+        "zaluzje-drewniane.jpg": "Żaluzje drewniane",
+    }
+    for folder, category in categories.items():
+        for file in sorted((ASSET_ROOT / folder).glob("*")):
+            if not file.is_file() or file.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
+                continue
+            if file.name == "wolbud-cieply-montaz-banner.png":
+                category = "montaz"
+            name = labels.get(file.name)
+            if not name and folder == "references":
+                number = re.search(r"(\d+)", file.stem)
+                name = f"Skan referencji nr {int(number.group(1))}" if number else "Skan referencji"
+            if not name:
+                name = file.stem.replace("-", " ").replace("_", " ").strip().capitalize()
+            if file.name == "wolbud-cieply-montaz-banner.png":
+                name = "Baner promujący ciepły montaż warstwowy okien i drzwi"
+            if folder == "products":
+                name += " — zdjęcie produktu katalogowego"
+            groups.append((category, file.relative_to(ROOT).as_posix(), name))
+    return groups
+
+
+def gallery_page() -> str:
+    category_names = [("wszystkie", "Wszystkie"), ("produkty", "Produkty"), ("salony", "Salony"), ("firma", "Firma"), ("montaz", "Ciepły montaż"), ("referencje", "Referencje")]
+    filters = "".join(f'<button type="button" class="gallery-filter" data-gallery-filter="{slug}" aria-pressed="false">{label}</button>' for slug, label in category_names)
+    cards = []
+    for category, file_path, label in gallery_assets():
+        image_href = "/" + file_path
+        cards.append(f'<figure class="gallery-card" data-gallery-category="{category}"><div class="gallery-card__image"><a href="{esc(image_href)}" target="_blank" rel="noopener" aria-label="Otwórz pełnowymiarowe zdjęcie: {esc(label)}"><img src="{esc(image_href)}" alt="{esc(label)}" loading="lazy" decoding="async"></a></div><figcaption>{esc(label)}</figcaption></figure>')
+    body = f'''<main id="main" class="page-main"><div class="container"><nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">Zdjęcia</span></nav>
+<button class="button button--light gallery-back" type="button" data-gallery-back data-fallback="/oferta/">← Wróć do poprzedniej strony</button>
+<header class="page-heading"><h1>Zdjęcia</h1><p class="page-heading__lead">Produkty, salony, firma, etapy ciepłego montażu i referencje.</p></header>
+<div class="gallery-toolbar" role="group" aria-label="Wybierz kategorię zdjęć">{filters}</div><div class="gallery-grid">{''.join(cards)}</div></div></main>'''
+    return document("/galeria/", "Zdjęcia | WOL-BUD", "Zdjęcia produktów, salonów, firmy, etapów montażu i referencji WOL-BUD.", body)
+
+
+def locations_page(blocks: list[dict], pages_by_route: dict[str, dict]) -> str:
+    route = "/nasze-sklepy/"
+    source_text = html_blocks([b for b in blocks if b.get("type") not in ("heading", "list")], pages_by_route)
+    story_title = next((b.get("text", "") for b in blocks if b.get("type") == "heading" and b.get("level") == 3), "Zapraszamy do naszych salonów sprzedaży okien i drzwi w Tarnowie i Radłowie")
+    story = f'''<div class="accordion-list" data-accordion-group><details class="accordion-item" data-accordion-item id="opis-salonow"><summary class="accordion-trigger" data-accordion-trigger aria-controls="panel-opis-salonow"><span class="accordion-trigger__label" role="heading" aria-level="2">{esc(story_title)}</span><span class="accordion-trigger__icon" aria-hidden="true"></span></summary><div class="accordion-panel article-copy" id="panel-opis-salonow">{source_text}</div></details></div>'''
+    locations = [
+        ("Salon Tarnów-Chyszów", "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów", "14 626 80 32", "534 091 021", "salon-tarnow-chyszow.jpg", "Pn–Pt 9–17 · Sb 9–13"),
+        ("Salon w Tarnowie", "ul. Szkotnik 2b, 33-100 Tarnów", "14 628 84 90", "693 870 505", "salon-tarnow-szkotnik.jpg", "Pn–Pt 9–17 · Sb 9–13"),
+        ("Punkt w Radłowie", "ul. Leśna 17a, 33-130 Radłów", "14 678 23 65", "609 734 290", "salon-radlow.jpg", "Pn–Pt 9–17 · Sb 9–13"),
+    ]
+    cards = []
+    for name, address, tel_fixed, tel_mobile, photo, hours in locations:
+        mobile_digits = re.sub(r"\D", "", tel_mobile)
+        fixed_digits = re.sub(r"\D", "", tel_fixed)
+        cards.append(f'''<article class="location-card"><div class="location-card__photo"><img src="/public/assets/source/stores/{photo}" alt="{esc(name)}" loading="lazy" decoding="async"></div><div class="location-card__body"><h2>{esc(name)}</h2><address>{esc(address)}</address><div class="location-card__links"><a href="tel:{mobile_digits}">Kom. {esc(tel_mobile)}</a><a href="tel:{fixed_digits}">Tel. {esc(tel_fixed)}</a></div><p class="location-card__hours">{esc(hours)} · niedz. —</p></div></article>''')
+    body = f'''<main id="main" class="page-main"><div class="container"><nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">Nasze sklepy</span></nav>
+<header class="page-heading"><h1>Nasze sklepy</h1><p class="page-heading__lead">Sprzedaż okien i drzwi w Tarnowie i Radłowie.</p></header>
+{story}<div class="location-grid">{''.join(cards)}</div><div class="page-actions"><a class="button button--dark" href="tel:+48534091021">Zadzwoń: 534 091 021</a><a class="button button--light" href="/kontakt/">Dane kontaktowe</a></div></div></main>'''
+    return document(route, "Nasze sklepy | WOL-BUD", "Salony WOL-BUD w Tarnowie i Radłowie.", body)
+
+
+def linkify_contact(text: str) -> str:
+    parts = []
+    pattern = re.compile(r"biuro@wol-bud\.com\.pl|(?<!\d)\d[\d .-]{6,}\d(?!\d)", re.I)
+    cursor = 0
+    for match in pattern.finditer(text):
+        parts.append(esc(text[cursor:match.start()]))
+        value = match.group(0)
+        if "@" in value:
+            parts.append(f'<a href="mailto:{esc(value)}">{esc(value)}</a>')
+        else:
+            digits = re.sub(r"\D", "", value)
+            if len(digits) == 9:
+                parts.append(f'<a href="tel:+48{digits}">{esc(value)}</a>')
+            else:
+                parts.append(esc(value))
+        cursor = match.end()
+    parts.append(esc(text[cursor:]))
+    return "".join(parts)
+
+
+def contact_page(blocks: list[dict], pages_by_route: dict[str, dict]) -> str:
+    route = "/kontakt/"
+    groups: list[dict] = []
+    current: dict | None = None
+    section_title = "Dane kontaktowe i telefoniczne"
+    for block in blocks:
+        if block.get("type") == "heading" and block.get("level") == 2:
+            section_title = block.get("text", section_title)
+        elif block.get("type") == "heading" and int(block.get("level") or 0) >= 4:
+            current = {"title": block.get("text", ""), "paragraphs": []}
+            groups.append(current)
+        elif block.get("type") == "paragraph" and current is not None:
+            current["paragraphs"].append(block.get("text", ""))
+
+    legal_info: list[str] = []
+    for group in groups:
+        if normalize(group["title"]) == "adres e mail" and len(group["paragraphs"]) > 1:
+            email_rows = [row for row in group["paragraphs"] if "@" in row]
+            legal_info = [row for row in group["paragraphs"] if "@" not in row]
+            group["paragraphs"] = email_rows or ["biuro@wol-bud.com.pl"]
+
+    cards = []
+    section_label = "SALONY SPRZEDAŻY:"
+    for group in groups:
+        title = group["title"]
+        if normalize(title).startswith("salony sprzedazy"):
+            section_label = title
+            continue
+        paragraphs = group["paragraphs"]
+        if normalize(title) == "salon sprzedazy radlow":
+            paragraphs = [re.sub(r"\bkom\.\s*609\s*734\s*29\b", "kom. 609 734 290", text, flags=re.I).strip() for text in paragraphs]
+        rows = "".join(f'<p>{linkify_contact(text)}</p>' for text in paragraphs if text)
+        cards.append(f'<article class="contact-card"><h2>{esc(title)}</h2><div class="article-copy">{rows}</div></article>')
+    legal_card = ""
+    if legal_info:
+        legal_card = '<article class="contact-card contact-card--wide"><h2>Dane firmy</h2><div class="article-copy">' + "".join(f'<p>{linkify_contact(text)}</p>' for text in legal_info) + "</div></article>"
+
+    body = f'''<main id="main" class="page-main"><div class="container"><nav class="breadcrumbs" aria-label="Okruszki"><a href="/">Strona główna</a><span aria-hidden="true">/</span><span aria-current="page">Kontakt</span></nav>
+<header class="page-heading"><h1>Kontakt</h1><p class="page-heading__lead">{esc(section_title)}</p></header><div class="page-actions"><a class="button button--dark" href="tel:+48534091021">Zadzwoń: 534 091 021</a><a class="button button--light" href="mailto:biuro@wol-bud.com.pl">Napisz e-mail</a></div>
+<h2 class="contact-section-title">{esc(section_label)}</h2><div class="contact-grid">{''.join(cards)}{legal_card}</div>
+<div class="page-actions"><a class="button button--light" href="/nasze-sklepy/">Nasze sklepy i godziny otwarcia</a></div></div></main>'''
+    return document(route, "Kontakt | WOL-BUD", "Dane kontaktowe WOL-BUD. Zadzwoń: 534 091 021.", body)
+
+
+def main() -> None:
+    source = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    pages = [page for page in source["pages"] if page.get("httpStatus") == 200]
+    pages_by_route = {route_for(page["url"]): page for page in pages}
+    unique_bodies, removed_duplicates = build_unique_content(pages)
+
+    home = pages_by_route["/"]
+    (ROOT / "index.html").write_text(home_page(unique_bodies["/"], pages_by_route), encoding="utf-8")
+
+    # Every accessible source URL retains a local, static counterpart.
+    counts: Counter[str] = Counter()
+    for page in sorted(pages, key=sort_priority):
+        route = route_for(page["url"])
+        if route == "/":
+            counts[route] = len(unique_bodies[route])
+            continue
+        title = heading_for(page, unique_bodies[route])
+        if route == "/kontakt/":
+            html_text = contact_page(unique_bodies[route], pages_by_route)
+        elif route == "/nasze-sklepy/":
+            html_text = locations_page(unique_bodies[route], pages_by_route)
+        else:
+            html_text = page_template(
+                route, title, unique_bodies[route], pages_by_route,
+                source_title=page.get("title", title),
+                extra_gallery=(route == "/uslugi/"),
+            )
+        destination = output_path(route)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(html_text, encoding="utf-8")
+        counts[route] = len(unique_bodies[route])
+
+    # Compact offer index; category detail text remains on its original category page.
+    offer_groups = [("Kategorie oferty", [(label, href) for label, href in TOP_CATEGORIES])]
+    offer = listing_page("/oferta/", "Oferta", offer_groups, "Co możemy Państwu zaoferować")
+    (ROOT / "oferta" / "index.html").parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / "oferta" / "index.html").write_text(offer, encoding="utf-8")
+
+    product_groups: list[tuple[str, list[tuple[str, str]]]] = []
+    assigned: set[str] = set()
+    for label, slugs in PRODUCT_GROUPS:
+        members = []
+        for slug in slugs:
+            route = f"/produkty/{slug}/"
+            page = pages_by_route.get(route)
+            if page:
+                h1 = next((b.get("text", "") for b in page.get("blocks", []) if b.get("type") == "heading" and b.get("level") == 1), slug.replace("-", " ").title())
+                members.append((h1, route))
+                assigned.add(route)
+        if members:
+            product_groups.append((label, members))
+    extra_products = []
+    for route, page in pages_by_route.items():
+        if route.startswith("/produkty/") and route not in assigned:
+            h1 = next((b.get("text", "") for b in page.get("blocks", []) if b.get("type") == "heading" and b.get("level") == 1), route.rstrip("/").split("/")[-1])
+            extra_products.append((h1, route))
+    if extra_products:
+        product_groups.insert(1, ("Pozostałe strony produktów", extra_products))
+    products_index = product_index_page(product_groups)
+    (ROOT / "produkty" / "index.html").parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / "produkty" / "index.html").write_text(products_index, encoding="utf-8")
+
+    (ROOT / "galeria" / "index.html").parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / "galeria" / "index.html").write_text(gallery_page(), encoding="utf-8")
+
+    # A compact and traceable list of all successful source routes and the old 404 paths.
+    lines = ["# Mapa kompletności treści", "", "Wygenerowana z `docs/source-content.json`. Każda strona z HTTP 200 ma lokalną trasę; dokładne duplikaty akapitów/list pozostawiono tylko przy pierwszym wystąpieniu. Oryginalny korpus pozostaje w pliku JSON.", "", "## Strony przechwycone i wyrenderowane", "", "| Trasa lokalna | Bloki po usunięciu wspólnej nawigacji i duplikatów |", "| --- | ---: |"]
+    for route in sorted(counts, key=lambda item: (item != "/", item)):
+        lines.append(f"| `{route}` | {counts[route]} |")
+    lines += ["", "## Niedostępne adresy źródłowe", "", "42 adresy z mapy witryny zwróciły HTTP 404 i nie zawierały treści do przeniesienia. Zostały pominięte jako niedziałające źródła.", ""]
+    for page in source["pages"]:
+        if page.get("httpStatus") != 200:
+            lines.append(f"- `{page.get('url', '')}` — HTTP {page.get('httpStatus')}")
+    lines += ["", "## Uwagi źródłowe", "", "- Strona główna używa zwartej parafrazy krótkiego wprowadzenia. Jej powtarzające się menu i listy nawigacyjne zastąpiono nawigacją, katalogiem kategorii oraz odnośnikami do produktów.", "- Z podstrony Kontakt usunięto wyłącznie etykiety pól formularza, ponieważ nowa witryna ma działać bez formularza.", "- Usunięto powtórzone teksty zgodnie z ustaleniami właściciela. Pełny korpus źródłowy pozostaje w `docs/source-content.json`; wykaz pominiętych powtórzeń znajduje się w `docs/content-deduplication.md`.", "- Niespójne „25 lat” zastąpiono na stronie O firmie parafrazą faktu źródłowego, że sprzedażą i montażem firma zajmuje się od 1995 r.", "- Ocena 4,3/5 na podstawie 47 opinii i trzy cytaty są potwierdzone przez Google Maps; szczegóły w `docs/google-reviews-verified.md`.", "- Adresy punktów w Radłowie różnią się między dwiema podstronami źródłowymi. Karty salonów na nowej stronie korzystają z mapowania z `Nasze sklepy`; karta Kontakt zachowuje oryginalne dane z podstrony Kontakt.", "- Galeria nie nazywa żadnych fotografii „realizacjami”. Zdjęcia produktów, salonów, firmy, etapów montażu, baneru montażowego i referencji są rozdzielone według zawartości.", ""]
+    (ROOT / "docs" / "content-coverage.md").write_text("\n".join(lines), encoding="utf-8")
+
+    dedupe_lines = ["# Usunięte duplikaty treści", "", "W kolejnych widokach pozostawiono jedno wystąpienie identycznych akapitów i list. Porównanie ignorowało różnice w wielkości liter i odstępach; treść źródłowa jest zachowana w `source-content.json`.", ""]
+    for route, signature in removed_duplicates:
+        dedupe_lines.append(f"- `{route}` — `{signature}`")
+    (ROOT / "docs" / "content-deduplication.md").write_text("\n".join(dedupe_lines) + "\n", encoding="utf-8")
+    print(f"Wygenerowano {len(counts)} stron źródłowych, katalogi, galerię i stronę główną; usunięto {len(removed_duplicates)} powtórzonych bloków.")
+
+
+if __name__ == "__main__":
+    main()

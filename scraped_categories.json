@@ -1,0 +1,538 @@
+{
+  "/kategorie/okna-pcv-domel": {
+    "title": "Okna PCV firmy Domel",
+    "url": "/kategorie/okna-pcv-domel",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Infinity Passive 83MD",
+        "href": "/produkty/infinity-passive-83md",
+        "img_src": "/wp-content/uploads/2013/09/infinity-passive-130x163.jpg",
+        "local_img": "infinity-passive-130x163.jpg"
+      },
+      {
+        "title": "Energetic 83MD",
+        "href": "/produkty/energetic-83md",
+        "img_src": "/wp-content/uploads/2013/08/energetic-classic-130x163.jpg",
+        "local_img": "energetic-classic-130x163.jpg"
+      },
+      {
+        "title": "Vector 82MD",
+        "href": "/produkty/vector-82md",
+        "img_src": "/wp-content/uploads/2013/08/vector-winchester-130x156.png",
+        "local_img": "vector-winchester-130x156.png"
+      },
+      {
+        "title": "Fusion",
+        "href": "/produkty/fusion",
+        "img_src": "/wp-content/uploads/2013/08/FUSION-CLASSIC-WINCHESTER-130x143.jpg",
+        "local_img": "FUSION-CLASSIC-WINCHESTER-130x143.jpg"
+      },
+      {
+        "title": "Synergic",
+        "href": "/produkty/synergic",
+        "img_src": "/wp-content/uploads/2013/08/SYNERGIC-CLASSIC-WINCHESTER-130x149.jpg",
+        "local_img": "SYNERGIC-CLASSIC-WINCHESTER-130x149.jpg"
+      }
+    ]
+  },
+  "/kategorie/drzwi-wewnetrzne": {
+    "title": "Drzwi wewnętrzne",
+    "url": "/kategorie/drzwi-wewnetrzne",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Intenso Doors – drzwi ramiakowe okleinowane",
+        "href": "/produkty/drzwi-wewnetrzne-intenso",
+        "img_src": "/wp-content/uploads/2013/09/Malaga-W-5-90x195.png",
+        "local_img": "Malaga-W-5-90x195.png"
+      }
+    ]
+  },
+  "/kategorie/drzwi-zewnetrzne": {
+    "title": "Drzwi zewnętrzne",
+    "url": "/kategorie/drzwi-zewnetrzne",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Wikęd – drzwi zewnętrzne stalowe",
+        "href": "/produkty/wiked-drzwi-zewnetrzne-stalowe",
+        "img_src": "/wp-content/uploads/2013/09/wikęd-130x130.jpg",
+        "local_img": ""
+      }
+    ]
+  },
+  "/kategorie/stolarka-aluminiowa": {
+    "title": "Stolarka aluminiowa",
+    "url": "/kategorie/stolarka-aluminiowa",
+    "content_html": "<div class=\"content\">\n<p>Aluminium jest jednym z najbardziej wytrzymałych materiałów budowlanych, prawie niewymagającym konserwacji, świetnie izolującym i trwałym. Elegancki profil aluminiowy gwarantuje maksymalny dostęp światła i różnorodność zastosowań.</p>\n<p>Posiadamy wieloletnie doświadczenie w sprzedaży i montażu stolarki aluminiowej w Tarnowie.</p>\n<p><strong>W ofercie posiadamy okna i drzwi aluminiowe, ogrody zimowe oraz fasady aluminiowe.</strong></p>\n</div>",
+    "content_text": "Aluminium jest jednym z najbardziej wytrzymałych materiałów budowlanych, prawie niewymagającym konserwacji, świetnie izolującym i trwałym. Elegancki profil aluminiowy gwarantuje maksymalny dostęp światła i różnorodność zastosowań.\nPosiadamy wieloletnie doświadczenie w sprzedaży i montażu stolarki aluminiowej w Tarnowie.\nW ofercie posiadamy okna i drzwi aluminiowe, ogrody zimowe oraz fasady aluminiowe.",
+    "products": [
+      {
+        "title": "Ogrody zimowe",
+        "href": "/produkty/ogrody-zimowe",
+        "img_src": "/wp-content/uploads/2013/08/ogród1-127x195.jpg",
+        "local_img": ""
+      },
+      {
+        "title": "Fasady Aluminiowe",
+        "href": "/produkty/fasady",
+        "img_src": "/wp-content/uploads/2013/08/fasady4-130x97.jpg",
+        "local_img": "fasady4-130x97.jpg"
+      },
+      {
+        "title": "Okna i drzwi ALU",
+        "href": "/produkty/okna-drzwi-alu",
+        "img_src": "/wp-content/uploads/2013/08/alu3-130x92.jpg",
+        "local_img": "alu3-130x92.jpg"
+      }
+    ]
+  },
+  "/kategorie/bramy-garazowe": {
+    "title": "Bramy garażowe",
+    "url": "/kategorie/bramy-garazowe",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Bramy segmentowe",
+        "href": "/produkty/segmentowe",
+        "img_src": "/wp-content/uploads/2013/08/brama-garazowa-130x173.jpg",
+        "local_img": "brama-garazowa-130x173.jpg"
+      },
+      {
+        "title": "Bramy rolowane",
+        "href": "/produkty/rolowane",
+        "img_src": "/wp-content/uploads/2013/08/brama-garazowa-rolowana-130x173.jpg",
+        "local_img": "brama-garazowa-rolowana-130x173.jpg"
+      },
+      {
+        "title": "Bramy uchylne",
+        "href": "/produkty/uchylne",
+        "img_src": "/wp-content/uploads/2013/08/brama-garazowa-uchylna1-130x88.jpg",
+        "local_img": "brama-garazowa-uchylna1-130x88.jpg"
+      }
+    ]
+  },
+  "/kategorie/parapety-blaty": {
+    "title": "Parapety i blaty",
+    "url": "/kategorie/parapety-blaty",
+    "content_html": "",
+    "content_text": "",
+    "products": []
+  },
+  "/kategorie/aglomarmur": {
+    "title": "Aglomarmur",
+    "url": "/kategorie/aglomarmur",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Venus",
+        "href": "/produkty/venus",
+        "img_src": "/wp-content/uploads/2014/03/Venus-130x86.jpg",
+        "local_img": "Venus-130x86.jpg"
+      },
+      {
+        "title": "New Marfil",
+        "href": "/produkty/new-marfil",
+        "img_src": "/wp-content/uploads/2014/03/New-Marfil-130x86.jpg",
+        "local_img": "New-Marfil-130x86.jpg"
+      },
+      {
+        "title": "Olimpo",
+        "href": "/produkty/olimpo",
+        "img_src": "/wp-content/uploads/2014/03/Olimpo-130x86.jpg",
+        "local_img": "Olimpo-130x86.jpg"
+      },
+      {
+        "title": "Botticino",
+        "href": "/produkty/botticino",
+        "img_src": "/wp-content/uploads/2014/03/Botticino-130x86.jpg",
+        "local_img": "Botticino-130x86.jpg"
+      },
+      {
+        "title": "Breccia Aurora",
+        "href": "/produkty/breccia-aurora",
+        "img_src": "/wp-content/uploads/2014/03/Breccia-Aurora-130x86.jpg",
+        "local_img": "Breccia-Aurora-130x86.jpg"
+      },
+      {
+        "title": "Breccia Oniciata",
+        "href": "/produkty/breccia-oniciata",
+        "img_src": "/wp-content/uploads/2014/03/Breccia-Oniciata-130x86.jpg",
+        "local_img": "Breccia-Oniciata-130x86.jpg"
+      },
+      {
+        "title": "Travertino",
+        "href": "/produkty/travertino",
+        "img_src": "/wp-content/uploads/2014/03/Travertino-130x86.jpg",
+        "local_img": "Travertino-130x86.jpg"
+      },
+      {
+        "title": "Calacata",
+        "href": "/produkty/calacata",
+        "img_src": "/wp-content/uploads/2014/03/Calacata-130x86.jpg",
+        "local_img": "Calacata-130x86.jpg"
+      },
+      {
+        "title": "Nero Portoro",
+        "href": "/produkty/nero-portoro",
+        "img_src": "/wp-content/uploads/2014/03/Nero-Portoro-130x86.jpg",
+        "local_img": "Nero-Portoro-130x86.jpg"
+      },
+      {
+        "title": "Giallo Reale",
+        "href": "/produkty/giallo-reale",
+        "img_src": "/wp-content/uploads/2014/03/Giallo-Reale-130x86.jpg",
+        "local_img": "Giallo-Reale-130x86.jpg"
+      },
+      {
+        "title": "Rosa del Garda",
+        "href": "/produkty/rosa-del-garda",
+        "img_src": "/wp-content/uploads/2014/03/Rosa-del-Garda-130x86.jpg",
+        "local_img": "Rosa-del-Garda-130x86.jpg"
+      },
+      {
+        "title": "Rosso Asiago",
+        "href": "/produkty/rosso-asiago",
+        "img_src": "/wp-content/uploads/2014/03/Rosso-Asiago-130x86.jpg",
+        "local_img": "Rosso-Asiago-130x86.jpg"
+      }
+    ]
+  },
+  "/kategorie/aglomarmur/page/2": {
+    "title": "Aglomarmur",
+    "url": "/kategorie/aglomarmur/page/2",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Espaniola",
+        "href": "/produkty/espaniola",
+        "img_src": "/wp-content/uploads/2014/03/Espaniola-130x86.jpg",
+        "local_img": "Espaniola-130x86.jpg"
+      },
+      {
+        "title": "Polare",
+        "href": "/produkty/polare",
+        "img_src": "/wp-content/uploads/2014/03/Polare-130x86.jpg",
+        "local_img": "Polare-130x86.jpg"
+      },
+      {
+        "title": "Carrara Micro",
+        "href": "/produkty/carrara-micro",
+        "img_src": "/wp-content/uploads/2014/03/Carrara-Micro-130x86.jpg",
+        "local_img": "Carrara-Micro-130x86.jpg"
+      },
+      {
+        "title": "Verde Alpi",
+        "href": "/produkty/aglomarmur",
+        "img_src": "/wp-content/uploads/2013/08/Verde-Alpi1-130x86.jpg",
+        "local_img": "Verde-Alpi1-130x86.jpg"
+      }
+    ]
+  },
+  "/kategorie/granit": {
+    "title": "Granit",
+    "url": "/kategorie/granit",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Baltic Brown",
+        "href": "/produkty/baltic-brown",
+        "img_src": "/wp-content/uploads/2014/03/Baltic-Brown-130x86.jpg",
+        "local_img": "Baltic-Brown-130x86.jpg"
+      },
+      {
+        "title": "Star Galaxy",
+        "href": "/produkty/star-galaxy",
+        "img_src": "/wp-content/uploads/2014/03/Star-Galaxy-130x86.jpg",
+        "local_img": "Star-Galaxy-130x86.jpg"
+      },
+      {
+        "title": "Kashmir Gold",
+        "href": "/produkty/kashmir-gold",
+        "img_src": "/wp-content/uploads/2014/03/Kashmir-Gold-130x86.jpg",
+        "local_img": "Kashmir-Gold-130x86.jpg"
+      },
+      {
+        "title": "Nero Zimbabwe",
+        "href": "/produkty/nero-zimbabwe",
+        "img_src": "/wp-content/uploads/2014/03/Nero-Zimbabwe-130x86.jpg",
+        "local_img": "Nero-Zimbabwe-130x86.jpg"
+      },
+      {
+        "title": "Multicolor Red",
+        "href": "/produkty/multicolor-red",
+        "img_src": "/wp-content/uploads/2014/03/Multicolor-Red-130x86.jpg",
+        "local_img": "Multicolor-Red-130x86.jpg"
+      },
+      {
+        "title": "Santiago Red",
+        "href": "/produkty/santiago-red",
+        "img_src": "/wp-content/uploads/2014/03/Santiago-Red-130x86.jpg",
+        "local_img": "Santiago-Red-130x86.jpg"
+      },
+      {
+        "title": "New Impala",
+        "href": "/produkty/new-impala",
+        "img_src": "/wp-content/uploads/2014/03/New-Impala-130x86.jpg",
+        "local_img": "New-Impala-130x86.jpg"
+      },
+      {
+        "title": "Yellow Pink",
+        "href": "/produkty/yellow-pink",
+        "img_src": "/wp-content/uploads/2014/03/Yellow-Pink-130x86.jpg",
+        "local_img": "Yellow-Pink-130x86.jpg"
+      },
+      {
+        "title": "New Bianco Cristal",
+        "href": "/produkty/new-bianco-cristal",
+        "img_src": "/wp-content/uploads/2014/03/New-Bianco-Cristal-130x86.jpg",
+        "local_img": "New-Bianco-Cristal-130x86.jpg"
+      },
+      {
+        "title": "Kashmir White",
+        "href": "/produkty/granit",
+        "img_src": "/wp-content/uploads/2013/08/Kashmir-White1-130x86.jpg",
+        "local_img": "Kashmir-White1-130x86.jpg"
+      }
+    ]
+  },
+  "/kategorie/marmur": {
+    "title": "Marmur",
+    "url": "/kategorie/marmur",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Perlato",
+        "href": "/produkty/perlato",
+        "img_src": "/wp-content/uploads/2015/02/Perlato-130x86.jpg",
+        "local_img": "Perlato-130x86.jpg"
+      },
+      {
+        "title": "Nero Marquina",
+        "href": "/produkty/nero-marquina",
+        "img_src": "/wp-content/uploads/2015/02/Nero-Marquina-130x86.jpg",
+        "local_img": "Nero-Marquina-130x86.jpg"
+      },
+      {
+        "title": "Forest Green",
+        "href": "/produkty/forest-green",
+        "img_src": "/wp-content/uploads/2015/02/Forest-Green-130x86.jpg",
+        "local_img": "Forest-Green-130x86.jpg"
+      },
+      {
+        "title": "Forest Brown",
+        "href": "/produkty/forest-brown",
+        "img_src": "/wp-content/uploads/2015/02/Forest-Brown-130x86.jpg",
+        "local_img": "Forest-Brown-130x86.jpg"
+      },
+      {
+        "title": "Emperador Dark",
+        "href": "/produkty/emperador-dark",
+        "img_src": "/wp-content/uploads/2015/02/Emperador-Dark-130x86.jpg",
+        "local_img": "Emperador-Dark-130x86.jpg"
+      },
+      {
+        "title": "Crema Marphil",
+        "href": "/produkty/crema-marphil",
+        "img_src": "/wp-content/uploads/2015/02/Crema-Marphil-130x86.jpg",
+        "local_img": "Crema-Marphil-130x86.jpg"
+      },
+      {
+        "title": "Crystal White",
+        "href": "/produkty/marmur",
+        "img_src": "/wp-content/uploads/2013/08/Crystal-White1-130x86.jpg",
+        "local_img": "Crystal-White1-130x86.jpg"
+      }
+    ]
+  },
+  "/kategorie/pcv-wewnetrzne": {
+    "title": "Parapety PCV wewnętrzne",
+    "url": "/kategorie/pcv-wewnetrzne",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Parapety PCV Nakładka",
+        "href": "/produkty/pcv-nakladka",
+        "img_src": "/wp-content/uploads/2013/09/PCV-Biały-130x86.jpg",
+        "local_img": ""
+      },
+      {
+        "title": "Parapety PCV",
+        "href": "/produkty/pcv-wewnetrzne",
+        "img_src": "/wp-content/uploads/2013/08/PCV-Złoty-Dąb-130x86.jpg",
+        "local_img": ""
+      }
+    ]
+  },
+  "/kategorie/stalowe-aluminiowe-zewnetrzne": {
+    "title": "Parapety stalowe i aluminiowe zewnętrzne",
+    "url": "/kategorie/stalowe-aluminiowe-zewnetrzne",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Parapety aluminiowe linia Zaokrąglona",
+        "href": "/produkty/aluminiowe-linia-zaokraglona",
+        "img_src": "/wp-content/uploads/2013/09/RAL-8019-12-mm1-130x86.jpg",
+        "local_img": "RAL-8019-12-mm1-130x86.jpg"
+      },
+      {
+        "title": "Parapety aluminiowe linia Standard",
+        "href": "/produkty/aluminiowe-linia-standard",
+        "img_src": "/wp-content/uploads/2013/09/RAL-9006-12-mm-130x86.jpg",
+        "local_img": "RAL-9006-12-mm-130x86.jpg"
+      },
+      {
+        "title": "Parapety stalowe linia Zaokrąglona",
+        "href": "/produkty/stalowe-linia-zaokraglona",
+        "img_src": "/wp-content/uploads/2013/09/RAL-8017-130x86.jpg",
+        "local_img": "RAL-8017-130x86.jpg"
+      },
+      {
+        "title": "Parapety stalowe linia Standard",
+        "href": "/produkty/stalowe-linia-standard",
+        "img_src": "/wp-content/uploads/2013/08/ZŁOTY-DĄB-130x86.jpg",
+        "local_img": ""
+      }
+    ]
+  },
+  "/kategorie/moskitiery": {
+    "title": "Moskitiery",
+    "url": "/kategorie/moskitiery",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "Moskitiery drzwiowe",
+        "href": "/produkty/drzwiowe",
+        "img_src": "/wp-content/uploads/2013/08/mosk_dzrwi-130x170.jpg",
+        "local_img": ""
+      },
+      {
+        "title": "Moskitiery okienne",
+        "href": "/produkty/moskitiery-okienne",
+        "img_src": "/wp-content/uploads/2013/08/moskitiery-przeciw-owadom-130x96.jpg",
+        "local_img": "moskitiery-przeciw-owadom-130x96.jpg"
+      }
+    ]
+  },
+  "/kategorie/rolety": {
+    "title": "Rolety",
+    "url": "/kategorie/rolety",
+    "content_html": "",
+    "content_text": "",
+    "products": []
+  },
+  "/kategorie/wewnetrzne": {
+    "title": "Rolety wewnętrzne",
+    "url": "/kategorie/wewnetrzne",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "DZIEŃ / NOC",
+        "href": "/produkty/dzien-noc-2",
+        "img_src": "/wp-content/uploads/2015/07/dzien-noc-2-130x86.jpg",
+        "local_img": "dzien-noc-2-130x86.jpg"
+      },
+      {
+        "title": "DO OKIEN DACHOWYCH DEKOLUX",
+        "href": "/produkty/do-okien-dachowych-dekolux",
+        "img_src": "/wp-content/uploads/2015/07/dekolux-1-130x195.jpg",
+        "local_img": "dekolux-1-130x195.jpg"
+      },
+      {
+        "title": "W KASECIE ALU KLAUDIA",
+        "href": "/produkty/w-kasecie-alu-klaudia",
+        "img_src": "/wp-content/uploads/2015/07/alu-klaudia-1-130x86.jpg",
+        "local_img": "alu-klaudia-1-130x86.jpg"
+      },
+      {
+        "title": "W KASECIE ALU VEGAS PROFIL",
+        "href": "/produkty/w-kasecie-alu-vegas-profil",
+        "img_src": "/wp-content/uploads/2015/07/alu-vegas-profil-1-130x86.jpg",
+        "local_img": "alu-vegas-profil-1-130x86.jpg"
+      },
+      {
+        "title": "W KASECIE ALU VEGAS CLASSIC",
+        "href": "/produkty/w-kasecie-alu-vegas-classic",
+        "img_src": "/wp-content/uploads/2015/07/alu-vegas-classic-1-130x86.jpg",
+        "local_img": "alu-vegas-classic-1-130x86.jpg"
+      },
+      {
+        "title": "W KASECIE PCV VEGAS CLASSIC",
+        "href": "/produkty/w-kasecie-pcv-vegas-classic",
+        "img_src": "/wp-content/uploads/2015/07/vegas-classic-1-130x86.jpg",
+        "local_img": "vegas-classic-1-130x86.jpg"
+      },
+      {
+        "title": "MINI VEGAS",
+        "href": "/produkty/mini-vegas",
+        "img_src": "/wp-content/uploads/2015/07/mini-vegas-1-130x86.jpg",
+        "local_img": "mini-vegas-1-130x86.jpg"
+      },
+      {
+        "title": "MINI SLIM",
+        "href": "/produkty/mini-slim",
+        "img_src": "/wp-content/uploads/2015/07/mini-slim-1-130x86.jpg",
+        "local_img": "mini-slim-1-130x86.jpg"
+      }
+    ]
+  },
+  "/kategorie/zewnetrzne": {
+    "title": "Rolety zewnętrzne",
+    "url": "/kategorie/zewnetrzne",
+    "content_html": "<div class=\"content\">\n<p><strong>Rolety zewnętrzne</strong> produkowane z wysokiej jakości <strong>aluminium</strong> są odporne na niszczące oddziaływanie czynników atmosferycznych. Pancerz rolety wypełniony jest pianką poliuretanową co zapewnia maksymalną izolacje termiczną i akustyczną. Stanowią skuteczną ochronę przed włamaniami, utratą ciepła, hałasem czy też nadmiernym oświetleniem.. Jest to doskonała izolacja termiczna, która zimą pozwala obniżyć koszty ogrzewania, a upalnym latem zapewnia przyjemny chłód. <strong>Mogą być zwijane ręcznie lub za pomocą siłownika elektrycznego.</strong></p>\n<p>Poszczególne systemy pozwalają na dobranie takiego produktu, który spełni Państwa oczekiwania.</p>\n<p><strong>Zalety rolet zewnętrznych:</strong></p>\n<ul>\n<li>chronią przed warunkami atmosferycznymi: słońcem, wiatrem, deszczem i śniegiem,</li>\n<li>izolują termicznie – zastosowanie rolet pozwala na zaoszczędzenie do 30% energii cieplnej w okresie grzewczym,</li>\n<li>izolują od hałasu,</li>\n<li>chronią przed wandalizmem i włamaniem,</li>\n<li>każdy z systemów można zintegrować z moskitierą.</li>\n</ul>\n</div>",
+    "content_text": "Rolety zewnętrzne produkowane z wysokiej jakości aluminium są odporne na niszczące oddziaływanie czynników atmosferycznych. Pancerz rolety wypełniony jest pianką poliuretanową co zapewnia maksymalną izolacje termiczną i akustyczną. Stanowią skuteczną ochronę przed włamaniami, utratą ciepła, hałasem czy też nadmiernym oświetleniem.. Jest to doskonała izolacja termiczna, która zimą pozwala obniżyć koszty ogrzewania, a upalnym latem zapewnia przyjemny chłód. Mogą być zwijane ręcznie lub za pomocą siłownika elektrycznego.\nPoszczególne systemy pozwalają na dobranie takiego produktu, który spełni Państwa oczekiwania.\nZalety rolet zewnętrznych:\n\nchronią przed warunkami atmosferycznymi: słońcem, wiatrem, deszczem i śniegiem,\nizolują termicznie – zastosowanie rolet pozwala na zaoszczędzenie do 30% energii cieplnej w okresie grzewczym,\nizolują od hałasu,\nchronią przed wandalizmem i włamaniem,\nkażdy z systemów można zintegrować z moskitierą.",
+    "products": [
+      {
+        "title": "Aluprof – system podtynkowy INTEGRO",
+        "href": "/produkty/podtynkowe-integro",
+        "img_src": "/wp-content/uploads/2013/08/podtynkowy_integor-130x173.jpg",
+        "local_img": ""
+      },
+      {
+        "title": "Aluprof – system adaptacyjny",
+        "href": "/produkty/adaptacyjne",
+        "img_src": "/wp-content/uploads/2013/08/adaptacyjny-130x136.jpg",
+        "local_img": ""
+      }
+    ]
+  },
+  "/kategorie/zaluzje-plisy": {
+    "title": "Żaluzje i plisy",
+    "url": "/kategorie/zaluzje-plisy",
+    "content_html": "<div class=\"content\">\n</div>",
+    "content_text": "",
+    "products": [
+      {
+        "title": "ŻALUZJE DREWNIANE",
+        "href": "/produkty/zaluzje-drewniane",
+        "img_src": "/wp-content/uploads/2015/07/zaluzje-drewniane-1-130x86.jpg",
+        "local_img": "zaluzje-drewniane-1-130x86.jpg"
+      },
+      {
+        "title": "ŻALUZJE POZIOME ALUMINIOWE",
+        "href": "/produkty/zaluzje-poziome-aluminiowe",
+        "img_src": "/wp-content/uploads/2015/07/zaluzje-aluminiowe-1-130x86.jpg",
+        "local_img": "zaluzje-aluminiowe-1-130x86.jpg"
+      },
+      {
+        "title": "PLISY",
+        "href": "/produkty/plisy",
+        "img_src": "/wp-content/uploads/2015/07/plisy-1-130x86.png",
+        "local_img": "plisy-1-130x86.png"
+      }
+    ]
+  }
+}

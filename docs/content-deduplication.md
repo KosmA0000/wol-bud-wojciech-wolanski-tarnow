@@ -1,0 +1,114 @@
+# Usunięte duplikaty treści
+
+W kolejnych widokach pozostawiono jedno wystąpienie identycznych akapitów i list. Porównanie ignorowało różnice w wielkości liter i odstępach; treść źródłowa jest zachowana w `source-content.json`.
+
+- `/kontakt/` — `p:biuro wol bud com pl`
+- `/produkty/aluminiowe-linia-zaokraglona/` — `p:parapety aluminiowe sa`
+- `/produkty/aluminiowe-linia-zaokraglona/` — `list:przeznaczone do montazu z oknami z pcv drewnianymi i wykonanymi z aluminium|estetyczn`
+- `/produkty/aluminiowe-linia-zaokraglona/` — `p:blacha powlekana zabezpieczona jest dodatkowo folia ochronna ktora chroni blache przed z`
+- `/produkty/botticino/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/botticino/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/botticino/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/breccia-aurora/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/breccia-aurora/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/breccia-aurora/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/breccia-oniciata/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/breccia-oniciata/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/breccia-oniciata/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/calacata/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/calacata/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/calacata/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/carrara-micro/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/carrara-micro/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/carrara-micro/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/dzien-noc-2/` — `p:opis`
+- `/produkty/emperador-dark/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/emperador-dark/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/espaniola/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/espaniola/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/espaniola/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/forest-brown/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/forest-brown/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/forest-green/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/forest-green/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/fusion/` — `p:najwazniejsze informacje na temat produktu`
+- `/produkty/giallo-reale/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/giallo-reale/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/giallo-reale/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/granit/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/granit/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/granit/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/infinity-passive-83md/` — `p:najwazniejsze informacje na temat produktu`
+- `/produkty/kashmir-gold/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/kashmir-gold/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/kashmir-gold/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/marmur/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/marmur/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/mini-slim/` — `p:opis`
+- `/produkty/mini-vegas/` — `p:opis`
+- `/produkty/moskitiery-okienne/` — `p:konserwacja moskitiery`
+- `/produkty/moskitiery-okienne/` — `p:moskitiere ktora ulegla zabrudzeniu po zdjeciu z okna nalezy myc gabka letnia woda z dod`
+- `/produkty/multicolor-red/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/multicolor-red/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/multicolor-red/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/nero-marquina/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/nero-marquina/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/nero-portoro/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/nero-portoro/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/nero-portoro/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/nero-zimbabwe/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/nero-zimbabwe/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/nero-zimbabwe/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/new-bianco-cristal/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/new-bianco-cristal/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/new-bianco-cristal/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/new-impala/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/new-impala/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/new-impala/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/new-marfil/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/new-marfil/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/new-marfil/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/olimpo/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/olimpo/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/olimpo/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/perlato/` — `p:marmur to skala metamorficzna powstala z przeobrazenia wapieni lub dolomitow sklada sie `
+- `/produkty/perlato/` — `p:obecnie wykorzystywany jako material na parapety wewnetrzne schody wewnetrzne wykonczeni`
+- `/produkty/plisy/` — `p:opis`
+- `/produkty/polare/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/polare/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/polare/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/rosa-del-garda/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/rosa-del-garda/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/rosa-del-garda/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/rosso-asiago/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/rosso-asiago/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/rosso-asiago/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/santiago-red/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/santiago-red/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/santiago-red/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/stalowe-linia-zaokraglona/` — `p:parapety stalowe wykonane sa z blachy stalowej najwyzszego gatunku ocynkowanej ogniowo n`
+- `/produkty/stalowe-linia-zaokraglona/` — `p:plastikowe boczki zaslepki po docieciu na wymiar pozwalaja solidnie osadzic parapet i do`
+- `/produkty/stalowe-linia-zaokraglona/` — `p:dostepne szerokosci w cm 10 13 15 18 20 23 25 28 30 33 35 40`
+- `/produkty/stalowe-linia-zaokraglona/` — `p:dostepne dlugosci do 6 m`
+- `/produkty/stalowe-linia-zaokraglona/` — `p:kolory ral 8017 8019 9010 o grubosci 0 7 mm lub dowolny z palety ral o grubosci 0 55 mm`
+- `/produkty/star-galaxy/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/star-galaxy/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/star-galaxy/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/synergic/` — `p:najwazniejsze informacje na temat produktu`
+- `/produkty/synergic/` — `list:wspolczynnik przenikania ciepla dla calego okna referencyjnego o szerokosci 123 cm i `
+- `/produkty/travertino/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/travertino/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/travertino/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/vector-82md/` — `p:najwazniejsze informacje na temat produktu`
+- `/produkty/venus/` — `p:parapety wewnetrzne wykonane z aglomarmuru maja gladka nieporowata powierzchnie co podno`
+- `/produkty/venus/` — `p:w ofercie znajduja sie parapety o grubosci 2cm i 3 cm mozliwe jest wykonanie parapetow w`
+- `/produkty/venus/` — `p:aglomarmur stosuje sie jako material na parapety wewnetrzne blaty kuchenne blaty lazienk`
+- `/produkty/w-kasecie-alu-klaudia/` — `p:opis`
+- `/produkty/w-kasecie-alu-vegas-classic/` — `p:opis`
+- `/produkty/w-kasecie-alu-vegas-profil/` — `p:opis`
+- `/produkty/w-kasecie-pcv-vegas-classic/` — `p:opis`
+- `/produkty/yellow-pink/` — `p:granit to skala glebinowa powstala w procesie krystalizacji magmy w jego sklad wchodza g`
+- `/produkty/yellow-pink/` — `p:niezwykle wytrzymaly i odporny na scieranie oraz sciskanie dzieki tej wlasciwosci ma zas`
+- `/produkty/yellow-pink/` — `p:istnieje mozliwosc wykonania powierzchni polerowanej plomieniowanej mlotkowanej to spraw`
+- `/produkty/zaluzje-drewniane/` — `p:opis`
+- `/produkty/zaluzje-poziome-aluminiowe/` — `p:opis`

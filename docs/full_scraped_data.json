@@ -1,0 +1,1796 @@
+{
+  "categories": {
+    "/kategorie/okna-pcv-domel/": {
+      "title": "Okna PCV firmy Domel",
+      "route": "/kategorie/okna-pcv-domel/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Infinity Passive 83MD",
+          "href": "/produkty/infinity-passive-83md",
+          "image": "/public/assets/scraped/thumbs/infinity-passive-130x163.jpg"
+        },
+        {
+          "title": "Energetic 83MD",
+          "href": "/produkty/energetic-83md",
+          "image": "/public/assets/scraped/thumbs/energetic-classic-130x163.jpg"
+        },
+        {
+          "title": "Vector 82MD",
+          "href": "/produkty/vector-82md",
+          "image": "/public/assets/scraped/thumbs/vector-winchester-130x156.png"
+        },
+        {
+          "title": "Fusion",
+          "href": "/produkty/fusion",
+          "image": "/public/assets/scraped/thumbs/FUSION-CLASSIC-WINCHESTER-130x143.jpg"
+        },
+        {
+          "title": "Synergic",
+          "href": "/produkty/synergic",
+          "image": "/public/assets/scraped/thumbs/SYNERGIC-CLASSIC-WINCHESTER-130x149.jpg"
+        }
+      ]
+    },
+    "/kategorie/drzwi-wewnetrzne/": {
+      "title": "Drzwi wewnętrzne",
+      "route": "/kategorie/drzwi-wewnetrzne/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Intenso Doors – drzwi ramiakowe okleinowane",
+          "href": "/produkty/drzwi-wewnetrzne-intenso",
+          "image": "/public/assets/scraped/thumbs/Malaga-W-5-90x195.png"
+        }
+      ]
+    },
+    "/kategorie/drzwi-zewnetrzne/": {
+      "title": "Drzwi zewnętrzne",
+      "route": "/kategorie/drzwi-zewnetrzne/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Wikęd – drzwi zewnętrzne stalowe",
+          "href": "/produkty/wiked-drzwi-zewnetrzne-stalowe",
+          "image": "/public/assets/scraped/thumbs/wik_d-130x130.jpg"
+        }
+      ]
+    },
+    "/kategorie/stolarka-aluminiowa/": {
+      "title": "Stolarka aluminiowa",
+      "route": "/kategorie/stolarka-aluminiowa/",
+      "paragraphs": [
+        "Aluminium jest jednym z najbardziej wytrzymałych materiałów budowlanych, prawie niewymagającym konserwacji, świetnie izolującym i trwałym. Elegancki profil aluminiowy gwarantuje maksymalny dostęp światła i różnorodność zastosowań.",
+        "Posiadamy wieloletnie doświadczenie w sprzedaży i montażu stolarki aluminiowej w Tarnowie.",
+        "W ofercie posiadamy okna i drzwi aluminiowe, ogrody zimowe oraz fasady aluminiowe."
+      ],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Ogrody zimowe",
+          "href": "/produkty/ogrody-zimowe",
+          "image": "/public/assets/scraped/thumbs/ogr_d1-127x195.jpg"
+        },
+        {
+          "title": "Fasady Aluminiowe",
+          "href": "/produkty/fasady",
+          "image": "/public/assets/scraped/thumbs/fasady4-130x97.jpg"
+        },
+        {
+          "title": "Okna i drzwi ALU",
+          "href": "/produkty/okna-drzwi-alu",
+          "image": "/public/assets/scraped/thumbs/alu3-130x92.jpg"
+        }
+      ]
+    },
+    "/kategorie/bramy-garazowe/": {
+      "title": "Bramy garażowe",
+      "route": "/kategorie/bramy-garazowe/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Bramy segmentowe",
+          "href": "/produkty/segmentowe",
+          "image": "/public/assets/scraped/thumbs/brama-garazowa-130x173.jpg"
+        },
+        {
+          "title": "Bramy rolowane",
+          "href": "/produkty/rolowane",
+          "image": "/public/assets/scraped/thumbs/brama-garazowa-rolowana-130x173.jpg"
+        },
+        {
+          "title": "Bramy uchylne",
+          "href": "/produkty/uchylne",
+          "image": "/public/assets/scraped/thumbs/brama-garazowa-uchylna1-130x88.jpg"
+        }
+      ]
+    },
+    "/kategorie/parapety-blaty/": {
+      "title": "Parapety i blaty",
+      "route": "/kategorie/parapety-blaty/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": []
+    },
+    "/kategorie/aglomarmur/": {
+      "title": "Aglomarmur",
+      "route": "/kategorie/aglomarmur/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Venus",
+          "href": "/produkty/venus",
+          "image": "/public/assets/scraped/thumbs/Venus-130x86.jpg"
+        },
+        {
+          "title": "New Marfil",
+          "href": "/produkty/new-marfil",
+          "image": "/public/assets/scraped/thumbs/New-Marfil-130x86.jpg"
+        },
+        {
+          "title": "Olimpo",
+          "href": "/produkty/olimpo",
+          "image": "/public/assets/scraped/thumbs/Olimpo-130x86.jpg"
+        },
+        {
+          "title": "Botticino",
+          "href": "/produkty/botticino",
+          "image": "/public/assets/scraped/thumbs/Botticino-130x86.jpg"
+        },
+        {
+          "title": "Breccia Aurora",
+          "href": "/produkty/breccia-aurora",
+          "image": "/public/assets/scraped/thumbs/Breccia-Aurora-130x86.jpg"
+        },
+        {
+          "title": "Breccia Oniciata",
+          "href": "/produkty/breccia-oniciata",
+          "image": "/public/assets/scraped/thumbs/Breccia-Oniciata-130x86.jpg"
+        },
+        {
+          "title": "Travertino",
+          "href": "/produkty/travertino",
+          "image": "/public/assets/scraped/thumbs/Travertino-130x86.jpg"
+        },
+        {
+          "title": "Calacata",
+          "href": "/produkty/calacata",
+          "image": "/public/assets/scraped/thumbs/Calacata-130x86.jpg"
+        },
+        {
+          "title": "Nero Portoro",
+          "href": "/produkty/nero-portoro",
+          "image": "/public/assets/scraped/thumbs/Nero-Portoro-130x86.jpg"
+        },
+        {
+          "title": "Giallo Reale",
+          "href": "/produkty/giallo-reale",
+          "image": "/public/assets/scraped/thumbs/Giallo-Reale-130x86.jpg"
+        },
+        {
+          "title": "Rosa del Garda",
+          "href": "/produkty/rosa-del-garda",
+          "image": "/public/assets/scraped/thumbs/Rosa-del-Garda-130x86.jpg"
+        },
+        {
+          "title": "Rosso Asiago",
+          "href": "/produkty/rosso-asiago",
+          "image": "/public/assets/scraped/thumbs/Rosso-Asiago-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/aglomarmur/page/2/": {
+      "title": "Aglomarmur",
+      "route": "/kategorie/aglomarmur/page/2/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Espaniola",
+          "href": "/produkty/espaniola",
+          "image": "/public/assets/scraped/thumbs/Espaniola-130x86.jpg"
+        },
+        {
+          "title": "Polare",
+          "href": "/produkty/polare",
+          "image": "/public/assets/scraped/thumbs/Polare-130x86.jpg"
+        },
+        {
+          "title": "Carrara Micro",
+          "href": "/produkty/carrara-micro",
+          "image": "/public/assets/scraped/thumbs/Carrara-Micro-130x86.jpg"
+        },
+        {
+          "title": "Verde Alpi",
+          "href": "/produkty/aglomarmur",
+          "image": "/public/assets/scraped/thumbs/Verde-Alpi1-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/granit/": {
+      "title": "Granit",
+      "route": "/kategorie/granit/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Baltic Brown",
+          "href": "/produkty/baltic-brown",
+          "image": "/public/assets/scraped/thumbs/Baltic-Brown-130x86.jpg"
+        },
+        {
+          "title": "Star Galaxy",
+          "href": "/produkty/star-galaxy",
+          "image": "/public/assets/scraped/thumbs/Star-Galaxy-130x86.jpg"
+        },
+        {
+          "title": "Kashmir Gold",
+          "href": "/produkty/kashmir-gold",
+          "image": "/public/assets/scraped/thumbs/Kashmir-Gold-130x86.jpg"
+        },
+        {
+          "title": "Nero Zimbabwe",
+          "href": "/produkty/nero-zimbabwe",
+          "image": "/public/assets/scraped/thumbs/Nero-Zimbabwe-130x86.jpg"
+        },
+        {
+          "title": "Multicolor Red",
+          "href": "/produkty/multicolor-red",
+          "image": "/public/assets/scraped/thumbs/Multicolor-Red-130x86.jpg"
+        },
+        {
+          "title": "Santiago Red",
+          "href": "/produkty/santiago-red",
+          "image": "/public/assets/scraped/thumbs/Santiago-Red-130x86.jpg"
+        },
+        {
+          "title": "New Impala",
+          "href": "/produkty/new-impala",
+          "image": "/public/assets/scraped/thumbs/New-Impala-130x86.jpg"
+        },
+        {
+          "title": "Yellow Pink",
+          "href": "/produkty/yellow-pink",
+          "image": "/public/assets/scraped/thumbs/Yellow-Pink-130x86.jpg"
+        },
+        {
+          "title": "New Bianco Cristal",
+          "href": "/produkty/new-bianco-cristal",
+          "image": "/public/assets/scraped/thumbs/New-Bianco-Cristal-130x86.jpg"
+        },
+        {
+          "title": "Kashmir White",
+          "href": "/produkty/granit",
+          "image": "/public/assets/scraped/thumbs/Kashmir-White1-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/marmur/": {
+      "title": "Marmur",
+      "route": "/kategorie/marmur/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Perlato",
+          "href": "/produkty/perlato",
+          "image": "/public/assets/scraped/thumbs/Perlato-130x86.jpg"
+        },
+        {
+          "title": "Nero Marquina",
+          "href": "/produkty/nero-marquina",
+          "image": "/public/assets/scraped/thumbs/Nero-Marquina-130x86.jpg"
+        },
+        {
+          "title": "Forest Green",
+          "href": "/produkty/forest-green",
+          "image": "/public/assets/scraped/thumbs/Forest-Green-130x86.jpg"
+        },
+        {
+          "title": "Forest Brown",
+          "href": "/produkty/forest-brown",
+          "image": "/public/assets/scraped/thumbs/Forest-Brown-130x86.jpg"
+        },
+        {
+          "title": "Emperador Dark",
+          "href": "/produkty/emperador-dark",
+          "image": "/public/assets/scraped/thumbs/Emperador-Dark-130x86.jpg"
+        },
+        {
+          "title": "Crema Marphil",
+          "href": "/produkty/crema-marphil",
+          "image": "/public/assets/scraped/thumbs/Crema-Marphil-130x86.jpg"
+        },
+        {
+          "title": "Crystal White",
+          "href": "/produkty/marmur",
+          "image": "/public/assets/scraped/thumbs/Crystal-White1-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/pcv-wewnetrzne/": {
+      "title": "Parapety PCV wewnętrzne",
+      "route": "/kategorie/pcv-wewnetrzne/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Parapety PCV Nakładka",
+          "href": "/produkty/pcv-nakladka",
+          "image": "/public/assets/scraped/thumbs/PCV-Bia_y-130x86.jpg"
+        },
+        {
+          "title": "Parapety PCV",
+          "href": "/produkty/pcv-wewnetrzne",
+          "image": "/public/assets/scraped/thumbs/PCV-Z_oty-D_b-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/stalowe-aluminiowe-zewnetrzne/": {
+      "title": "Parapety stalowe i aluminiowe zewnętrzne",
+      "route": "/kategorie/stalowe-aluminiowe-zewnetrzne/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Parapety aluminiowe linia Zaokrąglona",
+          "href": "/produkty/aluminiowe-linia-zaokraglona",
+          "image": "/public/assets/scraped/thumbs/RAL-8019-12-mm1-130x86.jpg"
+        },
+        {
+          "title": "Parapety aluminiowe linia Standard",
+          "href": "/produkty/aluminiowe-linia-standard",
+          "image": "/public/assets/scraped/thumbs/RAL-9006-12-mm-130x86.jpg"
+        },
+        {
+          "title": "Parapety stalowe linia Zaokrąglona",
+          "href": "/produkty/stalowe-linia-zaokraglona",
+          "image": "/public/assets/scraped/thumbs/RAL-8017-130x86.jpg"
+        },
+        {
+          "title": "Parapety stalowe linia Standard",
+          "href": "/produkty/stalowe-linia-standard",
+          "image": "/public/assets/scraped/thumbs/Z_OTY-D_B-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/moskitiery/": {
+      "title": "Moskitiery",
+      "route": "/kategorie/moskitiery/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "Moskitiery drzwiowe",
+          "href": "/produkty/drzwiowe",
+          "image": ""
+        },
+        {
+          "title": "Moskitiery okienne",
+          "href": "/produkty/moskitiery-okienne",
+          "image": "/public/assets/scraped/thumbs/moskitiery-przeciw-owadom-130x96.jpg"
+        }
+      ]
+    },
+    "/kategorie/rolety/": {
+      "title": "Rolety",
+      "route": "/kategorie/rolety/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": []
+    },
+    "/kategorie/wewnetrzne/": {
+      "title": "Rolety wewnętrzne",
+      "route": "/kategorie/wewnetrzne/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "DZIEŃ / NOC",
+          "href": "/produkty/dzien-noc-2",
+          "image": "/public/assets/scraped/thumbs/dzien-noc-2-130x86.jpg"
+        },
+        {
+          "title": "DO OKIEN DACHOWYCH DEKOLUX",
+          "href": "/produkty/do-okien-dachowych-dekolux",
+          "image": "/public/assets/scraped/thumbs/dekolux-1-130x195.jpg"
+        },
+        {
+          "title": "W KASECIE ALU KLAUDIA",
+          "href": "/produkty/w-kasecie-alu-klaudia",
+          "image": "/public/assets/scraped/thumbs/alu-klaudia-1-130x86.jpg"
+        },
+        {
+          "title": "W KASECIE ALU VEGAS PROFIL",
+          "href": "/produkty/w-kasecie-alu-vegas-profil",
+          "image": "/public/assets/scraped/thumbs/alu-vegas-profil-1-130x86.jpg"
+        },
+        {
+          "title": "W KASECIE ALU VEGAS CLASSIC",
+          "href": "/produkty/w-kasecie-alu-vegas-classic",
+          "image": "/public/assets/scraped/thumbs/alu-vegas-classic-1-130x86.jpg"
+        },
+        {
+          "title": "W KASECIE PCV VEGAS CLASSIC",
+          "href": "/produkty/w-kasecie-pcv-vegas-classic",
+          "image": "/public/assets/scraped/thumbs/vegas-classic-1-130x86.jpg"
+        },
+        {
+          "title": "MINI VEGAS",
+          "href": "/produkty/mini-vegas",
+          "image": "/public/assets/scraped/thumbs/mini-vegas-1-130x86.jpg"
+        },
+        {
+          "title": "MINI SLIM",
+          "href": "/produkty/mini-slim",
+          "image": "/public/assets/scraped/thumbs/mini-slim-1-130x86.jpg"
+        }
+      ]
+    },
+    "/kategorie/zewnetrzne/": {
+      "title": "Rolety zewnętrzne",
+      "route": "/kategorie/zewnetrzne/",
+      "paragraphs": [
+        "Rolety zewnętrzne produkowane z wysokiej jakości aluminium są odporne na niszczące oddziaływanie czynników atmosferycznych. Pancerz rolety wypełniony jest pianką poliuretanową co zapewnia maksymalną izolacje termiczną i akustyczną. Stanowią skuteczną ochronę przed włamaniami, utratą ciepła, hałasem czy też nadmiernym oświetleniem.. Jest to doskonała izolacja termiczna, która zimą pozwala obniżyć koszty ogrzewania, a upalnym latem zapewnia przyjemny chłód. Mogą być zwijane ręcznie lub za pomocą siłownika elektrycznego.",
+        "Poszczególne systemy pozwalają na dobranie takiego produktu, który spełni Państwa oczekiwania.",
+        "Zalety rolet zewnętrznych:"
+      ],
+      "bullets": [
+        "chronią przed warunkami atmosferycznymi: słońcem, wiatrem, deszczem i śniegiem,",
+        "izolują termicznie – zastosowanie rolet pozwala na zaoszczędzenie do 30% energii cieplnej w okresie grzewczym,",
+        "izolują od hałasu,",
+        "chronią przed wandalizmem i włamaniem,",
+        "każdy z systemów można zintegrować z moskitierą."
+      ],
+      "products": [
+        {
+          "title": "Aluprof – system podtynkowy INTEGRO",
+          "href": "/produkty/podtynkowe-integro",
+          "image": ""
+        },
+        {
+          "title": "Aluprof – system adaptacyjny",
+          "href": "/produkty/adaptacyjne",
+          "image": ""
+        }
+      ]
+    },
+    "/kategorie/zaluzje-plisy/": {
+      "title": "Żaluzje i plisy",
+      "route": "/kategorie/zaluzje-plisy/",
+      "paragraphs": [],
+      "bullets": [],
+      "products": [
+        {
+          "title": "ŻALUZJE DREWNIANE",
+          "href": "/produkty/zaluzje-drewniane",
+          "image": "/public/assets/scraped/thumbs/zaluzje-drewniane-1-130x86.jpg"
+        },
+        {
+          "title": "ŻALUZJE POZIOME ALUMINIOWE",
+          "href": "/produkty/zaluzje-poziome-aluminiowe",
+          "image": "/public/assets/scraped/thumbs/zaluzje-aluminiowe-1-130x86.jpg"
+        },
+        {
+          "title": "PLISY",
+          "href": "/produkty/plisy",
+          "image": "/public/assets/scraped/thumbs/plisy-1-130x86.png"
+        }
+      ]
+    }
+  },
+  "products": {
+    "/produkty/adaptacyjne/": {
+      "title": "Aluprof – system adaptacyjny",
+      "route": "/produkty/adaptacyjne/",
+      "paragraphs": [
+        "Rolety zewnętrzne w systemie adaptacyjnym przeznaczone są do stosowania w istniejących budynkach. Dzięki bogatej gamie kolorów są doskonałym elementem dekoracyjnym, dopasowanym do wyglądu budynku.",
+        "Ponadto charakteryzują się dobrą izolacyjnością dźwiękową oraz termiczną, pozwalając w znacznym stopniu obniżyć koszty ogrzewania zimą, a latem zmniejszają w znacznym stopniu nagrzewanie się pomieszczeń. Zastosowanie pracującego niezależnie od rolety systemu Moskito zabezpiecza dodatkowo wnętrze budynku przed insektami, przy jednoczesnym zachowaniu dostępu światła i powietrza."
+      ],
+      "specs": [],
+      "images": [],
+      "pdfs": []
+    },
+    "/produkty/aglomarmur/": {
+      "title": "Verde Alpi",
+      "route": "/produkty/aglomarmur/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Verde-Alpi1-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/aluminiowe-linia-standard/": {
+      "title": "Parapety aluminiowe linia Standard",
+      "route": "/produkty/aluminiowe-linia-standard/",
+      "paragraphs": [
+        "Parapety aluminiowe są:",
+        "Blacha powlekana zabezpieczona jest dodatkowo folią ochronną, która chroni blachę przed zarysowaniem w czasie produkcji i transportu. Folię należy usunąć po zamontowaniu parapetu. Posiadamy w sprzedaży zakończenia parapetów, chronią blachę przed korozją, usprawniają odprowadzanie wody, pozwalają solidnie osadzić parapet, podnoszą estetykę wykonania."
+      ],
+      "specs": [
+        "przeznaczone do montażu z oknami z PCV, drewnianymi i wykonanymi z aluminium,",
+        "estetyczne i trwałe, odporne na wpływ warunków atmosferycznych,",
+        "prawidłowo zamontowane dobrze chronią elewację budynków i odprowadzają wodę,",
+        "odporne na wilgoć, zaplamienie, niepalne, odporne na chemikalia."
+      ],
+      "images": [
+        "/public/assets/scraped/products/RAL-9006-12-mm-306x204.jpg",
+        "/public/assets/scraped/products/RAL-9010-12-mm-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9010-08-mm-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9006-12-mm-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8019-12-mm-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8017-12-mm-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8017-08-mm-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/aluminiowe-linia-zaokraglona/": {
+      "title": "Parapety aluminiowe linia Zaokrąglona",
+      "route": "/produkty/aluminiowe-linia-zaokraglona/",
+      "paragraphs": [
+        "Parapety aluminiowe są:",
+        "Blacha powlekana zabezpieczona jest dodatkowo folią ochronną, która chroni blachę przed zarysowaniem w czasie produkcji i transportu. Folię należy usunąć po zamontowaniu parapetu. Posiadamy w sprzedaży zakończenia parapetów, chronią blachę przed korozją, usprawniają odprowadzanie wody, pozwalają solidnie osadzić parapet, podnoszą estetykę wykonania."
+      ],
+      "specs": [
+        "przeznaczone do montażu z oknami z PCV, drewnianymi i wykonanymi z aluminium,",
+        "estetyczne i trwałe, odporne na wpływ warunków atmosferycznych,",
+        "prawidłowo zamontowane dobrze chronią elewację budynków i odprowadzają wodę,",
+        "odporne na wilgoć, zaplamienie, niepalne, odporne na chemikalia."
+      ],
+      "images": [
+        "/public/assets/scraped/products/RAL-8019-12-mm1-306x204.jpg",
+        "/public/assets/scraped/products/RAL-8017-12-mm1-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9010-12-mm1-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8017-08-mm1-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8019-12-mm1-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9010-08-mm1-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9006-12-mm1-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/baltic-brown/": {
+      "title": "Baltic Brown",
+      "route": "/produkty/baltic-brown/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Baltic-Brown-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/botticino/": {
+      "title": "Botticino",
+      "route": "/produkty/botticino/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Botticino-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/breccia-aurora/": {
+      "title": "Breccia Aurora",
+      "route": "/produkty/breccia-aurora/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Breccia-Aurora-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/breccia-oniciata/": {
+      "title": "Breccia Oniciata",
+      "route": "/produkty/breccia-oniciata/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Breccia-Oniciata-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/calacata/": {
+      "title": "Calacata",
+      "route": "/produkty/calacata/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Calacata-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/carrara-micro/": {
+      "title": "Carrara Micro",
+      "route": "/produkty/carrara-micro/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Carrara-Micro-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/crema-marphil/": {
+      "title": "Crema Marphil",
+      "route": "/produkty/crema-marphil/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Crema-Marphil-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/do-okien-dachowych-dekolux/": {
+      "title": "DO OKIEN DACHOWYCH DEKOLUX",
+      "route": "/produkty/do-okien-dachowych-dekolux/",
+      "paragraphs": [
+        "Szczelne zakrycie dzięki zastosowaniu kasety oraz szerokich prowadnic bocznych, elegancja dzięki materiałom najwyższej jakości, łatwa obsługa dzięki mechanizmom najwyższej klasy.",
+        "Opis:"
+      ],
+      "specs": [
+        "pasuje do każdego okna dachowego,",
+        "zabudowane w eleganckiej kasecie,",
+        "szczelnie zakrywające prowadnice boczne,",
+        "sprężyna naciągowa pozwala na zatrzymanie rolety w dowolnym miejscu,",
+        "szeroki wybór materiałów standardowych oraz podgumowanych wraz ze srebrną powłoką odbijającą."
+      ],
+      "images": [
+        "/public/assets/scraped/products/dekolux-1-166x250.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/drzwi-wewnetrzne-intenso/": {
+      "title": "Intenso Doors – drzwi ramiakowe okleinowane",
+      "route": "/produkty/drzwi-wewnetrzne-intenso/",
+      "paragraphs": [
+        "Dla osób ceniących wysoką jakość drzwi wewnętrznych oraz unikatowe wzornictwo drzwi przy zachowaniu niewygórowanej ceny proponujemy drzwi firmy Intenso Doors.",
+        "Katalog w wersji online do przeglądnięcia – Katalog Intenso Online",
+        "Katalog w wersji pdf do pobrania – Katalog drzwi Intenso"
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Malaga-W-5-115x250.png",
+        "/public/assets/scraped/products/Alicante-W-1-18x40.png",
+        "/public/assets/scraped/products/Malaga-W-5-18x40.png",
+        "/public/assets/scraped/products/Malaga-W-4-18x40.png",
+        "/public/assets/scraped/products/Malaga-W-3-18x40.png",
+        "/public/assets/scraped/products/Malaga-W-2-18x40.png",
+        "/public/assets/scraped/products/Malaga-W-1-18x40.png",
+        "/public/assets/scraped/products/Bilbao-W-5-18x40.png",
+        "/public/assets/scraped/products/Bilbao-W-4-18x40.png",
+        "/public/assets/scraped/products/Bilbao-W-3-18x40.png",
+        "/public/assets/scraped/products/Bilbao-W-2-18x40.png",
+        "/public/assets/scraped/products/Bilbao-W-1-18x40.png",
+        "/public/assets/scraped/products/Alicante-W-5-18x40.png",
+        "/public/assets/scraped/products/Alicante-W-4-18x40.png",
+        "/public/assets/scraped/products/Alicante-W-3-18x40.png",
+        "/public/assets/scraped/products/Alicante-W-2-18x40.png",
+        "/public/assets/scraped/products/intenso.png"
+      ],
+      "pdfs": [
+        {
+          "title": "Katalog Intenso Online",
+          "href": "https://intenso-doors.pl/uploads/downloads/intenso_folder_2020_.pdf"
+        },
+        {
+          "title": "Katalog drzwi Intenso",
+          "href": "https://wol-bud.com.pl/wp-content/uploads/2013/09/Katalog-drzwi-Intenso-3.pdf"
+        }
+      ]
+    },
+    "/produkty/drzwiowe/": {
+      "title": "Moskitiery drzwiowe",
+      "route": "/produkty/drzwiowe/",
+      "paragraphs": [
+        "Drzwi siatkowe wykonane są z profilu walcowanego z aluminium o doskonałych cechach wytrzymałościowych, a kurtyna wykonana jest z szklanego włókna. Drzwi montowane są na zawiasach ze sprężyną, która domyka je samoczynnie. Drzwi siatkowe wzmocnione są poprzeczką, do której przymocowana jest klamka.",
+        "Zalety stosowania moskitier drzwiowych:"
+      ],
+      "specs": [
+        "zastosowanie do wszystkich typów drzwi",
+        "estetyczny wygląd",
+        "bardzo łatwy i szybki montaż",
+        "magnes ułatwiający szybkie otwieranie i zamykanie drzwi",
+        "sposób wykonania powodujący idealną ochronę przed insektami"
+      ],
+      "images": [],
+      "pdfs": []
+    },
+    "/produkty/dzien-noc-2/": {
+      "title": "DZIEŃ / NOC",
+      "route": "/produkty/dzien-noc-2/",
+      "paragraphs": [
+        "W dzień – elegancka ozdoba okna, w noc – szczelne zakrycie i dyskrecja.",
+        "Opis:"
+      ],
+      "specs": [
+        "dwuwarstwowy materiał pozwalający regulować stopień nasłonecznienia,",
+        "służy jako firana i jako roleta,",
+        "dostępne w wersji mini oraz zabudowane w kasecie,",
+        "bardzo szeroki wybór materiałów."
+      ],
+      "images": [
+        "/public/assets/scraped/products/dzien-noc-2-306x204.jpg",
+        "/public/assets/scraped/products/dzien-noc-3-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-1-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-4-26x40.jpg",
+        "/public/assets/scraped/products/dzien-noc-5-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-6-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-7-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-8-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-9-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-10-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-11-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-12-44x29.jpg",
+        "/public/assets/scraped/products/dzien-noc-13-26x40.jpg",
+        "/public/assets/scraped/products/dzien-noc-14-26x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/emperador-dark/": {
+      "title": "Emperador Dark",
+      "route": "/produkty/emperador-dark/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Emperador-Dark-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/energetic-83md/": {
+      "title": "Energetic 83MD",
+      "route": "/produkty/energetic-83md/",
+      "paragraphs": [
+        "Okna Domel Energetic  są produktem dla wymagających inwestorów, którzy nie chcą iść na żadne wątpliwe kompromisy.",
+        "Najważniejsze informacje na temat produktu:"
+      ],
+      "specs": [
+        "6-ciokomorowy profil Gealan S9000 Energetic o głębokości 83 mm",
+        "system trzech uszczelek z dodatkową uszczelką środkową – uszczelki wykonane z tworzywa EPDM",
+        "wzmocnienie stalowe zamknięte o grubości 1,5 mm w ramie oraz 2 mm w skrzydle",
+        "możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach",
+        "okucia Winkhaus Activ Pilot",
+        "pakiet 3-szybowy o grubości 48 mm – 4/18/4/18/4 z ciepłymi ramkami międzyszybowym",
+        "możliwość wykonania rdzenia okna w czterech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy, brązowy i szary",
+        "dwie wersje okna – Classic ze skrzydłem prostym oraz Round ze skrzydłem półzlicowanym zaokrąglonym"
+      ],
+      "images": [
+        "/public/assets/scraped/products/energetic-classic-198x250.jpg",
+        "/public/assets/scraped/products/energetic-round-31x40.jpg",
+        "/public/assets/scraped/products/klasyfikacja-wla_ciwo_ci-energetic-28x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/espaniola/": {
+      "title": "Espaniola",
+      "route": "/produkty/espaniola/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Espaniola-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/fasady/": {
+      "title": "Fasady Aluminiowe",
+      "route": "/produkty/fasady/",
+      "paragraphs": [
+        "Fasady aluminiowe – nowoczesne ściany osłonowe o kształtach prostych i złożonych wykonywane są z oryginalnych systemów profili aluminiowych (fasada słupowo – ryglowa, „pozioma linia”, fasada półstrukturalna lub strukturalna). Dzięki szerokim możliwościom zastosowania pozwalają spełniać bardzo różnorodne i zaawansowane technicznie oczekiwania inwestorów, projektantów oraz architektów.",
+        "Ściany osłonowe są nierozłącznym elementem współczesnej architektury. Konstrukcje te łączą nowoczesną technologię z aktualnymi trendami zapewniając wymaganą izolację termiczną i akustyczną pomieszczeń."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/fasady4-306x229.jpg",
+        "/public/assets/scraped/products/fasady1-29x40.jpg",
+        "/public/assets/scraped/products/fasady6-44x28.jpg",
+        "/public/assets/scraped/products/fasady2-44x32.jpg",
+        "/public/assets/scraped/products/fasady7-44x26.jpg",
+        "/public/assets/scraped/products/fasady5-44x28.jpg",
+        "/public/assets/scraped/products/fasady3-40x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/forest-brown/": {
+      "title": "Forest Brown",
+      "route": "/produkty/forest-brown/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Forest-Brown-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/forest-green/": {
+      "title": "Forest Green",
+      "route": "/produkty/forest-green/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Forest-Green-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/fusion/": {
+      "title": "Fusion",
+      "route": "/produkty/fusion/",
+      "paragraphs": [
+        "Okna Domel Fusion to okna dla klientów zainteresowanych obłymi, zaokrąglonymi kształtami. Stanowią alternatywę dla prostych linii, dlatego doskonale sprawdzają się zwłaszcza przy wymianach okien czy budynkach o bardziej tradycyjnym stylu.",
+        "Najważniejsze informacje na temat produktu:"
+      ],
+      "specs": [
+        "6-ciokomorowy w ościeżnicy i 5-ciokomorowy w skrzydle profil Gealan S8000 IQ o głębokości 83 mm w ościeżnicy oraz 74 mm w skrzydle",
+        "system dwóch uszczelek- uszczelki wykonane z tworzywa EPDM",
+        "wzmocnienie stalowe o grubości 1,5 mm w ramie oraz 1,5 mm w skrzydle",
+        "możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach",
+        "okucia Winkhaus Activ Pilot",
+        "pakiet 2-szybowy o grubości 24 mm – 4/16/4 z ciepłymi ramkami międzyszybowymi lub zalecany pakiet 3-szybowy o grubości 44 mm – 4/16/4/16/4 z ciepłymi ramkami międzyszybowym",
+        "możliwość wykonania rdzenia okna w trzech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy i brązowy",
+        "dwie wersje okna – Classic ze skrzydłem prostym oraz Round ze skrzydłem półzlicowanym zaokrąglonym"
+      ],
+      "images": [
+        "/public/assets/scraped/products/FUSION-CLASSIC-WINCHESTER-226x250.jpg",
+        "/public/assets/scraped/products/FUSION-ROUND-ZLOTY-DAB-37x40.jpg",
+        "/public/assets/scraped/products/klasyfikacja-wlasciwosci-fusion-28x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/giallo-reale/": {
+      "title": "Giallo Reale",
+      "route": "/produkty/giallo-reale/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Giallo-Reale-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/granit/": {
+      "title": "Kashmir White",
+      "route": "/produkty/granit/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Kashmir-White1-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/infinity-passive-83md/": {
+      "title": "Infinity Passive 83MD",
+      "route": "/produkty/infinity-passive-83md/",
+      "paragraphs": [
+        "Okna Domel Infinity Passive są zaprojektowane dla osób ceniących najwyższą jakość okien zarówno pod względem parametrów technicznych, jak również wyposażenia.",
+        "Najważniejsze informacje na temat produktu:"
+      ],
+      "specs": [
+        "6-ciokomorowy profil Gealan S9000 Futura o głębokości 83 mm",
+        "szczelne wypełnienie piankowe w jednej z komór w ramie dla poprawienia izolacji termicznej",
+        "system trzech uszczelek z dodatkową uszczelką środkową – uszczelki wykonane z tworzywa EPDM",
+        "wzmocnienie stalowe o grubości 2 mm w ramie oraz 2 mm w skrzydle",
+        "wklejany do skrzydła pakiet szybowy przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach",
+        "ukryte zawiasy Winkhaus Activ Select niewidoczne przy zamkniętym skrzydle",
+        "pakiet 3-szybowy o grubości 50 mm – 6/18/4/18/4 z ciepłymi ramkami międzyszybowym – szyba zewnętrzna o grubości 6 mm dla lepszej izolacji akustycznej",
+        "możliwość wykonania rdzenia okna w czterech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy, brązowy i szary",
+        "prosty, klasyczny kształt okna"
+      ],
+      "images": [
+        "/public/assets/scraped/products/infinity-passive-198x250.jpg",
+        "/public/assets/scraped/products/INFINITY-ANTEAK-40x40.jpg",
+        "/public/assets/scraped/products/klasyfikacja-infinity-28x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/kashmir-gold/": {
+      "title": "Kashmir Gold",
+      "route": "/produkty/kashmir-gold/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Kashmir-Gold-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/marmur/": {
+      "title": "Crystal White",
+      "route": "/produkty/marmur/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Crystal-White1-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/mini-slim/": {
+      "title": "MINI SLIM",
+      "route": "/produkty/mini-slim/",
+      "paragraphs": [
+        "Roleta zawieszana na skrzydle okiennym urzekająca swoją lekkością i prostotą.",
+        "Opis:"
+      ],
+      "specs": [
+        "zawieszana na skrzydle okiennym",
+        "magnesy przytrzymują roletę przy oknie,",
+        "montaż inwazyjny lub nieinwazyjny na haczykach",
+        "nie zabiera światła szyby,",
+        "tania w zakupie",
+        "szeroki wybór materiałów standardowych i podgumowanych"
+      ],
+      "images": [
+        "/public/assets/scraped/products/mini-slim-1-306x203.jpg",
+        "/public/assets/scraped/products/mini-slim-2-44x29.jpg",
+        "/public/assets/scraped/products/mini-slim-3-44x29.jpg",
+        "/public/assets/scraped/products/mini-slim-4-26x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/mini-vegas/": {
+      "title": "MINI VEGAS",
+      "route": "/produkty/mini-vegas/",
+      "paragraphs": [
+        "Roleta zawieszana na skrzydle okiennym wyposażona w prowadnice żyłkowe.",
+        "Zastosowany mechanizm VEGAS ułatwia montaż i gwarantuje niezawodne działanie przez długie lata.",
+        "Opis:"
+      ],
+      "specs": [
+        "żyłki za materiałem podtrzymują roletę przy oknie,",
+        "montaż inwazyjny lub nieinwazyjny,",
+        "nie zabiera światła szyby,",
+        "dolne wieszaki z regulacją napięcia żyłki,",
+        "szeroki wybór materiałów standardowych i podgumowanych"
+      ],
+      "images": [
+        "/public/assets/scraped/products/mini-vegas-1-306x203.jpg",
+        "/public/assets/scraped/products/mini-vegas-2-26x40.jpg",
+        "/public/assets/scraped/products/mini-vegas-3-44x29.jpg",
+        "/public/assets/scraped/products/mini-vegas-4-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/moskitiery-okienne/": {
+      "title": "Moskitiery okienne",
+      "route": "/produkty/moskitiery-okienne/",
+      "paragraphs": [
+        "Moskitiery ramkowe okienne nadają się do wszystkich typów okien, które otwierane lub uchylane są wyłącznie w celu przewietrzenia pomieszczenia. Nie ma tu znaczenia, czy okno jest drewniane, PCV, czy aluminiowe. Zastosowanie moskitiery ramkowej okiennej nie ogranicza funkcjonalności okna, czy rolety zewnętrznej.",
+        "Dzięki specjalnym zaczepom moskitiery za jednym ruchem ręki mogą zostać zdemontowane np. w celu umycia ramy okna.",
+        "Moskitiery ramkowe okienne cechuje przede wszystkim łatwość montażu oraz prosta budowa zapewniająca długowieczność. Na zimę moskitiery te można bardzo łatwo zdemontować i przechowywać na strychu, czy w garażu."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/moskitiery-przeciw-owadom-306x228.jpg",
+        "/public/assets/scraped/products/moskitiera-ramkowa-okienna-30x40.jpg",
+        "/public/assets/scraped/products/moskitiera_w_ramce-35x40.jpg",
+        "/public/assets/scraped/products/moskitiery_kolorystyka-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/multicolor-red/": {
+      "title": "Multicolor Red",
+      "route": "/produkty/multicolor-red/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Multicolor-Red-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/nero-marquina/": {
+      "title": "Nero Marquina",
+      "route": "/produkty/nero-marquina/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Nero-Marquina-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/nero-portoro/": {
+      "title": "Nero Portoro",
+      "route": "/produkty/nero-portoro/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Nero-Portoro-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/nero-zimbabwe/": {
+      "title": "Nero Zimbabwe",
+      "route": "/produkty/nero-zimbabwe/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Nero-Zimbabwe-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/new-bianco-cristal/": {
+      "title": "New Bianco Cristal",
+      "route": "/produkty/new-bianco-cristal/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/New-Bianco-Cristal-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/new-impala/": {
+      "title": "New Impala",
+      "route": "/produkty/new-impala/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/New-Impala-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/new-marfil/": {
+      "title": "New Marfil",
+      "route": "/produkty/new-marfil/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/New-Marfil-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/ogrody-zimowe/": {
+      "title": "Ogrody zimowe",
+      "route": "/produkty/ogrody-zimowe/",
+      "paragraphs": [
+        "Zarówno wolnostojący, jak i wkomponowany w bryłę budynku, odpowiednio dobrany ogród zimowy doskonale koresponduje z otoczeniem i podnosi standard domu, umożliwiając chwilę odpoczynku w otoczeniu światła i zieleni. Jest również najtańszym sposobem zdobycia dodatkowej atrakcyjnej przestrzeni mieszkalnej o wyjątkowych walorach użytkowych.",
+        "Ogród zimowy służy często jako bufor ciepła w czasie chłodnych miesięcy i umożliwia oszczędzanie kosztów ogrzewania dzięki wykorzystaniu bezpłatnej energii słonecznej, uzyskanej przez tzw. efekt cieplarniany."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/ogr_d1-162x250.jpg",
+        "/public/assets/scraped/products/ogr_d3-44x33.jpg",
+        "/public/assets/scraped/products/ogr_d2-29x40.jpg",
+        "/public/assets/scraped/products/ogr_d-44x31.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/okna-drzwi-alu/": {
+      "title": "Okna i drzwi ALU",
+      "route": "/produkty/okna-drzwi-alu/",
+      "paragraphs": [
+        "Okna i drzwi z aluminium produkowane przez Firmę „PETECKI” oparte są na systemach firmy Aluprof, Yawal System oraz Reyaners Aluminium lub innych według wskazań projektanta czy inwestora.",
+        "Pozwalają one na wykonanie okien i drzwi z „zimnego” lub „ciepłego” aluminium o dowolnych funkcjach i walorach użytkowych (jako kwatery stałe, uchylne, uchylno – rozwierane, obrotowe, przesuwne, jako jednoskrzydłowe, dwuskrzydłowe, drzwi otwierane do środka lub na zewnątrz, na zawiasach wrębowych lub nawierzchniowych, ze szczotką, lub z progiem, przesuwne ręcznie, lub automatycznie). Dobór systemu uzależniony jest od wymagań w zakresie ochrony cieplnej i akustycznej, od natężenia użytkowania oraz od wymagań specjalnych (konstrukcje dymoszczelne, antywłamaniowe, kuloodporne, ognioodporne itp.). Ofertę uzupełniamy całą gamą kolorów i wypełnień konstrukcji, np. szkło, panele aluminiowe, panele PCV oraz akcesoriów, takich jak samozamykacze, pochwyty, etc. Stosujemy tylko sprawdzone okucia systemowe. Dla okien uchylnych, położonych wysoko, proponujemy otwieracze naświetli lub siłowniki, umożliwiające ich wygodne otwieranie z poziomu podłogi."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/alu3-306x217.jpg",
+        "/public/assets/scraped/products/alu8-44x33.jpg",
+        "/public/assets/scraped/products/alu5-44x29.jpg",
+        "/public/assets/scraped/products/alu6-29x40.jpg",
+        "/public/assets/scraped/products/alu7-44x32.jpg",
+        "/public/assets/scraped/products/alu9-26x40.jpg",
+        "/public/assets/scraped/products/alu10-29x40.jpg",
+        "/public/assets/scraped/products/alu1-44x31.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/olimpo/": {
+      "title": "Olimpo",
+      "route": "/produkty/olimpo/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Olimpo-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/pcv-nakladka/": {
+      "title": "Parapety PCV Nakładka",
+      "route": "/produkty/pcv-nakladka/",
+      "paragraphs": [
+        "Parapety renowacyjne PCV – TYP NAKŁADKA przeznaczone są do montażu na istniejących parapetach lastrykowych i betonowych. Niskim kosztem i małym wysiłkiem można odmienić wygląd starych parapetów."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/PCV-Bia_y-306x204.jpg",
+        "/public/assets/scraped/products/PCV-Marmur-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/pcv-wewnetrzne/": {
+      "title": "Parapety PCV",
+      "route": "/produkty/pcv-wewnetrzne/",
+      "paragraphs": [
+        "Parapety wewnętrzne PCV produkowane  z twardego polichlorku winylu, czyli tworzywa, które stosowane jest również w produkcji okien i drzwi PCV. Powierzchnia parapetu jest powlekana folią wysokiej jakości, co sprawia, że parapet PCV jest odporny na ścieranie, ciepło, wilgoć oraz promienie słoneczne.",
+        "Posiadamy w ofercie szeroką gamę kolorów, dzięki czemu parapety PCV można dopasować do każdego wnętrza.",
+        "Dostępne kolory to: biały, marmur, złoty dąb, buk, orzech, jabłoń oraz mahoń.",
+        "Maksymalna długość to: 6 m. Dostępne szerokości: od 15 cm do 50 cm."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/PCV-Z_oty-D_b-306x204.jpg",
+        "/public/assets/scraped/products/PCV-Bia_y-44x29.jpg",
+        "/public/assets/scraped/products/PCV-Marmur-44x29.jpg",
+        "/public/assets/scraped/products/PCV-Buk-44x29.jpg",
+        "/public/assets/scraped/products/PCV-Z_oty-D_b1-44x29.jpg",
+        "/public/assets/scraped/products/PCV-Orzech-44x29.jpg",
+        "/public/assets/scraped/products/PCV-Maho_-44x29.jpg",
+        "/public/assets/scraped/products/montaz1-44x33.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/perlato/": {
+      "title": "Perlato",
+      "route": "/produkty/perlato/",
+      "paragraphs": [
+        "Marmur to skała metamorficzna powstała z przeobrażenia wapieni lub dolomitów. Składa się głównie z krystalicznego kalcytu lub dolomitu. W zależności od domieszek może przybierać różne barwy: białą, szarą, różową, zielonkawą, czarną. Marmur można szlifować, piłować, polerować. Od starożytności stosowany jako niezwykle cenny materiał budowlany, rzeźbiarski oraz architektoniczny.",
+        "Obecnie wykorzystywany jako materiał na parapety wewnętrzne, schody wewnętrzne, wykończenia kominków czy różnego rodzaju dekoracje wewnętrzne."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Perlato-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/plisy/": {
+      "title": "PLISY",
+      "route": "/produkty/plisy/",
+      "paragraphs": [
+        "To niezawodny system do zadań specjalnych. Różne kształty, różne warianty, rożne sposoby zasłaniania, każdy znajdzie coś dla siebie.",
+        "Opis:"
+      ],
+      "specs": [
+        "możliwość zasłonięcia dowolnego fragmentu okna,",
+        "warianty do okien zwykłych i dachowych,",
+        "łatwy montaż i demontaż,",
+        "płynnie działający mechanizm,",
+        "możliwość wykonania różnych kształtów (trapez, trójkąt, łuk),",
+        "bardzo szeroki wybór materiałów."
+      ],
+      "images": [
+        "/public/assets/scraped/products/plisy-1-306x203.png"
+      ],
+      "pdfs": []
+    },
+    "/produkty/podtynkowe-integro/": {
+      "title": "Aluprof – system podtynkowy INTEGRO",
+      "route": "/produkty/podtynkowe-integro/",
+      "paragraphs": [
+        "Rolety zewnętrzne w systemie podtynkowym INTEGRO przeznaczone są do zastosowania przede wszystkim w nowo wznoszonych budynkach, ale także w obiektach już istniejących. Rolety wkomponowują się w elewację budynku stanowiąc jej integralną część. Pozostałe elementy czyli pokrywa rewizyjna i prowadnice mogą być dopasowane kolorystycznie do barwy okien.",
+        "Duży wybór kolorów w palecie standardowej umożliwia zaspokojenie potrzeb najbardziej wymagających klientów. Powłoki kolorystyczne elementów ekstrudowanych wykonywane są metodą lakierowania proszkowego, co zapewnia wysoką jakość i trwałość produktu.",
+        "Rolety w systemie podtynkowym INTEGRO wkomponowują się w elewację budynku stanowiąc jej integralną część. Czoło skrzynki rolety stanowi jednocześnie podkład pod dowolny materiał wykończeniowy (np. tynk lub klinkier) dzięki czemu skrzynka staje się niezauważalnym elementem fasady budynku. System ten zapewnia perfekcyjną izolację termiczną i akustyczną, ponieważ jako dodatkowe zamknięcie otworu nie ingeruje w konstrukcję nadproża, okna i drzwi, a tym samym nie narusza bilansu energetycznego budynku."
+      ],
+      "specs": [],
+      "images": [],
+      "pdfs": []
+    },
+    "/produkty/polare/": {
+      "title": "Polare",
+      "route": "/produkty/polare/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Polare-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/rolowane/": {
+      "title": "Bramy rolowane",
+      "route": "/produkty/rolowane/",
+      "paragraphs": [
+        "Bramy garażowe rolowane (roletowe) – charakterystyka"
+      ],
+      "specs": [
+        "nie wymagają wolnego miejsca przed garażem do otwierania i zamykania,",
+        "nie zajmują miejsca pod stropem, dzięki czemu nie trzeba brać pod uwagę bramy przy projektowaniu oświetlenia lub konstrukcji dachu,",
+        "mogą być montowane przed otworem wjazdowym,",
+        "brama jest zwijana do trwałej aluminiowej skrzynki umieszczonej nad otworem wjazdowym,",
+        "dla wygody użytkowania zalecane jest otwieranie automatyczne."
+      ],
+      "images": [
+        "/public/assets/scraped/products/brama-garazowa-rolowana-187x250.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/rosa-del-garda/": {
+      "title": "Rosa del Garda",
+      "route": "/produkty/rosa-del-garda/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Rosa-del-Garda-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/rosso-asiago/": {
+      "title": "Rosso Asiago",
+      "route": "/produkty/rosso-asiago/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Rosso-Asiago-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/santiago-red/": {
+      "title": "Santiago Red",
+      "route": "/produkty/santiago-red/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Santiago-Red-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/segmentowe/": {
+      "title": "Bramy segmentowe",
+      "route": "/produkty/segmentowe/",
+      "paragraphs": [
+        "Bramy garażowe segmentowe – charakterystyka"
+      ],
+      "specs": [
+        "otwierają się pionowo w górę, pod strop",
+        "połączone segmenty, prowadzone są na rolkach po prowadnicach to ergonomiczne rozwiązanie sprawia, że przestrzeń wewnątrz garażu jest możliwie największa, a przed garażem nie potrzeba dodatkowego miejsca do swobodnego otwieranie i zamykanie bramy",
+        "mogą być obsługiwane ręcznie lub automatycznie w każdym z tych przypadków obsługa jest prosta i bezpieczna",
+        "są dobrze zabezpieczone , wyposażone w proste i niezawodne systemy mechanicznego zabezpieczenia przed włamaniem zamek lub rygiel",
+        "zapewniają dobrą izolację termiczną i akustyczną, dzięki temu, że wykonane są z segmentów o grubości 40 – 42 mm wypełnionych pianką poliuretanową, a wokół płaszczyzny bramy montowany jest system trwałych uszczelnień."
+      ],
+      "images": [
+        "/public/assets/scraped/products/brama-garazowa-187x250.jpg",
+        "/public/assets/scraped/products/segm1-44x24.jpg",
+        "/public/assets/scraped/products/segm2-44x33.jpg",
+        "/public/assets/scraped/products/Wi_niowski-2-171x171.png"
+      ],
+      "pdfs": []
+    },
+    "/produkty/stalowe-linia-standard/": {
+      "title": "Parapety stalowe linia Standard",
+      "route": "/produkty/stalowe-linia-standard/",
+      "paragraphs": [
+        "Parapety stalowe wykonane są z blachy stalowej najwyższego gatunku, ocynkowanej ogniowo, następnie powlekanej światowej klasy lakierami poliestrowymi typu: Coroflex, Antislip (chroniącymi doskonale blachę przed korozją na długie lata). Zabezpieczone są folią ochronną przed uszkodzeniem podczas transportu i montażu (usuwa się ją podczas montowania parapetu).",
+        "Plastikowe boczki (zaślepki) po docięciu na wymiar pozwalają solidnie osadzić parapet i dodatkowo chronią blachę przed korozją oraz usprawniają odprowadzanie wody. Na życzenie klienta wykańczamy parapety w dowolnych kolorach co pozwala nadać indywidualny charakter domu lub budynku."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Z_OTY-D_B-306x204.jpg",
+        "/public/assets/scraped/products/RAL-8017-44x29.jpg",
+        "/public/assets/scraped/products/Z_OTY-D_B-44x29.jpg",
+        "/public/assets/scraped/products/ORZECH-44x29.jpg",
+        "/public/assets/scraped/products/CIEMNY-D_B-44x29.jpg",
+        "/public/assets/scraped/products/WINCHESTER-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9010-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9002-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9007-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9006-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9005-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8019-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8017-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8004-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8004-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-7035-44x29.jpg",
+        "/public/assets/scraped/products/RAL-7024-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-7016-44x29.jpg",
+        "/public/assets/scraped/products/RAL-6029-44x29.jpg",
+        "/public/assets/scraped/products/RAL-6020-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-5010-44x29.jpg",
+        "/public/assets/scraped/products/RAL-3011-44x29.jpg",
+        "/public/assets/scraped/products/RAL-3009-MAT-44x29.jpg",
+        "/public/assets/scraped/products/RAL-3005-44x29.jpg",
+        "/public/assets/scraped/products/montaz-44x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/stalowe-linia-zaokraglona/": {
+      "title": "Parapety stalowe linia Zaokrąglona",
+      "route": "/produkty/stalowe-linia-zaokraglona/",
+      "paragraphs": [
+        "Parapety stalowe wykonane są z blachy stalowej najwyższego gatunku, ocynkowanej ogniowo, następnie powlekanej światowej klasy lakierami poliestrowymi typu: Coroflex, Antislip (chroniącymi doskonale blachę przed korozją na długie lata). Zabezpieczone są folią ochronną przed uszkodzeniem podczas transportu i montażu (usuwa się ją podczas montowania parapetu).",
+        "Plastikowe boczki (zaślepki) po docięciu na wymiar pozwalają solidnie osadzić parapet i dodatkowo chronią blachę przed korozją oraz usprawniają odprowadzanie wody. Na życzenie klienta wykańczamy parapety w dowolnych kolorach co pozwala nadać indywidualny charakter domu lub budynku."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/RAL-8017-306x204.jpg",
+        "/public/assets/scraped/products/Z_OTY-D_B-44x29.jpg",
+        "/public/assets/scraped/products/ORZECH-44x29.jpg",
+        "/public/assets/scraped/products/WINCHESTER-44x29.jpg",
+        "/public/assets/scraped/products/RAL-8017-44x29.jpg",
+        "/public/assets/scraped/products/ral-8019-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9010-44x29.jpg",
+        "/public/assets/scraped/products/RAL-9006-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/star-galaxy/": {
+      "title": "Star Galaxy",
+      "route": "/produkty/star-galaxy/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Star-Galaxy-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/synergic/": {
+      "title": "Synergic",
+      "route": "/produkty/synergic/",
+      "paragraphs": [
+        "Okna Domel Synergic stanowią połączenie między rozsądną ceną, a odpowiednimi parametrami w zakresie przenikalności cieplnej, szczelności czy sztywności konstrukcji.",
+        "Najważniejsze informacje na temat produktu:"
+      ],
+      "specs": [
+        "6-ciokomorowy w ościeżnicy i 5-ciokomorowy w skrzydle profil Gealan S8000 IQ o głębokości 74 mm",
+        "system dwóch uszczelek- uszczelki wykonane z tworzywa EPDM",
+        "wzmocnienie stalowe o grubości 1,5 mm w ramie oraz 1,5 mm w skrzydle",
+        "możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach",
+        "okucia Winkhaus Activ Pilot",
+        "pakiet 2-szybowy o grubości 24 mm – 4/16/4 z ciepłymi ramkami międzyszybowymi lub zalecany pakiet 3-szybowy o grubości 44 mm – 4/16/4/16/4 z ciepłymi ramkami międzyszybowym",
+        "możliwość wykonania rdzenia okna w trzech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy i brązowy",
+        "dwie wersje okna – Classic ze skrzydłem prostym oraz Round ze skrzydłem półzlicowanym zaokrąglonym"
+      ],
+      "images": [
+        "/public/assets/scraped/products/SYNERGIC-CLASSIC-WINCHESTER-217x250.jpg",
+        "/public/assets/scraped/products/SYNERGIC-ROUND-ZLOTY-DAB-34x40.jpg",
+        "/public/assets/scraped/products/SYNERGIC-CLASSIC-BIALY-33x40.jpg",
+        "/public/assets/scraped/products/SYNERGIC-ROUND-ORZECH-34x40.jpg",
+        "/public/assets/scraped/products/klasyfikacja-wlasciwosci-synergic-28x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/travertino/": {
+      "title": "Travertino",
+      "route": "/produkty/travertino/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Travertino-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/uchylne/": {
+      "title": "Bramy uchylne",
+      "route": "/produkty/uchylne/",
+      "paragraphs": [
+        "Wjazd do garażu powinien charakteryzować się łatwą obsługą, bezpieczeństwem oraz estetyką właściwą do architektury budynku. I takie właśnie zalety posiadają uchylne bramy garażowe oferowane Państwu przez naszą firmę z Tarnowa."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/brama-garazowa-uchylna1-306x207.jpg",
+        "/public/assets/scraped/products/Wi_niowski-2-171x171.png"
+      ],
+      "pdfs": []
+    },
+    "/produkty/vector-82md/": {
+      "title": "Vector 82MD",
+      "route": "/produkty/vector-82md/",
+      "paragraphs": [
+        "Okna Domel Vector stanowią ciekawe połączenie klasycznego wyglądu, wyśrubowanych parametrów z bogactwem kolorów i nietypowych rozwiązań konstrukcyjnych.",
+        "Najważniejsze informacje na temat produktu:"
+      ],
+      "specs": [
+        "7-ciokomorowy w ościeżnicy i 6-ciokomorowy w skrzydle profil Veka Softline o głębokości 82 mm",
+        "system trzech uszczelek z dodatkową uszczelką środkową – uszczelki wykonane z tworzywa EPDM",
+        "wzmocnienie stalowe zamknięte o grubości 1,5 mm w ramie oraz 2 mm w skrzydle",
+        "możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach",
+        "okucia Winkhaus Activ Pilot",
+        "pakiet 3-szybowy o grubości 48 mm – 4/18/4/18/4 z ciepłymi ramkami międzyszybowym",
+        "możliwość wykonania rdzenia okna w czterech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy, brązowy i szary",
+        "dla okien w jasnych okleinach drewnopodobnych obustronnych jak Złoty Dąb czy Winchester uszczelki okienne wykonane są w kolorze karmelowym"
+      ],
+      "images": [
+        "/public/assets/scraped/products/vector-winchester-207x250.png",
+        "/public/assets/scraped/products/vector-orzech-34x40.png",
+        "/public/assets/scraped/products/klasyfikacja-wla_ciwo_ci-vector-28x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/venus/": {
+      "title": "Venus",
+      "route": "/produkty/venus/",
+      "paragraphs": [
+        "Parapety wewnętrzne wykonane z aglomarmuru mają gładką nieporowatą powierzchnię, co podnosi ich wartość estetyczną a przede wszystkim ułatwia utrzymanie czystości. Wykonane są 95% z kruszywa marmurowego i ok. 5% żywicy poliestrowej. Jego właściwości są podobne do właściwości marmuru, jednak jest bardziej odporny na działanie substancji zawierających kwasy.",
+        "W ofercie znajdują się parapety o grubości 2cm i 3 cm. Możliwe jest wykonanie parapetów w dowolnym kształcie i wymiarach.",
+        "Aglomarmur stosuje się jako materiał na parapety wewnętrzne, blaty kuchenne, blaty łazienkowe, posadzki, schody lub wykończenia wewnętrzne jak np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Venus-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/w-kasecie-alu-klaudia/": {
+      "title": "W KASECIE ALU KLAUDIA",
+      "route": "/produkty/w-kasecie-alu-klaudia/",
+      "paragraphs": [
+        "Lekka zabudowa, nietuzinkowe wykończenie i smukły kształt wyróżnia roletę Klaudia spośród innych.",
+        "Opis:"
+      ],
+      "specs": [
+        "innowacyjna, pomniejszona kaseta,",
+        "lekka konstrukcja,",
+        "prowadnice płaskie przyklejane,",
+        "montaż nieinwazyjny",
+        "możliwość montażu nawet w trudno dostępnych miejscach,",
+        "łatwa w utrzymaniu czystości,",
+        "szeroki wybór materiałów standardowych i podgumowanych."
+      ],
+      "images": [
+        "/public/assets/scraped/products/alu-klaudia-1-306x204.jpg",
+        "/public/assets/scraped/products/alu-klaudia-2-26x40.jpg",
+        "/public/assets/scraped/products/alu-klaudia-3-44x29.jpg",
+        "/public/assets/scraped/products/alu-klaudia-4-26x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/w-kasecie-alu-vegas-classic/": {
+      "title": "W KASECIE ALU VEGAS CLASSIC",
+      "route": "/produkty/w-kasecie-alu-vegas-classic/",
+      "paragraphs": [
+        "Zabudowa w trwałym aluminium, elegancja opływowa kaseta i prowadnice boczne gwarantują komfort i niezawodność użytkowania.",
+        "Opis:"
+      ],
+      "specs": [
+        "zabudowana w kasecie ALU,",
+        "prowadnice płaskie przyklejane ALU lub PCV,",
+        "montaż kasety inwazyjny,",
+        "łatwa w utrzymaniu w czystości,",
+        "szeroki wybór materiałów standardowych i podgumowanych"
+      ],
+      "images": [
+        "/public/assets/scraped/products/alu-vegas-classic-1-306x203.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/w-kasecie-alu-vegas-profil/": {
+      "title": "W KASECIE ALU VEGAS PROFIL",
+      "route": "/produkty/w-kasecie-alu-vegas-profil/",
+      "paragraphs": [
+        "Roleta zabudowana w powiększoną kasetę i prowadnice przestrzenne, pozwoli sprostać nawet najtrudniejszym wyzwaniom.",
+        "Opis:"
+      ],
+      "specs": [
+        "zabudowana z kasecie ALU o powiększonej pojemności,",
+        "prowadnice przestrzenne, przyklejane,",
+        "montaż nieinwazyjny,",
+        "łatwy montaż i demontaż,",
+        "możliwość wykonania dużych gabarytów,",
+        "szeroki wybór materiałów standardowych i podgumowanych."
+      ],
+      "images": [
+        "/public/assets/scraped/products/alu-vegas-profil-1-306x203.jpg",
+        "/public/assets/scraped/products/alu-vegas-profil-2-44x29.jpg",
+        "/public/assets/scraped/products/alu-vegas-profil-3-26x40.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/w-kasecie-pcv-vegas-classic/": {
+      "title": "W KASECIE PCV VEGAS CLASSIC",
+      "route": "/produkty/w-kasecie-pcv-vegas-classic/",
+      "paragraphs": [
+        "Roleta zabudowana w opływowej i eleganckiej kasecie z PCV, wyposażona w szczelnie zakrywające prowadnice zapewni przyjemne zaciemnienie i dyskrecję.",
+        "Opis:"
+      ],
+      "specs": [
+        "zabudowana w kasetę z PCV,",
+        "prowadnice płaskie PCV, przyklejane,",
+        "montaż kasety inwazyjny,",
+        "trwałe nieżółknące PCV",
+        "szeroki wybór materiałów standardowych i podgumowanych"
+      ],
+      "images": [
+        "/public/assets/scraped/products/vegas-classic-1-306x204.jpg",
+        "/public/assets/scraped/products/vegas-classic-2-26x40.jpg",
+        "/public/assets/scraped/products/vegas-classic-3-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/wiked-drzwi-zewnetrzne-stalowe/": {
+      "title": "Wikęd – drzwi zewnętrzne stalowe",
+      "route": "/produkty/wiked-drzwi-zewnetrzne-stalowe/",
+      "paragraphs": [
+        "Uwzględniając stosunek jakości do ceny uważamy, że drzwi stalowe firmy Wikęd plasują się w ścisłej czołówce producentów drzwi w całym kraju.",
+        "Wynika to z dbałości o możliwie jak najlepsze rozwiązania technologiczne oraz bardzo dobrą jakość wykonania skutkującą całkowicie znikomą ilością jakichkolwiek problemów czy reklamacji.",
+        "Drzwi stalowe zewnętrzne firmy Wikęd stanowią zdecydowanie największą część naszej sprzedaży, jeśli chodzi o drzwi wejściowe do domów mieszkalnych jednorodzinnych, mieszkań w budownictwie wielorodzinnym czy budynkach gospodarczych.",
+        "Dzięki ofercie obejmującej kilka rodzajów konstrukcji drzwiowych – od podstawowych po bardzo zaawansowane przeznaczone do domów energooszczędnych – mamy możliwość dopasować drzwi do konkretnych wymagań i budżetu.",
+        "Innowacyjne połączenie skrzydeł stalowych z ościeżnicami aluminiowymi umożliwia wykonanie zestawów o bardzo dużych gabarytach, na przykład drzwi o wysokości nawet do 240 cm z dodatkowymi naświetlami bocznymi, górnymi oraz łączeniem drzwi i naświetli pod kątem 90 stopni przy pomocy specjalnie zaprojektowanego łącznika aluminiowego.",
+        "Katalog w wersji pdf do pobrania – Katalog drzwi Wikęd"
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/wik_d-250x250.jpg",
+        "/public/assets/scraped/products/Wik_d-Prestige-Lux-28x40.jpg",
+        "/public/assets/scraped/products/Wik_d-Optimum-Termo-28x40.jpg",
+        "/public/assets/scraped/products/Wik_d-Optimum-28x40.jpg",
+        "/public/assets/scraped/products/Wik_d-Premium-Termo-28x40.jpg",
+        "/public/assets/scraped/products/Wik_d-Premium1-28x40.jpg"
+      ],
+      "pdfs": [
+        {
+          "title": "Katalog drzwi Wikęd",
+          "href": "https://wol-bud.com.pl/wp-content/uploads/2013/09/Katalog-drzwi-Wikęd-3.pdf"
+        }
+      ]
+    },
+    "/produkty/yellow-pink/": {
+      "title": "Yellow Pink",
+      "route": "/produkty/yellow-pink/",
+      "paragraphs": [
+        "Granit to skała głębinowa powstała w procesie krystalizacji magmy. W jego skład wchodzą głównie: kwarcyt skaleń i łyszczek, poza tym zawiera magnetyt, aparyt, cyrkon. Posiada strukturę równoziarnistą i porfirową.",
+        "Niezwykle wytrzymały i odporny na ścieranie oraz ściskanie – dzięki tej właściwości ma zastosowanie w budownictwie, nadaje się jako materiał do realizacji obiektów użyteczności publicznej o dużym natężeniu ruchu zarówno osobowego jak i kołowego.",
+        "Istnieje możliwość wykonania powierzchni polerowanej, płomieniowanej, młotkowanej, to sprawia, że granit może być stosowany wewnątrz i na zewnątrz budynków doskonale spełniając swoje funkcje użytkowe i dekoracyjne jako materiał na parapety, blaty kuchenne i łazienkowe, posadzki, schody czy wykończenia wewnętrzne, np. wykończenia kominków."
+      ],
+      "specs": [],
+      "images": [
+        "/public/assets/scraped/products/Yellow-Pink-306x204.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/zaluzje-drewniane/": {
+      "title": "ŻALUZJE DREWNIANE",
+      "route": "/produkty/zaluzje-drewniane/",
+      "paragraphs": [
+        "Tradycyjny system w zupełnie nowej odsłonie! Żaluzje poziome drewniane nadają wnętrzu styl, charakter oraz ciepło.",
+        "Opis:"
+      ],
+      "specs": [
+        "szerokość lameli 50 i 25 mm,",
+        "zastosowane drewna nadaje wnętrzu ciepło i wyjątkowy styl",
+        "możliwość regulacji kąta padania światła,",
+        "bogata kolorystyka – drewniane, laminowane, bambusowe."
+      ],
+      "images": [
+        "/public/assets/scraped/products/zaluzje-drewniane-1-306x204.jpg",
+        "/public/assets/scraped/products/zaluzje-drewniane-2-44x29.jpg",
+        "/public/assets/scraped/products/zaluzje-drewniane-3-26x40.jpg",
+        "/public/assets/scraped/products/zaluzje-drewniane-4-44x29.jpg",
+        "/public/assets/scraped/products/zaluzje-drewniane-5-26x40.jpg",
+        "/public/assets/scraped/products/zaluzje-drewniane-6-44x29.jpg"
+      ],
+      "pdfs": []
+    },
+    "/produkty/zaluzje-poziome-aluminiowe/": {
+      "title": "ŻALUZJE POZIOME ALUMINIOWE",
+      "route": "/produkty/zaluzje-poziome-aluminiowe/",
+      "paragraphs": [
+        "Nadal modne, nadal cieszące się wielkim powodzeniem – żaluzje poziome aluminiowe. Teraz wzbogacone o nowe szerokości lameli i warianty zabudowy!",
+        "Opis:"
+      ],
+      "specs": [
+        "możliwość regulacji kąta padania światła,",
+        "rożne szerokości lameli do wyboru ( 50, 25, 16 mm),",
+        "dwa warianty sterowania i zabudowy do wyboru,",
+        "łatwy montaż i demontaż,",
+        "bogata kolorystyka."
+      ],
+      "images": [
+        "/public/assets/scraped/products/zaluzje-aluminiowe-1-306x204.jpg",
+        "/public/assets/scraped/products/zaluzje-aluminiowe-2-44x29.jpg",
+        "/public/assets/scraped/products/zaluzje-aluminiowe-3-44x29.jpg",
+        "/public/assets/scraped/products/zaluzje-aluminiowe-4-44x29.jpg",
+        "/public/assets/scraped/products/zaluzje-aluminiowe-5-26x40.jpg"
+      ],
+      "pdfs": []
+    }
+  },
+  "services": [
+    {
+      "title": "Pomiar, doradztwo i wycena",
+      "paragraphs": [
+        "Zapewniamy bezpłatny i niewiążący pomiar, doradztwo i wycenę na miejscu budowy lub w naszych salonach sprzedaży. Potrafimy zaproponować rozwiązania nieszablonowe, wyłamujące się z utartych schematów.\nWykonujemy wyceny wielowariantowe, doradzamy w kwestii wyboru stolarki, dodatków czy sposobu montażu."
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Ciepły montaż",
+      "paragraphs": [
+        "Dla osób ceniących energooszczędność oraz wysoką jakość okien i montażu proponujemy okna firmy Petecki wraz z ciepłym montażem z wykorzystaniem materiałów firmy Illbruck.",
+        "W zależności od wymagań inwestora oraz sytuacji na budowie wykonujemy kilka wariantów ciepłego montażu:",
+        "1. Folie okienne ProTape firmy Partner zabezpieczające piankę montażową od strony wewnętrznej i zewnętrznej\n2. Taśmy rozprężne illbruck Illmod Trio na całą głębokość okna\n3. Systemy mieszane – folie + taśmy rozprężne lub folie + uszczelniacze\n4. Montaż odstawny w systemie illbruck MOWO w warstwie ocieplenia lub montaż w systemie KIK również w warstwie ocieplenia",
+        "Wykonujemy również montaż termoparapetów podokiennych firmy Klinar które zapewniają idealny i ciepły montaż okna i parapetów w dolnej części otworu okiennego, znacznie poprawiają przebieg izoterm cieplnych i eliminują jakiekolwiek mostki termiczne czy przedmuchy.",
+        "Wszystkie z wymienionych sposobów ciepłego montażu zapewniają wiele korzyści dla inwestora:\n– ogromną poprawę szczelności montażu – o 75 % mniejsza przepuszczalność powietrza dla różnych prędkości wiatru\n– eliminację mostków cieplnych występujących podczas zawilgocenia szczeliny montażowej przy zwykłym montażu na piance\n– brak występowania zagrzybienia lub pleśni w szczelinach montażowych oraz wokół okien\n– większy komfort użytkowania okien bez przedmuchów, przemarzania pod oknami balkonowymi czy dołem okna na styku parapetów\n– gwarantowany zwrot z inwestycji.",
+        "Zapewniamy również odpowiedni dobór elementów montażowych, które zapewnią stabilność okien niezależnie od zastosowanego materiału do budowy domu."
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Serwis",
+      "paragraphs": [
+        "Prowadzimy pełny serwis okien i drzwi:\n– regulacja poprawiająca pracę i szczelność okien\n– naprawa lub wymiana okuć, zamków, zawiasów, uszczelek i innych elementów\n– wymiana rozbitych pakietów szybowych\n– zamiana starych pakietów szybowych na cieplejsze, ozdobne, chroniące przed słońcem, bezpieczne lub antywłamaniowe"
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Kompleksowa obsługa inwestycji",
+      "paragraphs": [
+        "Wieloletnie doświadczenie przy obsłudze przetargów i inwestycji prywatnych oraz bogata oferta produktowa pozwala nam zaopatrzyć praktycznie każdą inwestycję w potrzebną stolarkę, począwszy od okien i drzwi po dodatki okienne, jak parapety, rolety czy okiennice.\nRealizowaliśmy wiele inwestycji liczonych w tysiącach sztuk okien."
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Prace wykończeniowe i murarskie",
+      "paragraphs": [
+        "Wykonujemy wszelkie prace związane z poszerzaniem, wycinaniem czy zamurowaniem otworów okiennych czy drzwiowych, jak również obróbkę szpalet od uzupełnienia ubytków tynkarskich po wykonanie obróbki końcowej z wygładzeniem i malowaniem."
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Układanie kostki brukowej",
+      "paragraphs": [
+        "Oferujemy usługę montażu kostki brukowej oraz chodników dla instytucji takich, jak szkoły, urzędy czy spółdzielnie mieszkaniowe."
+      ],
+      "bullets": []
+    },
+    {
+      "title": "Daszki poliwęglanowe",
+      "paragraphs": [
+        "Prowadzimy sprzedaż i montaż daszków poliwęglanowych dla osób prywatnych, firm i instytucji. Zapewniamy bezpłatną wycenę i doradztwo."
+      ],
+      "bullets": []
+    }
+  ],
+  "warm_montage": {
+    "title": "Ciepły montaż warstwowy okien i drzwi",
+    "paragraphs": [
+      "Ciepły montaż zapewnia wiele korzyści dla inwestora:",
+      "Sposób i harmonogram tego typu montażu wygląda w naszej firmie następująco:",
+      "Rewelacyjnym uzupełnieniem ciepłego montażu warstwowego jest zastosowanie termoparapetów podokiennych, które zapewniają:",
+      "Harmonogram wykonania ciepłego montażu warstwowego oraz rodzaje termoparapetów podokiennych:\n\t\t\n\n\n\n\n\n\t\t\t\tWyrównanie otworów 1\n\t\t\t\t\n\n\n\n\n\t\t\t\tWyrównanie otworów 2\n\t\t\t\t\n\n\n\n\n\t\t\t\tWyklejenie folii okiennych\n\t\t\t\t\n\n\n\n\n\t\t\t\tWyklejenie folii na mur\n\t\t\t\t\n\n\n\n\n\t\t\t\tZabezpieczenie folii zewnętrznej 1\n\t\t\t\t\n\n\n\n\n\t\t\t\tZabezpieczenie folii zewnętrznej 2\n\t\t\t\t\n\n\n\n\n\t\t\t\tZabezpieczenie folii zewnętrznej 3\n\t\t\t\t\n\n\n\n\n\t\t\t\tZabezpieczenie folii zewnętrznej 4\n\t\t\t\t\n\n\n\n\n\t\t\t\tTermoparapet podokienny\n\t\t\t\t\n\n\n\n\n\t\t\t\tTermoparapet balkonowy\n\t\t\t\t\n\n\n\n\n\t\t\t\tPodwalina klinarytowa do drzwi HST"
+    ],
+    "steps": [
+      {
+        "title": "wyrównanie otworów 1",
+        "img": "/public/assets/scraped/montage/wyr_wnanie-otwor_w-1.jpg"
+      },
+      {
+        "title": "wyrównanie otworów 2",
+        "img": "/public/assets/scraped/montage/wyr_wnanie-otwor_w-2.jpg"
+      },
+      {
+        "title": "wyklejanie folii 1",
+        "img": "/public/assets/scraped/montage/wyklejanie-folii-1.jpg"
+      },
+      {
+        "title": "wyklejanie folii",
+        "img": "/public/assets/scraped/montage/wyklejanie-folii.jpg"
+      },
+      {
+        "title": "zabezpieczenie folii",
+        "img": "/public/assets/scraped/montage/zabezpieczenie-folii.jpg"
+      },
+      {
+        "title": "zabezpieczenie folii 2",
+        "img": "/public/assets/scraped/montage/zabezpieczenie-folii-2.jpg"
+      },
+      {
+        "title": "zabezpieczenie folii od zewnątrz 1",
+        "img": "/public/assets/scraped/montage/zabezpieczenie-folii-od-zewn_trz-1.jpg"
+      },
+      {
+        "title": "zabezpieczenie folii od zewnątrz 2",
+        "img": "/public/assets/scraped/montage/zabezpieczenie-folii-od-zewn_trz-2.jpg"
+      },
+      {
+        "title": "termoparapet okienny",
+        "img": "/public/assets/scraped/montage/termoparapet-okienny.jpg"
+      },
+      {
+        "title": "termoparapet balkonowy",
+        "img": "/public/assets/scraped/montage/termoparapet-balkonowy.jpg"
+      },
+      {
+        "title": "klinaryt drzwi HST",
+        "img": "/public/assets/scraped/montage/klinaryt-drzwi-HST.jpg"
+      }
+    ]
+  }
+}
