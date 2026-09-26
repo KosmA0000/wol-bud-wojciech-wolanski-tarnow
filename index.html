@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css"><script defer src="assets/js/site.js"></script></head>
 <body>
-<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button><a href="oferta/" data-desktop-href="oferta/" data-mobile-home-href="#oferta">Oferta</a><a href="uslugi/" data-desktop-href="uslugi/" data-mobile-home-href="#uslugi">Usługi</a><a href="o-firmie/" data-desktop-href="o-firmie/" data-mobile-home-href="#ofirmie">O firmie</a><a href="nasze-sklepy/" data-desktop-href="nasze-sklepy/" data-mobile-home-href="#nasze-sklepy">Nasze sklepy</a><a href="kontakt/" data-desktop-href="kontakt/" data-mobile-home-href="#kontakt">Kontakt</a><a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="./">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>
+<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button><a href="./" data-desktop-href="./" data-mobile-home-href="#start">Strona główna</a><a href="oferta/" data-desktop-href="oferta/" data-mobile-home-href="#oferta">Oferta</a><a href="uslugi/" data-desktop-href="uslugi/" data-mobile-home-href="#uslugi">Usługi</a><a href="o-firmie/" data-desktop-href="o-firmie/" data-mobile-home-href="#ofirmie">O firmie</a><a href="nasze-sklepy/" data-desktop-href="nasze-sklepy/" data-mobile-home-href="#nasze-sklepy">Nasze sklepy</a><a href="kontakt/" data-desktop-href="kontakt/" data-mobile-home-href="#kontakt">Kontakt</a><a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="./">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>
 <main id="main">
 <!-- HERO -->
 <section class="hero" id="start">
@@ -42,7 +42,10 @@
         <h2>WOL-BUD Wojciech Wolański</h2>
         <p>Firma prowadzi sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku. Pomiar, doradztwo i wycena są bezpłatne i niewiążące.</p>
       </div>
-      <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+      <div class="trust-compact-actions">
+        <a class="trust-about-link" href="o-firmie/">Poznaj firmę i referencje ↗</a>
+        <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+      </div>
     </div>
   </div>
 </section>
@@ -133,6 +136,27 @@
   </div>
 </a>
     </div>
+    <div class="home-extra-categories" aria-label="Dodatkowe kategorie produktów">
+      <a class="home-extra-category" href="kategorie/wewnetrzne/">Rolety wewnętrzne <span aria-hidden="true">↗</span></a><a class="home-extra-category" href="kategorie/zewnetrzne/">Rolety zewnętrzne <span aria-hidden="true">↗</span></a><a class="home-extra-category" href="kategorie/zaluzje-plisy/">Żaluzje i plisy <span aria-hidden="true">↗</span></a>
+    </div>
+    <section class="home-featured-section" aria-labelledby="home-featured-title">
+      <div class="home-featured-heading"><span class="eyebrow eyebrow--gold">Polecane produkty</span><h3 id="home-featured-title">Warto sprawdzić</h3></div>
+      <div class="home-featured-grid"><a class="home-featured-product" href="produkty/infinity-passive-83md/">
+  <div class="home-featured-media"><img src="public/assets/source/products/okno-infinity-passive-83md.webp" alt="Infinity Passive 83MD" loading="lazy" decoding="async"></div>
+  <div class="home-featured-copy">
+    <h4>Infinity Passive 83MD</h4>
+    <p>Okna Domel Infinity Passive są zaprojektowane dla osób ceniących najwyższą jakość okien zarówno pod względem parametrów technicznych, jak również wyposażenia.</p>
+    <span>Zobacz produkt ↗</span>
+  </div>
+</a><a class="home-featured-product" href="produkty/wiked-drzwi-zewnetrzne-stalowe/">
+  <div class="home-featured-media"><img src="public/assets/scraped/products/wik_d-250x250.webp" alt="Wikęd – drzwi zewnętrzne stalowe" loading="lazy" decoding="async"></div>
+  <div class="home-featured-copy">
+    <h4>Wikęd – drzwi zewnętrzne stalowe</h4>
+    <p>Uwzględniając stosunek jakości do ceny uważamy, że drzwi stalowe firmy Wikęd plasują się w ścisłej czołówce producentów drzwi w całym kraju.</p>
+    <span>Zobacz produkt ↗</span>
+  </div>
+</a></div>
+    </section>
 
     <!-- 7 Services Box -->
     <div class="home-services-box" id="uslugi">
@@ -146,6 +170,7 @@
       <div class="home-services-grid">
         <article class="home-service-item">
   <h4>Pomiar, doradztwo i wycena</h4>
+  <p class="home-service-item-teaser">Zapewniamy bezpłatny i niewiążący pomiar, doradztwo i wycenę na miejscu budowy lub w naszych salonach sprzedaży.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Zapewniamy bezpłatny i niewiążący pomiar, doradztwo i wycenę na miejscu budowy lub w naszych salonach sprzedaży. Potrafimy zaproponować rozwiązania nieszablonowe, wyłamujące się z utartych schematów.<br>Wykonujemy wyceny wielowariantowe, doradzamy w kwestii wyboru stolarki, dodatków czy sposobu montażu.</p></div>
@@ -153,6 +178,7 @@
   <a class="arr" href="uslugi/#pomiar-doradztwo-i-wycena">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Ciepły montaż</h4>
+  <p class="home-service-item-teaser">Dla osób ceniących energooszczędność oraz wysoką jakość okien i montażu proponujemy okna firmy Petecki wraz z ciepłym montażem z wykorzystaniem materiałów firmy Illbruck.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Dla osób ceniących energooszczędność oraz wysoką jakość okien i montażu proponujemy okna firmy Petecki wraz z ciepłym montażem z wykorzystaniem materiałów firmy Illbruck.<br>W zależności od wymagań inwestora oraz sytuacji na budowie wykonujemy kilka wariantów ciepłego montażu:<br>1. Folie okienne ProTape firmy Partner zabezpieczające piankę montażową od strony wewnętrznej i zewnętrznej<br>2. Taśmy rozprężne illbruck Illmod Trio na całą głębokość okna<br>3. Systemy mieszane – folie + taśmy rozprężne lub folie + uszczelniacze<br>4. Montaż odstawny w systemie illbruck MOWO w warstwie ocieplenia lub montaż w systemie KIK również w warstwie ocieplenia<br>Wykonujemy również montaż termoparapetów podokiennych firmy Klinar które zapewniają idealny i ciepły montaż okna i parapetów w dolnej części otworu okiennego, znacznie poprawiają przebieg izoterm cieplnych i eliminują jakiekolwiek mostki termiczne czy przedmuchy.<br>Wszystkie z wymienionych sposobów ciepłego montażu zapewniają wiele korzyści dla inwestora:<br>– ogromną poprawę szczelności montażu – o 75 % mniejsza przepuszczalność powietrza dla różnych prędkości wiatru<br>– eliminację mostków cieplnych występujących podczas zawilgocenia szczeliny montażowej przy zwykłym montażu na piance<br>– brak występowania zagrzybienia lub pleśni w szczelinach montażowych oraz wokół okien<br>– większy komfort użytkowania okien bez przedmuchów, przemarzania pod oknami balkonowymi czy dołem okna na styku parapetów<br>– gwarantowany zwrot z inwestycji.<br>Zapewniamy również odpowiedni dobór elementów montażowych, które zapewnią stabilność okien niezależnie od zastosowanego materiału do budowy domu.</p></div>
@@ -160,6 +186,7 @@
   <a class="arr" href="promocje/cieply-montaz-warstwowy-okien-drzwi/">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Serwis</h4>
+  <p class="home-service-item-teaser">Prowadzimy pełny serwis okien i drzwi: – regulacja poprawiająca pracę i szczelność okien – naprawa lub wymiana okuć, zamków, zawiasów, uszczelek i innych elementów – wymiana rozbitych pakietów szybowych – zamiana starych pakietów szybowych na cieplejsze, ozdobne, chroniące przed słońcem, bezpieczne lub antywłamaniowe</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Prowadzimy pełny serwis okien i drzwi:<br>– regulacja poprawiająca pracę i szczelność okien<br>– naprawa lub wymiana okuć, zamków, zawiasów, uszczelek i innych elementów<br>– wymiana rozbitych pakietów szybowych<br>– zamiana starych pakietów szybowych na cieplejsze, ozdobne, chroniące przed słońcem, bezpieczne lub antywłamaniowe</p></div>
@@ -167,6 +194,7 @@
   <a class="arr" href="uslugi/#serwis">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Kompleksowa obsługa inwestycji</h4>
+  <p class="home-service-item-teaser">Wieloletnie doświadczenie przy obsłudze przetargów i inwestycji prywatnych oraz bogata oferta produktowa pozwala nam zaopatrzyć praktycznie każdą inwestycję w potrzebną stolarkę, począwszy od okien i drzwi po dodatki okienne, jak parapety, rolety czy okiennice.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Wieloletnie doświadczenie przy obsłudze przetargów i inwestycji prywatnych oraz bogata oferta produktowa pozwala nam zaopatrzyć praktycznie każdą inwestycję w potrzebną stolarkę, począwszy od okien i drzwi po dodatki okienne, jak parapety, rolety czy okiennice.<br>Realizowaliśmy wiele inwestycji liczonych w tysiącach sztuk okien.</p></div>
@@ -174,6 +202,7 @@
   <a class="arr" href="uslugi/#kompleksowa-obsluga-inwestycji">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Prace wykończeniowe i murarskie</h4>
+  <p class="home-service-item-teaser">Wykonujemy wszelkie prace związane z poszerzaniem, wycinaniem czy zamurowaniem otworów okiennych czy drzwiowych, jak również obróbkę szpalet od uzupełnienia ubytków tynkarskich po wykonanie obróbki końcowej z wygładzeniem i malowaniem.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Wykonujemy wszelkie prace związane z poszerzaniem, wycinaniem czy zamurowaniem otworów okiennych czy drzwiowych, jak również obróbkę szpalet od uzupełnienia ubytków tynkarskich po wykonanie obróbki końcowej z wygładzeniem i malowaniem.</p></div>
@@ -181,6 +210,7 @@
   <a class="arr" href="uslugi/#prace-wykonczeniowe-i-murarskie">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Układanie kostki brukowej</h4>
+  <p class="home-service-item-teaser">Oferujemy usługę montażu kostki brukowej oraz chodników dla instytucji takich, jak szkoły, urzędy czy spółdzielnie mieszkaniowe.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Oferujemy usługę montażu kostki brukowej oraz chodników dla instytucji takich, jak szkoły, urzędy czy spółdzielnie mieszkaniowe.</p></div>
@@ -188,6 +218,7 @@
   <a class="arr" href="uslugi/#ukladanie-kostki-brukowej">Dowiedz się więcej ↗</a>
 </article><article class="home-service-item">
   <h4>Daszki poliwęglanowe</h4>
+  <p class="home-service-item-teaser">Prowadzimy sprzedaż i montaż daszków poliwęglanowych dla osób prywatnych, firm i instytucji.</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>Prowadzimy sprzedaż i montaż daszków poliwęglanowych dla osób prywatnych, firm i instytucji. Zapewniamy bezpłatną wycenę i doradztwo.</p></div>
@@ -259,6 +290,7 @@
           <a class="store-nav-btn" href="https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Le%C5%9Bna+17a,+33-130+Rad%C5%82%C3%B3w" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
         </div>
 
+        <a class="store-full-copy-link" href="nasze-sklepy/">Pełny opis salonów i ekspozycji ↗</a>
       </div>
     </div>
   </div>

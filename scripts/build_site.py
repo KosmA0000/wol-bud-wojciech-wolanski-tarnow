@@ -17,6 +17,7 @@ import json
 import re
 import unicodedata
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRAPED_DATA_FILE = ROOT / "docs" / "full_scraped_data.json"
@@ -112,8 +113,246 @@ def url_for(path: str, prefix: str) -> str:
     return f"{prefix}{path}"
 
 
+def source_route(page: dict) -> str:
+    path = urlsplit(page.get("url", "")).path or "/"
+    return route_url(path)
+
+
+def source_page_index(source_content: dict) -> dict:
+    pages = {}
+    for page in source_content.get("pages", []):
+        if page.get("httpStatus") != 200 or page.get("captureStatus") != "captured":
+            continue
+        pages.setdefault(source_route(page), page)
+    return pages
+
+
+def source_page_title(page: dict) -> str:
+    for block in page.get("blocks", []):
+        if block.get("type") == "heading" and block.get("level") == 1:
+            return block.get("text", "").strip()
+    return page.get("title", "WOL-BUD")
+
+
+def source_display_text(value: str) -> str:
+    value = str(value or "")
+    value = value.replace("działa już od 25 lat", "działa od 1995 roku")
+    value = value.replace("zajmujemy się już od 25 lat", "zajmujemy się od 1995 roku")
+    value = value.replace("25-letnie doświadczenie w branży okien i drzwi", "doświadczenie w branży okien i drzwi od 1995 roku")
+    return value
+
+
+def source_body_blocks(page: dict) -> list:
+    blocks = page.get("blocks", [])
+    title_index = next(
+        (i for i, block in enumerate(blocks) if block.get("type") == "heading" and block.get("level") == 1),
+        -1,
+    )
+    body = blocks[title_index + 1:] if title_index >= 0 else blocks[:]
+
+    # The capture keeps the original page body, followed by the site's repeated offer footer.
+    for i, block in enumerate(body):
+        if block.get("type") != "heading" or normalize(block.get("text", "")) != "oferta":
+            continue
+        following = body[i + 1:i + 3]
+        if any(
+            next_block.get("type") == "heading"
+            and normalize(next_block.get("text", "")) == "zobacz nasza oferte"
+            for next_block in following
+        ):
+            body = body[:i]
+            break
+    if urlsplit(page.get("url", "")).path.rstrip("/") == "/o-firmie":
+        body = [dict(block) for block in body]
+        for i, block in enumerate(body):
+            if block.get("type") != "list" or block.get("depth") != 1:
+                continue
+            items = list(block.get("items", []))
+            for item_index, item in enumerate(items):
+                match = re.match(r"(Uczciwość wobec Klienta na każdym etapie rozmów):\s*(szczegółowe doradztwo i przejrzyste przedstawienie oferty)", item, re.IGNORECASE)
+                if not match:
+                    continue
+                items[item_index] = match.group(1) + ":"
+                block["items"] = items
+                nested = next(
+                    (next_block for next_block in body[i + 1:] if next_block.get("type") == "list"),
+                    None,
+                )
+                if nested and int(nested.get("depth", 1) or 1) == 2:
+                    nested["items"] = [match.group(2), *nested.get("items", [])]
+                break
+    return body
+
+
+def render_source_list(node: dict) -> str:
+    tag = "ol" if node.get("listType") == "ordered" else "ul"
+    items = []
+    for item in node.get("items", []):
+        children = "".join(render_source_list(child) for child in item.get("children", []))
+        items.append(f"<li>{esc(source_display_text(item.get('text', '')))}{children}</li>")
+    return f'<{tag} class="source-list">{"".join(items)}</{tag}>'
+
+
+def render_source_blocks(blocks: list, prefix: str = "", anchor_map: dict | None = None) -> str:
+    rendered = []
+    roots = []
+    stack = []
+
+    def flush_lists() -> None:
+        if roots:
+            rendered.extend(render_source_list(root) for root in roots)
+            roots.clear()
+        stack.clear()
+
+    for block in blocks:
+        block_type = block.get("type")
+        if block_type == "list":
+            items = [{"text": item, "children": []} for item in block.get("items", [])]
+            if not items:
+                continue
+            depth = max(1, int(block.get("depth", 1) or 1))
+            node = {"listType": block.get("listType"), "items": items}
+            if depth == 1 and stack and len(stack) > 1:
+                stack[0]["items"].extend(items)
+                stack[:] = [stack[0]]
+                continue
+            if depth == 1 or not stack:
+                roots.append(node)
+                stack[:] = [node]
+                continue
+            parent_depth = min(depth - 2, len(stack) - 1)
+            parent = stack[parent_depth]
+            parent["items"][-1]["children"].append(node)
+            stack[:] = stack[:parent_depth + 1] + [node]
+            continue
+
+        flush_lists()
+        if block_type == "heading":
+            text = source_display_text(block.get("text", "").strip())
+            level = min(4, max(2, int(block.get("level", 2) or 2)))
+            heading_id = (anchor_map or {}).get(normalize(text), "")
+            id_attr = f' id="{esc(heading_id)}"' if heading_id else ""
+            rendered.append(f"<h{level}{id_attr}>{esc(text)}</h{level}>")
+        elif block_type == "paragraph":
+            text = source_display_text(block.get("text", "").strip())
+            if normalize(text) in {"opis", "parametry", "zalety", "cechy", "dane techniczne"}:
+                rendered.append(f"<h2>{esc(text)}</h2>")
+            elif text:
+                rendered.append(f"<p>{esc(text).replace(chr(10), '<br>')}</p>")
+        elif block_type == "table":
+            headers = block.get("headers", [])
+            rows = block.get("rows", [])
+            head_html = "".join(f"<th scope=\"col\">{esc(source_display_text(cell))}</th>" for cell in headers)
+            body_html = "".join(
+                "<tr>" + "".join(f"<td>{esc(source_display_text(cell))}</td>" for cell in row) + "</tr>"
+                for row in rows
+            )
+            rendered.append(
+                f'<div class="source-table-scroll"><table><thead><tr>{head_html}</tr></thead><tbody>{body_html}</tbody></table></div>'
+            )
+        elif block_type == "image":
+            src = url_for(block.get("src", ""), prefix)
+            alt = esc(block.get("alt", ""))
+            rendered.append(f'<figure class="source-image"><img src="{esc(src)}" alt="{alt}" loading="lazy" decoding="async"></figure>')
+
+    flush_lists()
+    return "".join(rendered)
+
+
+def source_content_panel(page: dict | None, prefix: str = "", summary: str = "Pełny opis źródłowy", anchor_map: dict | None = None) -> str:
+    if not page:
+        return ""
+    body = render_source_blocks(source_body_blocks(page), prefix, anchor_map)
+    if not body:
+        return ""
+    return f'''<details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
+  <summary>{esc(summary)}</summary>
+  <div class="mobile-details-body source-content-body">{body}</div>
+</details>'''
+
+
+def source_first_sentence(value: str) -> str:
+    value = source_display_text(value).strip()
+    match = re.search(r"^(.+?[.!?])(?:\s|$)", value)
+    return match.group(1) if match else value
+
+
+def source_teaser(page: dict | None) -> str:
+    if not page:
+        return ""
+    for block in source_body_blocks(page):
+        if block.get("type") == "paragraph" and block.get("text", "").strip():
+            return source_first_sentence(block["text"])
+    for block in source_body_blocks(page):
+        if block.get("type") == "list" and block.get("items"):
+            return source_first_sentence(block["items"][0])
+    return ""
+
+
+def source_service_sections(page: dict | None) -> list:
+    if not page:
+        return []
+    sections = []
+    current = None
+    for block in source_body_blocks(page):
+        if block.get("type") == "heading" and int(block.get("level", 2) or 2) == 2:
+            if current:
+                sections.append(current)
+            current = {"title": block.get("text", ""), "blocks": []}
+        elif current:
+            current["blocks"].append(block)
+    if current:
+        sections.append(current)
+    return sections
+
+
+_image_dimension_cache: dict[str, tuple[int, int] | None] = {}
+
+
+def image_dimensions(image_path: str) -> tuple[int, int] | None:
+    if image_path in _image_dimension_cache:
+        return _image_dimension_cache[image_path]
+    path = ROOT / image_path.lstrip("/")
+    size_match = re.search(r"(?:[-_])(\d{1,4})x(\d{1,4})(?=\.[^.]+$)", path.name, re.IGNORECASE)
+    if size_match:
+        dimensions = (int(size_match.group(1)), int(size_match.group(2)))
+    else:
+        try:
+            from PIL import Image
+
+            with Image.open(path) as image:
+                dimensions = image.size
+        except Exception:
+            dimensions = None
+    _image_dimension_cache[image_path] = dimensions
+    return dimensions
+
+
+def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
+    """Keep detailed product photos in the stage; retain small source swatches separately."""
+    hero_overrides = {
+        "/produkty/infinity-passive-83md/": "/public/assets/source/products/okno-infinity-passive-83md.webp",
+        "/produkty/drzwi-wewnetrzne-intenso/": "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp",
+    }
+    displayed = []
+    small_assets = []
+    for image in images:
+        dimensions = image_dimensions(image)
+        if dimensions and min(dimensions) < 80:
+            small_assets.append(image)
+        else:
+            displayed.append(image)
+    hero = hero_overrides.get(route)
+    if hero and (ROOT / hero.lstrip("/")).exists():
+        original_hero = images[0] if images else ""
+        displayed = [hero] + [image for image in displayed if image != original_hero and image != hero]
+        small_assets = [image for image in small_assets if image not in {hero, original_hero}]
+    return displayed, small_assets
+
+
 def header(prefix: str) -> str:
     links = [
+        ("Strona główna", "/", "/#start"),
         ("Oferta", "/oferta/", "/#oferta"),
         ("Usługi", "/uslugi/", "/#uslugi"),
         ("O firmie", "/o-firmie/", "/#ofirmie"),
@@ -190,9 +429,13 @@ def document(route: str, title: str, description: str, body: str) -> str:
     return re.sub(r"(?m)^[ \t]+$", "", html_doc)
 
 
-def home_page(scraped_data: dict) -> str:
+def home_page(scraped_data: dict, services_source_page: dict | None = None) -> str:
     prefix = ""
     intro = "WOL-BUD to firma Wojciecha Wolańskiego, założona w 1995 roku. Oferuje okna PCV i aluminiowe, drzwi, bramy garażowe, rolety, parapety, doradztwo i montaż."
+    service_teasers = {
+        normalize(section["title"]): source_teaser({"blocks": section["blocks"]})
+        for section in source_service_sections(services_source_page)
+    }
 
     # Category Cards (8 primary)
     cat_cards_markup = []
@@ -206,6 +449,39 @@ def home_page(scraped_data: dict) -> str:
     <h3>{esc(cat_name)}</h3>
     {cat_desc_html}
     <div class="home-cat-cta">Zobacz ofertę <span>↗</span></div>
+  </div>
+</a>''')
+
+    additional_categories = [
+        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/"),
+        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/"),
+        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"),
+    ]
+    extra_category_markup = "".join(
+        f'<a class="home-extra-category" href="{url_for(route, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a>'
+        for name, route in additional_categories
+    )
+
+    featured_product_markup = []
+    featured_products = [
+        ("/produkty/infinity-passive-83md/", "Infinity Passive 83MD"),
+        ("/produkty/wiked-drzwi-zewnetrzne-stalowe/", "Wikęd – drzwi zewnętrzne stalowe"),
+    ]
+    product_data = scraped_data.get("products", {})
+    for route, featured_title in featured_products:
+        product = product_data.get(route, {})
+        images, _ = product_gallery_images(route, product.get("images", []))
+        image_html = ""
+        if images:
+            image_html = f'<img src="{url_for(images[0], prefix)}" alt="{esc(featured_title)}" loading="lazy" decoding="async">'
+        paragraph = next((item for item in product.get("paragraphs", []) if item.strip()), "")
+        teaser = source_first_sentence(paragraph) if paragraph else ""
+        featured_product_markup.append(f'''<a class="home-featured-product" href="{url_for(route, prefix)}">
+  <div class="home-featured-media">{image_html}</div>
+  <div class="home-featured-copy">
+    <h4>{esc(featured_title)}</h4>
+    {f'<p>{esc(teaser)}</p>' if teaser else ''}
+    <span>Zobacz produkt ↗</span>
   </div>
 </a>''')
 
@@ -225,9 +501,11 @@ def home_page(scraped_data: dict) -> str:
         anch = service_anchors.get(stitle, slugify(stitle))
         para = "\n".join(s.get("paragraphs", []))
         para_html = esc(para).replace("\n", "<br>")
+        teaser = service_teasers.get(normalize(stitle)) or source_first_sentence(para)
         link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/" if "Ciepły" in stitle else f"/uslugi/#{anch}"
         services_markup.append(f'''<article class="home-service-item">
   <h4>{esc(stitle)}</h4>
+  <p class="home-service-item-teaser">{esc(teaser)}</p>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body"><p>{para_html}</p></div>
@@ -276,7 +554,10 @@ def home_page(scraped_data: dict) -> str:
         <h2>WOL-BUD Wojciech Wolański</h2>
         <p>Firma prowadzi sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku. Pomiar, doradztwo i wycena są bezpłatne i niewiążące.</p>
       </div>
-      <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+      <div class="trust-compact-actions">
+        <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę i referencje ↗</a>
+        <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+      </div>
     </div>
   </div>
 </section>
@@ -295,6 +576,13 @@ def home_page(scraped_data: dict) -> str:
     <div class="home-catalog-grid">
       {''.join(cat_cards_markup)}
     </div>
+    <div class="home-extra-categories" aria-label="Dodatkowe kategorie produktów">
+      {extra_category_markup}
+    </div>
+    <section class="home-featured-section" aria-labelledby="home-featured-title">
+      <div class="home-featured-heading"><span class="eyebrow eyebrow--gold">Polecane produkty</span><h3 id="home-featured-title">Warto sprawdzić</h3></div>
+      <div class="home-featured-grid">{''.join(featured_product_markup)}</div>
+    </section>
 
     <!-- 7 Services Box -->
     <div class="home-services-box" id="uslugi">
@@ -372,6 +660,7 @@ def home_page(scraped_data: dict) -> str:
           <a class="store-nav-btn" href="{MAP_LINKS['radlow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
         </div>
 
+        <a class="store-full-copy-link" href="{url_for('/nasze-sklepy/', prefix)}">Pełny opis salonów i ekspozycji ↗</a>
       </div>
     </div>
   </div>
@@ -421,7 +710,7 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
 </aside>'''
 
 
-def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
+def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: dict | None = None) -> str:
     prefix = asset_prefix(route)
     title = cat_data.get("title") or route.strip("/").split("/")[-1].replace("-", " ").title()
     desc = cat_data.get("description", "")
@@ -443,17 +732,21 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
             p_title = p.get("title", "")
             p_href = route_url(p.get("href", ""))
             p_img = p.get("image", "")
-            if not p_img.startswith("/"):
+            if p_img and not p_img.startswith("/"):
                 p_img = "/" + p_img
 
             clean_route = route_url(p_href)
             prod_detail = scraped_data.get("products", {}).get(clean_route, {})
             p_href_rel = url_for(p_href, prefix)
             p_img_rel = url_for(p_img, prefix)
+            p_media = (
+                f'<img src="{p_img_rel}" alt="{esc(p_title)}" loading="lazy" decoding="async">'
+                if p_img else '<span aria-hidden="true"></span>'
+            )
 
             cards_html.append(f'''<article class="cat-prod-card">
   <a class="cat-prod-media" href="{p_href_rel}" aria-label="{esc(p_title)}">
-    <img src="{p_img_rel}" alt="{esc(p_title)}" loading="lazy" decoding="async">
+    {p_media}
   </a>
   <div class="cat-prod-body">
     <span class="cat-prod-tag">WOL-BUD Tarnów</span>
@@ -496,7 +789,9 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
   <div class="cat-quick-nav-pills">{''.join(quick_pills)}</div>
 </div>'''
 
-    desc_html = f'<p class="subpage-lead">{esc(desc)}</p>' if desc else ''
+    source_markup = source_content_panel(source_page, prefix, "Pełny opis kategorii")
+    teaser = source_teaser(source_page)
+    desc_html = f'<p class="subpage-lead">{esc(teaser or desc)}</p>' if teaser or (desc and not source_markup) else ''
 
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
@@ -518,6 +813,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
     <div class="subpage-grid">
       <div class="subpage-content">
         {content_grid}
+        {source_markup}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Zainteresowała Cię nasza oferta?</span>
           <h3>Zamów bezpłatny pomiar i wycenę</h3>
@@ -532,12 +828,12 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
     return document(route, f"{title} | WOL-BUD Tarnów", desc or f"{title} — sprzedaż i montaż w WOL-BUD Tarnów.", main)
 
 
-def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
+def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page: dict | None = None) -> str:
     prefix = asset_prefix(route)
     title = prod.get("title", "")
     paragraphs = prod.get("paragraphs", [])
     specs = prod.get("specs", [])
-    images = prod.get("images", [])
+    images, small_assets = product_gallery_images(route, prod.get("images", []))
     pdfs = prod.get("pdfs", [])
 
     # Find parent category
@@ -591,10 +887,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
 
     # Hero visual & interactive gallery with stage arrows and zoom
     visual_html = ""
-    if not images:
-        images = ["/public/assets/source/products/fasada-aluminiowa.webp"]
-
-    main_img = url_for(images[0], prefix)
+    main_img = url_for(images[0], prefix) if images else ""
     has_multiple = len(images) > 1
 
     prev_arrow = f'''<button type="button" class="gallery-nav-arrow gallery-prev" data-gallery-prev aria-label="Poprzednie zdjęcie">
@@ -618,6 +911,24 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
 </button>''')
         thumbs_html = f'<div class="product-gallery-row" data-gallery-thumbs>{"".join(thumb_list)}</div>'
 
+    variant_assets_html = ""
+    if small_assets:
+        variant_cards = []
+        for image in small_assets:
+            image_rel = url_for(image, prefix)
+            dimensions = image_dimensions(image)
+            size_label = f" ({dimensions[0]} × {dimensions[1]} px)" if dimensions else ""
+            label = re.sub(r"[-_]+", " ", Path(image).stem)
+            label = re.sub(r"\b\d{1,4}x\d{1,4}\b", "", label, flags=re.IGNORECASE).strip()
+            variant_cards.append(f'''<figure class="product-variant-card">
+  <img src="{image_rel}" alt="{esc(label or title)}" loading="lazy" decoding="async">
+  <figcaption>{esc(label or title)}{size_label}</figcaption>
+</figure>''')
+        variant_assets_html = f'''<details class="mobile-details product-variant-assets" data-responsive-disclosure>
+  <summary>Dodatkowe próbki i ilustracje ({len(small_assets)})</summary>
+  <div class="mobile-details-body"><div class="product-variant-grid">{"".join(variant_cards)}</div></div>
+</details>'''
+
     visual_html = f'''<div class="product-gallery" data-gallery>
   <div class="product-gallery-stage">
     {prev_arrow}
@@ -632,7 +943,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
     {next_arrow}
   </div>
   {thumbs_html}
-</div>'''
+</div>''' if images else ""
 
     # Description paragraphs
     desc_html = "".join(f'<p>{esc(p)}</p>' for p in paragraphs if p.strip())
@@ -649,6 +960,10 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
   <summary>Parametry techniczne i charakterystyka</summary>
   <div class="mobile-details-body"><ul class="specs-list">{items}</ul></div>
 </details>'''
+
+    if source_page:
+        desc_details = source_content_panel(source_page, prefix, "Opis, zalety i parametry produktu")
+        specs_html = ""
 
     # PDF downloads
     downloads_html = ""
@@ -680,6 +995,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
     <div class="subpage-grid">
       <div class="subpage-content">
         {visual_html}
+        {variant_assets_html}
         {desc_details}
         {specs_html}
         {downloads_html}
@@ -699,7 +1015,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
     return document(route, f"{title} | WOL-BUD Tarnów", description, main)
 
 
-def services_page(scraped_data: dict) -> str:
+def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
     route = "/uslugi/"
     prefix = asset_prefix(route)
     services = scraped_data.get("services", [])
@@ -747,6 +1063,48 @@ def services_page(scraped_data: dict) -> str:
   </details>
 </article>''')
 
+    if source_page:
+        service_content_cards = []
+        source_sections = source_service_sections(source_page)
+        for section in source_sections:
+            stitle = source_display_text(section["title"])
+            anch = service_anchors.get(stitle, slugify(stitle))
+            blocks = section["blocks"]
+            first_paragraph = next(
+                (block.get("text", "") for block in blocks if block.get("type") == "paragraph" and block.get("text", "").strip()),
+                "",
+            )
+            teaser = source_first_sentence(first_paragraph)
+            full_body = render_source_blocks(blocks, prefix)
+            feature_box = ""
+            if "Ciepły" in stitle:
+                feature_box = f'''<div class="service-feature-box">
+  <div>
+    <span class="eyebrow eyebrow--gold">Fotoreportaż z budowy</span>
+    <p>Zobacz zdjęcia z ciepłego montażu warstwowego.</p>
+  </div>
+  <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
+</div>'''
+            service_content_cards.append(f'''<article class="service-card" id="{esc(anch)}">
+  <h2>{esc(stitle)}</h2>
+  {f'<p class="service-card-teaser">{esc(teaser)}</p>' if teaser else ''}
+  <details class="mobile-details" open data-responsive-disclosure>
+    <summary>Opis usługi</summary>
+    <div class="mobile-details-body source-content-body">{full_body}{feature_box}</div>
+  </details>
+</article>''')
+        service_content = "".join(service_content_cards)
+        warm_montage_link = f'''<div class="service-feature-box">
+  <div>
+    <span class="eyebrow eyebrow--gold">Ciepły montaż</span>
+    <p>Zdjęcia i pełny opis ciepłego montażu warstwowego.</p>
+  </div>
+  <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz opis montażu ↗</a>
+</div>'''
+        service_content += warm_montage_link
+    else:
+        service_content = "".join(cards)
+
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -764,7 +1122,7 @@ def services_page(scraped_data: dict) -> str:
     </header>
     <div class="subpage-grid">
       <div class="subpage-content">
-        {''.join(cards)}
+        {service_content}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Skorzystaj z naszych usług</span>
           <h3>Umów bezpłatny pomiar i wycenę</h3>
@@ -779,7 +1137,7 @@ def services_page(scraped_data: dict) -> str:
     return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, ciepły montaż, serwis, prace wykończeniowe i murarskie, brukowanie, daszki poliwęglanowe.", main)
 
 
-def warm_montage_page(scraped_data: dict) -> str:
+def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> str:
     route = "/promocje/cieply-montaz-warstwowy-okien-drzwi/"
     prefix = asset_prefix(route)
     montage = scraped_data.get("warm_montage", {})
@@ -798,8 +1156,7 @@ def warm_montage_page(scraped_data: dict) -> str:
     <img src="{simg}" alt="{esc(stitle)}" loading="lazy" decoding="async">
   </div>
   <div class="montage-step-info">
-    <span class="montage-step-n">ETAP 0{idx if idx < 10 else idx}</span>
-    <h3 class="montage-step-title">{esc(stitle)}</h3>
+          <h3 class="montage-step-title">{esc(stitle)}</h3>
   </div>
 </article>''')
 
@@ -817,12 +1174,12 @@ def warm_montage_page(scraped_data: dict) -> str:
     <header class="subpage-head">
       <span class="eyebrow">Fotoreportaż i technologia</span>
       <h1>{esc(title)}</h1>
-      <p class="subpage-lead">Energooszczędny, szczelny montaż trójwarstwowy okien i drzwi z wykorzystaniem folii ProTape, taśm rozprężnych i termoparapetów podokiennych Klinar.</p>
+      <p class="subpage-lead">{esc(source_teaser(source_page) or (paragraphs[0] if paragraphs else ''))}</p>
     </header>
     <div class="subpage-grid">
       <div class="subpage-content">
         <div class="article-copy">
-          {paras_html}
+          {source_content_panel(source_page, prefix, "Pełny opis montażu") or paras_html}
         </div>
         <div class="subpage-section">
           <h2>Zdjęcia z montażu</h2>
@@ -891,9 +1248,34 @@ def catalog_index_page() -> str:
     return document(route, "Pełna oferta produktów | WOL-BUD Tarnów", "Okna, drzwi, bramy garażowe, rolety i parapety w ofercie firmy WOL-BUD Tarnów.", main)
 
 
-def about_page(source_content: dict) -> str:
+def references_gallery(prefix: str = "") -> str:
+    source_order = [12, 1, 2, 3, 4, 9, 8, 7, 6, 5, 15, 14, 13, 11, 10]
+    cards = []
+    for number in source_order:
+        filename = f"referencja-{number:02d}.webp"
+        image_url = url_for(f"/public/assets/source/references/{filename}", prefix)
+        cards.append(f'''<figure class="reference-card">
+  <a href="{image_url}" target="_blank" rel="noopener noreferrer" aria-label="Otwórz skan referencji nr {number}">
+    <img src="{image_url}" alt="Skan referencji nr {number}" loading="lazy" decoding="async" width="212" height="300">
+  </a>
+  <figcaption>Referencja nr {number}</figcaption>
+</figure>''')
+    return f'''<details class="mobile-details reference-gallery-disclosure" open data-responsive-disclosure>
+  <summary>Zobacz skany referencji (15)</summary>
+  <div class="mobile-details-body">
+    <section class="reference-gallery" aria-labelledby="reference-gallery-title">
+      <h2 id="reference-gallery-title">Referencje</h2>
+      <div class="reference-gallery-grid">{"".join(cards)}</div>
+    </section>
+  </div>
+</details>'''
+
+
+def about_page(source_page: dict | None = None) -> str:
     route = "/o-firmie/"
     prefix = asset_prefix(route)
+    company_story = source_content_panel(source_page, prefix, "O firmie: doświadczenie, atuty i dostawcy")
+    references = references_gallery(prefix) if source_page else ""
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -912,16 +1294,8 @@ def about_page(source_content: dict) -> str:
     </header>
     <div class="subpage-grid">
       <div class="subpage-content article-copy">
-        <p>WOL-BUD Wojciecha Wolańskiego prowadzi sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku. Oferta obejmuje także bramy garażowe, rolety i parapety.</p>
-        <div class="subpage-section">
-          <h2>Oferta i usługi</h2>
-          <ul>
-            <li>Sprzedaż okien, drzwi, bram garażowych, rolet i parapetów</li>
-            <li>Bezpłatny pomiar, doradztwo i wycena</li>
-            <li>Ciepły montaż, serwis, prace murarskie i wykończeniowe</li>
-            <li>Układanie kostki brukowej i montaż daszków poliwęglanowych</li>
-          </ul>
-        </div>
+        {company_story}
+        {references}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Porozmawiajmy o Twojej inwestycji</span>
           <h3>Odwiedź nasz salon lub zadzwoń</h3>
@@ -936,7 +1310,31 @@ def about_page(source_content: dict) -> str:
     return document(route, "O firmie | WOL-BUD Wojciech Wolański Tarnów", "WOL-BUD — sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku.", main)
 
 
-def locations_page() -> str:
+def source_document_page(route: str, source_page: dict) -> str:
+    prefix = asset_prefix(route)
+    title = source_page_title(source_page)
+    source_markup = source_content_panel(source_page, prefix, "Pełny opis źródłowy")
+    crumb = f'''<div class="page-nav-bar">
+  <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <span>Wróć</span>
+  </button>
+  <nav class="breadcrumbs" aria-label="Okruszki"><a href="{url_for('/#oferta', prefix)}" data-home-link>Strona główna</a><span>/</span><span aria-current="page">{esc(title)}</span></nav>
+</div>'''
+    main = f'''<main id="main" class="page-main">
+  <div class="wrap">
+    {crumb}
+    <header class="subpage-head"><h1>{esc(title)}</h1></header>
+    <div class="subpage-grid">
+      <div class="subpage-content">{source_markup}</div>
+      {sidebar_markup(route, prefix)}
+    </div>
+  </div>
+</main>'''
+    return document(route, f"{title} | WOL-BUD", title, main)
+
+
+def locations_page(source_page: dict | None = None) -> str:
     route = "/nasze-sklepy/"
     prefix = asset_prefix(route)
     locations = [
@@ -963,6 +1361,9 @@ def locations_page() -> str:
   </div>
 </article>''')
 
+    source_details = source_content_panel(source_page, prefix, "Informacje o salonach i ekspozycji")
+    source_intro = source_teaser(source_page)
+
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -977,11 +1378,12 @@ def locations_page() -> str:
     <header class="subpage-head">
       <span class="eyebrow">Salony stacjonarne</span>
       <h1>Nasze sklepy i ekspozycje</h1>
-      <p class="subpage-lead">Zapraszamy do salonów sprzedaży w Tarnowie i Radłowie.</p>
+      <p class="subpage-lead">{esc(source_intro or 'Zapraszamy do salonów sprzedaży w Tarnowie i Radłowie.')}</p>
     </header>
     <div class="location-grid">
       {''.join(cards)}
     </div>
+    {source_details}
     <div class="cta-banner-dark">
       <span class="eyebrow eyebrow--gold">Potrzebujesz pomocy w doborze?</span>
       <h3>Zadzwoń do wybranego punktu</h3>
@@ -1024,6 +1426,10 @@ def contact_page() -> str:
           <b>WOL-BUD Wojciech Wolański</b>
           Sprzedaż i profesjonalny montaż stolarki okiennej i drzwiowej od 1995 roku.
         </div>
+        <div class="kt-oferta">
+          <b>Firma Usługowo–Handlowa „WOL-BUD” Wojciech Wolański</b>
+          NIP: 8731011790
+        </div>
       </div>
       <div class="kt-adres">
         <span class="kt-lab">Salony sprzedaży</span>
@@ -1060,16 +1466,17 @@ def main() -> None:
     print("Loading data...")
     scraped_data = json.loads(SCRAPED_DATA_FILE.read_text(encoding="utf-8"))
     source_content = json.loads(SOURCE_DATA_FILE.read_text(encoding="utf-8"))
+    source_pages = source_page_index(source_content)
 
     # 1. Generate Home Page
     print("Generating Home Page...")
-    (ROOT / "index.html").write_text(home_page(scraped_data), encoding="utf-8")
+    (ROOT / "index.html").write_text(home_page(scraped_data, source_pages.get("/uslugi/")), encoding="utf-8")
 
     # 2. Generate Primary and Secondary Category Pages
     print("Generating Category Pages...")
     categories = scraped_data.get("categories", {})
     for cat_route, cat_data in categories.items():
-        html_content = category_page(cat_route, cat_data, scraped_data)
+        html_content = category_page(cat_route, cat_data, scraped_data, source_pages.get(cat_route))
         dest = output_path(cat_route)
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(html_content, encoding="utf-8")
@@ -1079,7 +1486,7 @@ def main() -> None:
     for parent_cat in ["/kategorie/parapety-blaty/", "/kategorie/rolety/"]:
         if parent_cat not in categories:
             cat_data = {"title": "Parapety i blaty" if "parapety" in parent_cat else "Rolety", "products": []}
-            html_content = category_page(parent_cat, cat_data, scraped_data)
+            html_content = category_page(parent_cat, cat_data, scraped_data, source_pages.get(parent_cat))
             dest = output_path(parent_cat)
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(html_content, encoding="utf-8")
@@ -1089,7 +1496,7 @@ def main() -> None:
     print("Generating Product Detail Pages...")
     products = scraped_data.get("products", {})
     for prod_route, prod_data in products.items():
-        html_content = product_detail_page(prod_route, prod_data, scraped_data)
+        html_content = product_detail_page(prod_route, prod_data, scraped_data, source_pages.get(prod_route))
         dest = output_path(prod_route)
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(html_content, encoding="utf-8")
@@ -1098,12 +1505,12 @@ def main() -> None:
     # 4. Generate Services Page
     print("Generating Services Page...")
     (ROOT / "uslugi" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "uslugi" / "index.html").write_text(services_page(scraped_data), encoding="utf-8")
+    (ROOT / "uslugi" / "index.html").write_text(services_page(scraped_data, source_pages.get("/uslugi/")), encoding="utf-8")
 
     # 5. Generate Warm Montage Page
     print("Generating Warm Montage Page...")
     (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").write_text(warm_montage_page(scraped_data), encoding="utf-8")
+    (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").write_text(warm_montage_page(scraped_data, source_pages.get("/promocje/cieply-montaz-warstwowy-okien-drzwi/")), encoding="utf-8")
 
     # 6. Generate Catalog Index (Oferta)
     print("Generating Catalog Index Page...")
@@ -1113,13 +1520,31 @@ def main() -> None:
     # 7. Generate Standalone Pages: O firmie, Nasze sklepy, Kontakt
     print("Generating Static Content Pages...")
     (ROOT / "o-firmie" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "o-firmie" / "index.html").write_text(about_page(source_content), encoding="utf-8")
+    (ROOT / "o-firmie" / "index.html").write_text(about_page(source_pages.get("/o-firmie/")), encoding="utf-8")
 
     (ROOT / "nasze-sklepy" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "nasze-sklepy" / "index.html").write_text(locations_page(), encoding="utf-8")
+    (ROOT / "nasze-sklepy" / "index.html").write_text(
+        locations_page(source_pages.get("/nasze-sklepy/")),
+        encoding="utf-8",
+    )
 
     (ROOT / "kontakt" / "index.html").parent.mkdir(parents=True, exist_ok=True)
     (ROOT / "kontakt" / "index.html").write_text(contact_page(), encoding="utf-8")
+
+    # Render captured source routes without a specialized catalogue template as complete content pages.
+    generated_routes = {
+        "/", "/oferta/", "/uslugi/", "/o-firmie/", "/nasze-sklepy/", "/kontakt/",
+        "/promocje/cieply-montaz-warstwowy-okien-drzwi/",
+        *categories.keys(), *products.keys(),
+    }
+    for source_route_path, source_page in source_pages.items():
+        if source_route_path in generated_routes:
+            continue
+        dest = output_path(source_route_path)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(source_document_page(source_route_path, source_page), encoding="utf-8")
+        generated_routes.add(source_route_path)
+        print(f"  Source page {source_route_path}")
 
     print("\nSite build complete! All pages generated with interactive galleries, navigation, and map links.")
 
