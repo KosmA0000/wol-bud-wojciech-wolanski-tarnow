@@ -3118,3 +3118,113 @@ body.lightbox-open {
 .sidebar-map-link:hover {
   color: var(--ink);
 }
+
+/* Compact mobile layout and accessible in-page navigation */
+:where(section[id], [id="uslugi"], [id="nasze-sklepy"]) {
+  scroll-margin-top: 78px;
+}
+
+.trust-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(1.4rem, 3vw, 2.5rem);
+  border: 1px solid rgba(244, 243, 236, 0.18);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.trust-compact .eyebrow { margin-bottom: 0.65rem; }
+.trust-compact h2 { margin: 0 0 0.65rem; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.1; }
+.trust-compact p { max-width: 62ch; margin: 0; color: rgba(244, 243, 236, 0.78); }
+.trust-compact .tc-tel { flex: none; white-space: nowrap; }
+
+.mobile-details > summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.mobile-details-body { min-width: 0; }
+.mobile-details-body > :last-child { margin-bottom: 0; }
+
+.home-service-item .arr {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.menu-close { display: none; }
+
+@media (max-width: 760px) {
+  html { scroll-padding-top: 70px; }
+  .wrap { width: min(100% - 32px, 1280px); }
+  .bar { padding-inline: 16px; }
+  .menu.open .menu-panel { overflow-y: auto; overscroll-behavior: contain; }
+  .menu-close {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .trust { padding: 2.5rem 0; }
+  .trust-compact { align-items: stretch; flex-direction: column; gap: 1.25rem; padding: 1.25rem; }
+  .trust-compact .tc-tel { align-self: flex-start; white-space: normal; }
+  .offer { padding-inline: 0; }
+  .home-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+  .home-cat-thumb { aspect-ratio: 4 / 3; padding: 0.7rem; }
+  .home-cat-body { padding: 0.85rem; }
+  .home-cat-body h3 { font-size: clamp(0.95rem, 4vw, 1.12rem); overflow-wrap: anywhere; }
+  .home-cat-cta { font-size: 0.68rem; letter-spacing: 0.03em; }
+  .home-services-box { padding: 1rem; border-radius: 18px; margin-bottom: 1.5rem; }
+  .home-services-head { display: block; margin-bottom: 1rem; }
+  .home-services-head a { display: inline-block; margin-top: 0.75rem; }
+  .home-services-grid { grid-template-columns: minmax(0, 1fr); gap: 0.7rem; }
+  .home-service-item { min-width: 0; padding: 1rem; }
+  .home-service-item details[open] summary { margin-bottom: 0.45rem; }
+  .contact, .partners-section { padding-block: 3rem; }
+  .kt-tel, .kt-adres { min-width: 0; padding: 1.25rem; border-radius: 18px; }
+  .kt-num { max-width: 100%; font-size: clamp(1.9rem, 8.4vw, 2.7rem); }
+  .kt-lista li { min-width: 0; }
+  .kt-lista li > * { overflow-wrap: anywhere; }
+  .store-nav-btn { max-width: 100%; white-space: normal; letter-spacing: 0.02em; }
+  .location-card, .cat-prod-card, .home-service-item, .home-cat-card { min-width: 0; }
+  .cat-prod-body { padding: 1rem; }
+  .cat-prod-title, .subpage-head h1, .subpage-content h2 { overflow-wrap: anywhere; }
+  .product-gallery-stage { min-width: 0; }
+  .product-gallery-stage > img, .product-gallery-stage [data-gallery-main] { width: 100%; max-width: 100%; height: auto; object-fit: contain; }
+  .product-gallery-row { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+  .product-nav-bar { gap: 0.75rem; margin-top: 2rem; }
+  .pnav-btn { max-width: calc(50% - 0.5rem); min-width: 0; }
+  .pnav-btn span { overflow-wrap: anywhere; }
+  .scroll-top-btn { right: 12px; bottom: 12px; padding: 10px; }
+  .scroll-top-btn span { display: none; }
+}
+
+@media (max-width: 350px) {
+  .wrap { width: calc(100% - 24px); }
+  .home-catalog-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { left: 1rem; right: 1rem; }
+  .hero h1 { font-size: clamp(2.15rem, 11vw, 2.8rem); }
+  .hero-meta { gap: 0.55rem; font-size: 0.62rem; letter-spacing: 0.08em; }
+  .hero-meta span + span { padding-left: 0.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

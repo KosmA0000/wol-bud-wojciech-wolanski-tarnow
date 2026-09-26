@@ -7,6 +7,44 @@
   const menu = document.getElementById('menu');
   const menuButton = document.getElementById('menuButton');
   const menuPanel = document.querySelector('[data-menu-panel]');
+  const mobileQuery = window.matchMedia('(max-width: 760px)');
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobileNavLinks = document.querySelectorAll('[data-mobile-home-href]');
+
+  const syncMobileNavLinks = () => {
+    mobileNavLinks.forEach((link) => {
+      link.setAttribute('href', mobileQuery.matches ? link.dataset.mobileHomeHref : link.dataset.desktopHref);
+    });
+  };
+  syncMobileNavLinks();
+  mobileQuery.addEventListener('change', syncMobileNavLinks);
+  const isHomePage = Boolean(document.getElementById('start') && document.getElementById('oferta'));
+
+  const closeMenu = (returnFocus = false) => {
+    if (!menu || !menuButton) return;
+    menu.classList.remove('open');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuPanel?.setAttribute('hidden', '');
+    document.body.classList.remove('menu-open');
+    if (returnFocus) menuButton.focus();
+  };
+
+  const scrollToTarget = (target, updateHash = false) => {
+    if (!target) return;
+    if (updateHash && target.id) history.pushState(null, '', `#${target.id}`);
+    target.scrollIntoView({ behavior: reducedMotionQuery.matches ? 'auto' : 'smooth', block: 'start' });
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  };
+
+  const responsiveDetails = Array.from(document.querySelectorAll('[data-responsive-disclosure]'));
+  const applyResponsiveDetails = () => {
+    responsiveDetails.forEach((detail) => {
+      detail.open = !mobileQuery.matches;
+    });
+  };
+  applyResponsiveDetails();
+  mobileQuery.addEventListener('change', applyResponsiveDetails);
 
   if (menu && menuButton) {
     const toggleMenu = () => {
@@ -17,6 +55,7 @@
           menuPanel.removeAttribute('hidden');
           document.body.classList.add('menu-open');
         } else {
+          menuPanel.setAttribute('hidden', '');
           document.body.classList.remove('menu-open');
         }
       }
@@ -27,20 +66,29 @@
       toggleMenu();
     });
 
+    menu.querySelector('[data-menu-close]')?.addEventListener('click', () => closeMenu(true));
+
+    mobileNavLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        if (!mobileQuery.matches || !isHomePage) return;
+        const targetId = new URL(link.href, window.location.href).hash.slice(1);
+        const target = targetId ? document.getElementById(decodeURIComponent(targetId)) : null;
+        if (!target) return;
+        e.preventDefault();
+        closeMenu();
+        scrollToTarget(target, true);
+      });
+    });
+
     document.addEventListener('click', (e) => {
       if (menu.classList.contains('open') && !menu.contains(e.target)) {
-        menu.classList.remove('open');
-        menuButton.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('menu-open');
+        closeMenu();
       }
     });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && menu.classList.contains('open')) {
-        menu.classList.remove('open');
-        menuButton.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('menu-open');
-        menuButton.focus();
+        closeMenu(true);
       }
     });
   }
@@ -70,8 +118,6 @@
   // ==========================================================================
   // 3. Homepage Section Tracking & Smart Breadcrumbs / Back Navigation
   // ==========================================================================
-  const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html') && !window.location.pathname.includes('/kategorie/') && !window.location.pathname.includes('/produkty/');
-
   if (isHomePage) {
     // Record which section user clicks from
     document.addEventListener('click', (e) => {
@@ -100,10 +146,10 @@
 
     // If landed with hash, ensure smooth scroll to that section (not hero)
     if (window.location.hash) {
-      const target = document.querySelector(window.location.hash);
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
       if (target) {
         setTimeout(() => {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          scrollToTarget(target);
         }, 120);
       }
     }
@@ -336,7 +382,7 @@
     }, { passive: true });
 
     scrollTopBtn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' });
     });
   }
 
@@ -351,10 +397,9 @@
         if (targetEl) {
           e.preventDefault();
           if (menu && menu.classList.contains('open')) {
-            menu.classList.remove('open');
-            document.body.classList.remove('menu-open');
+            closeMenu();
           }
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          scrollToTarget(targetEl, true);
         }
       }
     });
