@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 SCRAPED_DATA_FILE = ROOT / "docs" / "full_scraped_data.json"
 SOURCE_DATA_FILE = ROOT / "docs" / "source-content.json"
+PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.json"
 
 # Navigation links for specific salon locations
 MAP_LINKS = {
@@ -32,13 +33,13 @@ MAP_LINKS = {
 
 # Primary categories displayed in menus and catalog
 PRIMARY_CATEGORIES = [
-    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/public/assets/scraped/thumbs/infinity-passive-130x163.webp", ""),
+    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/public/assets/source/products/okno-infinity-passive-83md.webp", ""),
     ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/public/assets/source/products/drzwi-zewnetrzne-wiked.webp", ""),
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
-    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/public/assets/scraped/thumbs/brama-garazowa-130x173.webp", ""),
-    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/public/assets/scraped/thumbs/alu3-130x92.webp", ""),
+    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/public/assets/source/products/brama-segmentowa.webp", ""),
+    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/public/assets/scraped/products/alu3-306x217.webp", ""),
     ("Rolety", "/kategorie/rolety/", "/public/assets/source/products/roleta-dzien-noc.webp", ""),
-    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/public/assets/scraped/thumbs/Botticino-130x86.webp", ""),
+    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/public/assets/scraped/products/Botticino-306x204.webp", ""),
     ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.webp", ""),
 ]
 
@@ -259,13 +260,14 @@ def render_source_blocks(blocks: list, prefix: str = "", anchor_map: dict | None
     return "".join(rendered)
 
 
-def source_content_panel(page: dict | None, prefix: str = "", summary: str = "Pełny opis źródłowy", anchor_map: dict | None = None) -> str:
+def source_content_panel(page: dict | None, prefix: str = "", summary: str = "Pełny opis źródłowy", anchor_map: dict | None = None, anchor_id: str | None = None) -> str:
     if not page:
         return ""
     body = render_source_blocks(source_body_blocks(page), prefix, anchor_map)
     if not body:
         return ""
-    return f'''<details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
+    id_attr = f' id="{esc(anchor_id)}"' if anchor_id else ""
+    return f'''<details class="mobile-details source-content-disclosure"{id_attr} open data-responsive-disclosure>
   <summary>{esc(summary)}</summary>
   <div class="mobile-details-body source-content-body">{body}</div>
 </details>'''
@@ -307,6 +309,7 @@ def source_service_sections(page: dict | None) -> list:
 
 
 _image_dimension_cache: dict[str, tuple[int, int] | None] = {}
+_product_gallery_source_map: dict | None = None
 
 
 def image_dimensions(image_path: str) -> tuple[int, int] | None:
@@ -328,11 +331,69 @@ def image_dimensions(image_path: str) -> tuple[int, int] | None:
     return dimensions
 
 
+def horizontal_photo_strip(content: str, track_class: str, label: str, track_attributes: str = "") -> str:
+    return f'''<div class="photo-strip" data-scroll-gallery aria-label="{esc(label)}">
+  <button type="button" class="photo-strip-arrow" data-scroll-prev aria-label="Poprzednie zdjęcie" aria-disabled="true">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <div class="{track_class}" data-scroll-track tabindex="0" role="region" aria-label="{esc(label)}" {track_attributes}>{content}</div>
+  <button type="button" class="photo-strip-arrow" data-scroll-next aria-label="Następne zdjęcie" aria-disabled="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+</div>'''
+
+
 def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
-    """Keep detailed product photos in the stage; retain small source swatches separately."""
+    """Use every original product-gallery item, paired with its source thumbnail."""
+    global _product_gallery_source_map
+    if _product_gallery_source_map is None:
+        try:
+            _product_gallery_source_map = json.loads(PRODUCT_GALLERY_SOURCE_MAP_FILE.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            _product_gallery_source_map = {}
+
+    source_page = _product_gallery_source_map.get("pages", {}).get(route, {})
+    source_items = source_page.get("items", [])
+    if source_items:
+        gallery_images = []
+        gallery_thumbnails = []
+        for item in source_items:
+            image = item.get("image", "")
+            thumbnail = item.get("thumbnail", "")
+            local_image_exists = bool(image and not image.startswith(("http://", "https://")) and (ROOT / image.lstrip("/")).is_file())
+            local_thumbnail_exists = bool(thumbnail and not thumbnail.startswith(("http://", "https://")) and (ROOT / thumbnail.lstrip("/")).is_file())
+            if (
+                item.get("imageStatus") == "original-fetch-failed"
+                and item.get("thumbnailStatus") == "source-thumb-fetch-failed"
+                and not local_image_exists
+                and not local_thumbnail_exists
+            ):
+                # Both authentic source files are gone, so do not emit a broken image.
+                continue
+            image_exists = bool(image and (image.startswith("http://") or image.startswith("https://") or (ROOT / image.lstrip("/")).is_file()))
+            thumbnail_exists = bool(thumbnail and (thumbnail.startswith("http://") or thumbnail.startswith("https://") or (ROOT / thumbnail.lstrip("/")).is_file()))
+            if not image_exists:
+                # If the linked original is gone, keep the source thumbnail as the clickable item.
+                image = item.get("sourceThumb", "") or item.get("sourceImage", "")
+                thumbnail = item.get("sourceThumb", "") or image
+            elif not thumbnail_exists:
+                thumbnail = image
+            if image:
+                gallery_images.append(image)
+                gallery_thumbnails.append(thumbnail or image)
+        if gallery_images:
+            return gallery_images, gallery_thumbnails
+
+    # Legacy fallback for routes absent from the source gallery audit.
     hero_overrides = {
         "/produkty/infinity-passive-83md/": "/public/assets/source/products/okno-infinity-passive-83md.webp",
         "/produkty/drzwi-wewnetrzne-intenso/": "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp",
+        "/produkty/ogrody-zimowe/": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
+    }
+    garden_variants = {
+        "ogr_d3-44x33": "/public/assets/source/products/ogrod-zimowy-variant-3.webp",
+        "ogr_d2-29x40": "/public/assets/source/products/ogrod-zimowy-variant-2.webp",
+        "ogr_d-44x31": "/public/assets/source/products/ogrod-zimowy-variant.webp",
     }
     displayed = []
     small_assets = []
@@ -346,8 +407,14 @@ def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], li
     if hero and (ROOT / hero.lstrip("/")).exists():
         original_hero = images[0] if images else ""
         displayed = [hero] + [image for image in displayed if image != original_hero and image != hero]
-        small_assets = [image for image in small_assets if image not in {hero, original_hero}]
-    return displayed, small_assets
+        if route != "/produkty/ogrody-zimowe/":
+            small_assets = [image for image in small_assets if image not in {hero, original_hero}]
+    if route == "/produkty/ogrody-zimowe/":
+        for image in small_assets:
+            variant = garden_variants.get(Path(image).stem.lower())
+            if variant and (ROOT / variant.lstrip("/")).exists() and variant not in displayed:
+                displayed.append(variant)
+    return displayed, []
 
 
 def header(prefix: str) -> str:
@@ -390,7 +457,7 @@ def document(route: str, title: str, description: str, body: str) -> str:
 <title>{esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{prefix}assets/css/site.css"><script defer src="{prefix}assets/js/site.js"></script></head>
+<link rel="stylesheet" href="{prefix}assets/css/site.css"><link rel="stylesheet" href="{prefix}assets/visual-refinements.css"><script defer src="{prefix}assets/js/site.js"></script></head>
 <body>
 {header(prefix)}
 {body}
@@ -500,17 +567,13 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         stitle = s.get("title", "")
         anch = service_anchors.get(stitle, slugify(stitle))
         para = "\n".join(s.get("paragraphs", []))
-        para_html = esc(para).replace("\n", "<br>")
         teaser = service_teasers.get(normalize(stitle)) or source_first_sentence(para)
-        link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/" if "Ciepły" in stitle else f"/uslugi/#{anch}"
+        link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/#pelny-opis-montazu" if "Ciepły" in stitle else f"/uslugi/#{anch}"
+        service_href = url_for(link, prefix)
         services_markup.append(f'''<article class="home-service-item">
-  <h4>{esc(stitle)}</h4>
+  <h4><a class="home-service-item-title-link" href="{service_href}">{esc(stitle)}</a></h4>
   <p class="home-service-item-teaser">{esc(teaser)}</p>
-  <details class="mobile-details" open data-responsive-disclosure>
-    <summary>Opis usługi</summary>
-    <div class="mobile-details-body"><p>{para_html}</p></div>
-  </details>
-  <a class="arr" href="{url_for(link, prefix)}">Dowiedz się więcej ↗</a>
+  <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(stitle)}">Dowiedz się więcej ↗</a>
 </article>''')
 
     partner_logos = [
@@ -552,7 +615,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       <div>
         <span class="eyebrow">Od 1995 roku</span>
         <h2>WOL-BUD Wojciech Wolański</h2>
-        <p>Firma prowadzi sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku. Pomiar, doradztwo i wycena są bezpłatne i niewiążące.</p>
+        <p>WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 25 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty.</p>
       </div>
       <div class="trust-compact-actions">
         <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę i referencje ↗</a>
@@ -738,6 +801,15 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
             clean_route = route_url(p_href)
             prod_detail = scraped_data.get("products", {}).get(clean_route, {})
             p_href_rel = url_for(p_href, prefix)
+            category_image_overrides = {
+                "/produkty/ogrody-zimowe": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
+                "/produkty/fasady": "/public/assets/source/products/fasada-aluminiowa.webp",
+            }
+            p_img = category_image_overrides.get(clean_route.rstrip("/"), p_img)
+            if clean_route.rstrip("/") not in category_image_overrides:
+                detail_images, _ = product_gallery_images(clean_route, prod_detail.get("images", []))
+                if detail_images:
+                    p_img = detail_images[0]
             p_img_rel = url_for(p_img, prefix)
             p_media = (
                 f'<img src="{p_img_rel}" alt="{esc(p_title)}" loading="lazy" decoding="async">'
@@ -900,46 +972,35 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
 
     counter_html = f'''<div class="gallery-counter"><span data-gallery-curr>1</span> / <span>{len(images)}</span></div>''' if has_multiple else ""
 
-    thumbs_html = ""
-    if has_multiple:
-        thumb_list = []
-        for i, img in enumerate(images):
-            act_cls = " is-active" if i == 0 else ""
-            img_rel = url_for(img, prefix)
-            thumb_list.append(f'''<button type="button" class="product-gallery-thumb{act_cls}" data-index="{i}" data-src="{img_rel}" aria-label="Zdjęcie {i+1} z {len(images)}">
-  <img src="{img_rel}" alt="{esc(title)}">
+    gallery_thumbs = []
+    thumbnail_images = small_assets if len(small_assets) == len(images) else images
+    for i, img in enumerate(images):
+        image_rel = url_for(img, prefix)
+        thumb_src = url_for(thumbnail_images[i], prefix)
+        width, height = image_dimensions(img) or (4, 3)
+        ratio = width / height
+        act_cls = " is-active" if i == 0 else ""
+        gallery_thumbs.append(f'''<button type="button" class="product-gallery-thumb{act_cls}" data-index="{i}" data-src="{image_rel}" data-ratio="{ratio:.5f}" style="--gallery-ratio: {ratio:.5f};" aria-label="Pokaż zdjęcie {i+1} z {len(images)}: {esc(title)}" aria-current="{str(i == 0).lower()}">
+  <img src="{thumb_src}" alt="{esc(title)}" loading="lazy" decoding="async">
 </button>''')
-        thumbs_html = f'<div class="product-gallery-row" data-gallery-thumbs>{"".join(thumb_list)}</div>'
+    thumbs_html = horizontal_photo_strip(
+        "".join(gallery_thumbs), "product-gallery-row", f"Galeria zdjęć: {title}", "data-gallery-thumbs"
+    ) if gallery_thumbs else ""
 
-    variant_assets_html = ""
-    if small_assets:
-        variant_cards = []
-        for image in small_assets:
-            image_rel = url_for(image, prefix)
-            dimensions = image_dimensions(image)
-            size_label = f" ({dimensions[0]} × {dimensions[1]} px)" if dimensions else ""
-            label = re.sub(r"[-_]+", " ", Path(image).stem)
-            label = re.sub(r"\b\d{1,4}x\d{1,4}\b", "", label, flags=re.IGNORECASE).strip()
-            variant_cards.append(f'''<figure class="product-variant-card">
-  <img src="{image_rel}" alt="{esc(label or title)}" loading="lazy" decoding="async">
-  <figcaption>{esc(label or title)}{size_label}</figcaption>
-</figure>''')
-        variant_assets_html = f'''<details class="mobile-details product-variant-assets" data-responsive-disclosure>
-  <summary>Dodatkowe próbki i ilustracje ({len(small_assets)})</summary>
-  <div class="mobile-details-body"><div class="product-variant-grid">{"".join(variant_cards)}</div></div>
-</details>'''
-
-    visual_html = f'''<div class="product-gallery" data-gallery>
+    door_gallery_class = " product-gallery--door" if any(
+        "drzwi" in normalize(value) for value in (title, parent_cat_name, route)
+    ) else ""
+    visual_html = f'''<div class="product-gallery{door_gallery_class}" data-gallery>
   <div class="product-gallery-stage">
     {prev_arrow}
-    <div class="product-detail-visual" data-gallery-trigger title="Kliknij, aby powiększyć zdjęcie">
+    <button type="button" class="product-detail-visual" data-gallery-trigger aria-haspopup="dialog" aria-label="Powiększ zdjęcie produktu: {esc(title)}">
       <img src="{main_img}" alt="{esc(title)}" id="mainGalleryImg" data-gallery-main decoding="async">
       <div class="gallery-zoom-badge">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
         <span>Powiększ</span>
       </div>
       {counter_html}
-    </div>
+    </button>
     {next_arrow}
   </div>
   {thumbs_html}
@@ -995,7 +1056,6 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
     <div class="subpage-grid">
       <div class="subpage-content">
         {visual_html}
-        {variant_assets_html}
         {desc_details}
         {specs_html}
         {downloads_html}
@@ -1153,7 +1213,7 @@ def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> st
         simg = url_for(s.get("img", ""), prefix)
         steps_html.append(f'''<article class="montage-step-card">
   <div class="montage-step-media">
-    <img src="{simg}" alt="{esc(stitle)}" loading="lazy" decoding="async">
+    <img src="{simg}" alt="{esc(stitle)}" data-lightbox-trigger data-lightbox-src="{simg}" data-lightbox-group="warm-montage" loading="lazy" decoding="async">
   </div>
   <div class="montage-step-info">
           <h3 class="montage-step-title">{esc(stitle)}</h3>
@@ -1179,13 +1239,11 @@ def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> st
     <div class="subpage-grid">
       <div class="subpage-content">
         <div class="article-copy">
-          {source_content_panel(source_page, prefix, "Pełny opis montażu") or paras_html}
+          {source_content_panel(source_page, prefix, "Pełny opis montażu", anchor_id="pelny-opis-montazu") or paras_html}
         </div>
         <div class="subpage-section">
           <h2>Zdjęcia z montażu</h2>
-          <div class="montage-steps-grid">
-            {''.join(steps_html)}
-          </div>
+          {horizontal_photo_strip(''.join(steps_html), "montage-steps-grid", "Zdjęcia z montażu")}
         </div>
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Chcesz zamówić ciepły montaż?</span>
@@ -1255,7 +1313,7 @@ def references_gallery(prefix: str = "") -> str:
         filename = f"referencja-{number:02d}.webp"
         image_url = url_for(f"/public/assets/source/references/{filename}", prefix)
         cards.append(f'''<figure class="reference-card">
-  <a href="{image_url}" target="_blank" rel="noopener noreferrer" aria-label="Otwórz skan referencji nr {number}">
+  <a href="{image_url}" data-lightbox-trigger data-lightbox-src="{image_url}" data-lightbox-group="references" aria-label="Powiększ skan referencji nr {number}">
     <img src="{image_url}" alt="Skan referencji nr {number}" loading="lazy" decoding="async" width="212" height="300">
   </a>
   <figcaption>Referencja nr {number}</figcaption>
@@ -1265,7 +1323,7 @@ def references_gallery(prefix: str = "") -> str:
   <div class="mobile-details-body">
     <section class="reference-gallery" aria-labelledby="reference-gallery-title">
       <h2 id="reference-gallery-title">Referencje</h2>
-      <div class="reference-gallery-grid">{"".join(cards)}</div>
+      {horizontal_photo_strip("".join(cards), "reference-gallery-grid", "Skanowane referencje WOL-BUD")}
     </section>
   </div>
 </details>'''
@@ -1384,11 +1442,6 @@ def locations_page(source_page: dict | None = None) -> str:
       {''.join(cards)}
     </div>
     {source_details}
-    <div class="cta-banner-dark">
-      <span class="eyebrow eyebrow--gold">Potrzebujesz pomocy w doborze?</span>
-      <h3>Zadzwoń do wybranego punktu</h3>
-      <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
-    </div>
   </div>
 </main>'''
     return document(route, "Nasze sklepy i salony | WOL-BUD Tarnów, Radłów", "Adresy salonów sprzedaży WOL-BUD w Tarnowie i Radłowie. Godziny otwarcia, telefony i wskazówki dojazdu.", main)

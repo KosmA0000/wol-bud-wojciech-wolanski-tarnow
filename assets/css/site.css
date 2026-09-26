@@ -268,7 +268,7 @@ p, li, blockquote {
 .hero-frame {
   position: absolute;
   inset: 8px;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
   background: radial-gradient(120% 80% at 50% 8%, #3a352a 0%, rgba(58, 53, 42, 0) 62%),
               linear-gradient(180deg, #26241d 0%, #1a1916 54%, #0d0d0b 100%);
@@ -2594,6 +2594,32 @@ footer {
   align-self: flex-end;
 }
 
+.home-service-item {
+  position: relative;
+}
+
+.home-service-item .home-service-item-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-service-item .home-service-item-title-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.home-service-item:where(:focus-within) {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.home-service-item :is(a, button, input, select, textarea, summary, [tabindex]):not(.home-service-item-title-link) {
+  position: relative;
+  z-index: 2;
+}
+
 
 /* ==========================================================================
    Interactive Product Gallery & Fullscreen Lightbox
@@ -3344,4 +3370,399 @@ body.lightbox-open {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+}
+
+/* Keep the hero-to-trust junction flat and continuous at every viewport. */
+.hero + .trust#ofirmie {
+  margin-top: 0;
+  padding-top: clamp(5rem, 9vw, 9rem);
+  border-radius: 0;
+}
+
+.hero + .trust#ofirmie:focus-visible {
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .hero + .trust#ofirmie {
+    padding-top: 2.5rem;
+  }
+}
+
+/* Keep grid tiles the same height while showing each full photo over a soft fill. */
+.cat-prod-media,
+.subcat-card-media,
+.home-cat-thumb,
+.montage-step-media,
+.home-featured-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  background: #e9e7e3;
+}
+
+.cat-prod-media { aspect-ratio: 16 / 11; }
+.subcat-card-media { aspect-ratio: 16 / 10; }
+.home-cat-thumb { aspect-ratio: 16 / 11; }
+.montage-step-media { aspect-ratio: 4 / 3; }
+.home-featured-media { min-height: 130px; aspect-ratio: 4 / 3; }
+
+.cat-prod-media::before,
+.subcat-card-media::before,
+.home-cat-thumb::before,
+.montage-step-media::before,
+.home-featured-media::before {
+  position: absolute;
+  inset: -12px;
+  z-index: 0;
+  content: "";
+  background-image: var(--frame-image);
+  background-position: center;
+  background-size: cover;
+  filter: blur(12px) brightness(0.82);
+  transform: scale(1.06);
+}
+
+.cat-prod-media img,
+.subcat-card-media img,
+.home-cat-thumb img,
+.montage-step-media img,
+.home-featured-media img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform: none !important;
+}
+
+.home-cat-card,
+.cat-prod-card,
+.subcat-card,
+.montage-step-card,
+.home-featured-product { height: 100%; }
+
+.product-detail-visual {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  margin-inline: auto;
+  padding: 0;
+  aspect-ratio: var(--gallery-ratio, 1.4);
+  overflow: hidden;
+}
+
+.product-detail-visual img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+
+.product-gallery-stage {
+  justify-content: center;
+}
+
+.product-gallery-thumb {
+  flex: 0 0 auto;
+  width: auto;
+  height: 76px;
+  aspect-ratio: var(--gallery-ratio, 1.4);
+}
+
+.product-gallery-thumb img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.photo-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.photo-strip [data-scroll-track] {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.photo-strip-arrow {
+  display: grid;
+  flex: 0 0 38px;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--dark);
+  cursor: pointer;
+}
+
+.photo-strip-arrow:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.photo-strip-arrow[hidden],
+.lightbox-modal[hidden],
+.lightbox-arrow[hidden] {
+  display: none !important;
+}
+
+.montage-step-card:hover .montage-step-media img,
+.home-cat-card:hover .home-cat-thumb img,
+.cat-prod-card:hover .cat-prod-media img,
+.subcat-card:hover .subcat-card-media img {
+  transform: none;
+}
+
+/* Keep gallery counts on one line even when the caption bar gets narrow. */
+.gallery-counter,
+.lightbox-counter {
+  white-space: nowrap;
+}
+
+.lightbox-counter {
+  flex: 0 0 auto;
+}
+
+/* Door product galleries reserve side columns for mobile navigation arrows. */
+@media (max-width: 760px) {
+  .subpage-grid {
+    gap: 1.25rem;
+  }
+
+  .subpage-sidebar {
+    margin-top: 0;
+  }
+
+  .subpage-head,
+  .product-gallery,
+  .product-gallery-stage {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .subpage-head h1 {
+    max-width: 100%;
+    font-size: clamp(1.55rem, 7.4vw, 2.35rem);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    overflow-wrap: anywhere;
+  }
+
+  .product-gallery--door .product-gallery-stage {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: clamp(4px, 2vw, 8px);
+    align-items: center;
+  }
+
+  .product-gallery--door .gallery-nav-arrow {
+    position: relative;
+    inset: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 40px;
+    height: 40px;
+    transform: none;
+    justify-self: center;
+  }
+
+  .product-gallery--door .gallery-nav-arrow:hover {
+    transform: scale(1.06);
+  }
+
+  .product-gallery--door .product-detail-visual {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    justify-self: stretch;
+  }
+
+  .product-gallery--door .product-detail-visual img {
+    min-width: 0;
+  }
+
+  .product-nav-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "prev next" "all all";
+    align-items: stretch;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+  }
+
+  .product-nav-bar > :first-child { grid-area: prev; }
+  .product-nav-bar > :nth-child(2) { grid-area: all; }
+  .product-nav-bar > :last-child { grid-area: next; }
+
+  .product-nav-bar > .pnav-btn {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+  }
+
+  .product-nav-bar > .pnav-btn span {
+    min-width: 0;
+    font-size: clamp(0.82rem, 3.6vw, 0.98rem);
+    overflow-wrap: anywhere;
+  }
+
+  .product-nav-bar > .pnav-btn small {
+    font-size: clamp(0.59rem, 2.7vw, 0.7rem);
+    letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+  }
+
+  .product-nav-bar > .pnav-all {
+    justify-self: center;
+    max-width: 100%;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.product-gallery--door) .lightbox-modal {
+    padding: 12px;
+  }
+
+  body:has(.product-gallery--door) .lightbox-dialog {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: clamp(4px, 2vw, 8px);
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+  }
+
+  body:has(.product-gallery--door) .lightbox-media-wrap {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: calc(100dvh - 110px);
+  }
+
+  body:has(.product-gallery--door) .lightbox-img {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(68dvh, calc(100dvh - 170px));
+  }
+
+  body:has(.product-gallery--door) .lightbox-caption-bar {
+    width: 100%;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+  }
+
+  body:has(.product-gallery--door) .lightbox-caption {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.product-gallery--door) .lightbox-arrow {
+    position: relative;
+    inset: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 40px;
+    height: 40px;
+    transform: none;
+    justify-self: center;
+    align-self: center;
+  }
+
+  body:has(.product-gallery--door) .lightbox-arrow:hover {
+    transform: scale(1.06);
+  }
+
+  .home-featured-product {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .home-featured-media {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 16 / 11;
+    border-radius: 0;
+  }
+
+  .home-featured-media img {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .home-featured-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  .home-featured-copy h4,
+  .home-featured-copy p {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Keep reference-gallery controls visible at rest and distinct on interaction. */
+.reference-gallery .photo-strip-arrow {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--dark);
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.reference-gallery .photo-strip-arrow:disabled {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--dark);
+  opacity: 0.78;
+}
+
+.reference-gallery .photo-strip-arrow:not(:disabled):hover {
+  border-color: var(--dark);
+  background: var(--dark);
+  color: #ffffff;
+}
+
+.reference-gallery .photo-strip-arrow:focus-visible {
+  outline: 3px solid var(--dark);
+  outline-offset: 3px;
 }

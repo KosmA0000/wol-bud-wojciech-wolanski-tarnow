@@ -46,6 +46,20 @@
   applyResponsiveDetails();
   mobileQuery.addEventListener('change', applyResponsiveDetails);
 
+  // Direct links to a service section reveal its full copy without a second tap.
+  const revealAnchoredDisclosure = () => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    let target = null;
+    try { target = document.getElementById(decodeURIComponent(id)); } catch (_) {}
+    const disclosure = target?.matches('details[data-responsive-disclosure]')
+      ? target
+      : target?.querySelector('details[data-responsive-disclosure]');
+    if (disclosure) disclosure.open = true;
+  };
+  window.addEventListener('hashchange', revealAnchoredDisclosure);
+  if (window.location.hash) requestAnimationFrame(revealAnchoredDisclosure);
+
   if (menu && menuButton) {
     const toggleMenu = () => {
       const isOpen = menu.classList.toggle('open');
@@ -182,6 +196,7 @@
   // ==========================================================================
   // 4. Interactive Product Gallery & Fullscreen Lightbox
   // ==========================================================================
+  /* Legacy product-only gallery controller replaced by the shared controller below.
   const gallery = document.querySelector('[data-gallery]');
   const lightboxModal = document.getElementById('lightboxModal');
 
@@ -367,9 +382,240 @@
     }
   }
 
-  // ==========================================================================
+  */
+
+  // ============================================================================
+  // 4. Shared product galleries, image groups, and lightbox
+  // ============================================================================
+  const lightboxModal = document.getElementById('lightboxModal');
+  if (lightboxModal) {
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    const lightboxPrev = lightboxModal.querySelector('[data-lightbox-prev]');
+    const lightboxNext = lightboxModal.querySelector('[data-lightbox-next]');
+    let currentItems = [];
+    let currentIndex = 0;
+    let syncCurrentGallery = null;
+    let closeTimer = 0;
+    let returnFocusTo = null;
+
+    const modalIsOpen = () => lightboxModal.classList.contains('is-open');
+    const showLightboxItem = (index) => {
+      if (!currentItems.length) return;
+      currentIndex = (index + currentItems.length) % currentItems.length;
+      const item = currentItems[currentIndex];
+      lightboxImg.src = item.src;
+      lightboxImg.alt = item.alt || '';
+      lightboxCaption.textContent = item.caption || item.alt || '';
+      lightboxCounter.textContent = `${currentIndex + 1} / ${currentItems.length}`;
+      const hasNeighbors = currentItems.length > 1;
+      lightboxPrev.hidden = !hasNeighbors;
+      lightboxNext.hidden = !hasNeighbors;
+      if (syncCurrentGallery) syncCurrentGallery(currentIndex);
+    };
+
+    const openLightbox = (items, index, syncGallery, focusTarget) => {
+      if (!items.length) return;
+      window.clearTimeout(closeTimer);
+      currentItems = items;
+      syncCurrentGallery = syncGallery || null;
+      returnFocusTo = focusTarget || document.activeElement;
+      lightboxModal.removeAttribute('hidden');
+      lightboxModal.offsetHeight;
+      lightboxModal.classList.add('is-open');
+      document.body.classList.add('lightbox-open');
+      showLightboxItem(index);
+      lightboxModal.querySelector('[data-lightbox-close]')?.focus({ preventScroll: true });
+    };
+
+    const closeLightbox = () => {
+      if (!modalIsOpen()) return;
+      lightboxModal.classList.remove('is-open');
+      document.body.classList.remove('lightbox-open');
+      closeTimer = window.setTimeout(() => {
+        lightboxModal.setAttribute('hidden', '');
+        lightboxImg.removeAttribute('src');
+        syncCurrentGallery = null;
+        returnFocusTo?.focus?.({ preventScroll: true });
+      }, 260);
+    };
+
+    document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+      const mainImg = gallery.querySelector('[data-gallery-main]');
+      const trigger = gallery.querySelector('[data-gallery-trigger]');
+      const previous = gallery.querySelector('[data-gallery-prev]');
+      const next = gallery.querySelector('[data-gallery-next]');
+      const counter = gallery.querySelector('[data-gallery-curr]');
+      const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumbs] .product-gallery-thumb'));
+      const items = thumbs.map((thumb) => {
+        const image = thumb.querySelector('img');
+        const alt = image?.alt || mainImg?.alt || '';
+        return {
+          src: thumb.dataset.src || image?.currentSrc || image?.src || '',
+          alt,
+          ratio: thumb.dataset.ratio || '1.4',
+          caption: alt
+        };
+      }).filter((item) => item.src);
+
+      if (!items.length && mainImg?.src) {
+        const alt = mainImg.alt || '';
+        items.push({ src: mainImg.src, alt, ratio: '1.4', caption: alt });
+      }
+
+      let index = 0;
+      const sizeStageFrame = (item) => {
+        if (!trigger || !item) return;
+        const ratio = Math.max(0.2, Number.parseFloat(item.ratio) || 1.4);
+        const availableWidth = gallery.clientWidth || window.innerWidth;
+        const maxHeight = Math.min(window.innerHeight * 0.72, 680);
+        const width = Math.max(1, Math.min(availableWidth, maxHeight * ratio));
+        const height = width / ratio;
+        const stage = gallery.querySelector('.product-gallery-stage');
+        if (stage) {
+          stage.style.width = `${width}px`;
+          stage.style.marginInline = 'auto';
+        }
+        trigger.style.width = `${width}px`;
+        trigger.style.height = `${height}px`;
+        trigger.style.setProperty('--gallery-ratio', String(ratio));
+      };
+      const showGalleryItem = (nextIndex) => {
+        if (!items.length) return;
+        index = (nextIndex + items.length) % items.length;
+        const item = items[index];
+        mainImg.src = item.src;
+        mainImg.alt = item.alt;
+        sizeStageFrame(item);
+        if (counter) counter.textContent = String(index + 1);
+        thumbs.forEach((thumb, thumbIndex) => {
+          const active = thumbIndex === index;
+          thumb.classList.toggle('is-active', active);
+          thumb.setAttribute('aria-current', String(active));
+          if (active) thumb.scrollIntoView({ behavior: reducedMotionQuery.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+        });
+      };
+
+      thumbs.forEach((thumb, thumbIndex) => {
+        thumb.addEventListener('click', () => showGalleryItem(thumbIndex));
+      });
+      previous?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showGalleryItem(index - 1);
+      });
+      next?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showGalleryItem(index + 1);
+      });
+      trigger?.addEventListener('click', () => {
+        openLightbox(items, index, showGalleryItem, trigger);
+      });
+      gallery.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          event.preventDefault();
+          showGalleryItem(index + (event.key === 'ArrowRight' ? 1 : -1));
+        }
+      });
+      window.addEventListener('resize', () => sizeStageFrame(items[index]), { passive: true });
+      showGalleryItem(0);
+    });
+
+    const lightboxTriggers = Array.from(document.querySelectorAll('[data-lightbox-trigger][data-lightbox-src]'));
+    const itemForTrigger = (trigger) => {
+      const image = trigger.matches('img') ? trigger : trigger.querySelector('img');
+      const src = trigger.getAttribute('data-lightbox-src') || image?.currentSrc || image?.src || '';
+      const alt = image?.alt || trigger.getAttribute('aria-label') || '';
+      return { src, alt, caption: alt };
+    };
+
+    lightboxTriggers.forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        const group = trigger.getAttribute('data-lightbox-group');
+        const groupTriggers = group
+          ? lightboxTriggers.filter((candidate) => candidate.getAttribute('data-lightbox-group') === group)
+          : [trigger];
+        const items = groupTriggers.map(itemForTrigger).filter((item) => item.src);
+        const index = Math.max(0, groupTriggers.indexOf(trigger));
+        event.preventDefault();
+        event.stopPropagation();
+        openLightbox(items, index, null, trigger);
+      });
+    });
+
+    lightboxPrev?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      showLightboxItem(currentIndex - 1);
+    });
+    lightboxNext?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      showLightboxItem(currentIndex + 1);
+    });
+    lightboxModal.querySelectorAll('[data-lightbox-close]').forEach((element) => {
+      element.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeLightbox();
+      });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (!modalIsOpen()) return;
+      if (event.key === 'Escape') closeLightbox();
+      else if (event.key === 'ArrowLeft') showLightboxItem(currentIndex - 1);
+      else if (event.key === 'ArrowRight') showLightboxItem(currentIndex + 1);
+    });
+
+    let touchStartX = 0;
+    lightboxModal.addEventListener('touchstart', (event) => {
+      touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+    lightboxModal.addEventListener('touchend', (event) => {
+      const distance = touchStartX - event.changedTouches[0].screenX;
+      if (distance > 50) showLightboxItem(currentIndex + 1);
+      else if (distance < -50) showLightboxItem(currentIndex - 1);
+    }, { passive: true });
+  }
+
+  const filledImageFrames = document.querySelectorAll('.cat-prod-media, .subcat-card-media, .home-cat-thumb, .montage-step-media, .home-featured-media');
+  filledImageFrames.forEach((frame) => {
+    const image = frame.querySelector('img');
+    if (!image) return;
+    const applyFrameImage = () => {
+      const src = image.currentSrc || image.src;
+      if (src) frame.style.setProperty('--frame-image', `url("${src}")`);
+    };
+    applyFrameImage();
+    image.addEventListener('load', applyFrameImage);
+  });
+
+  // Horizontal thumbnail and photo strips share the same arrow behavior.
+  document.querySelectorAll('[data-scroll-gallery]').forEach((strip) => {
+    const track = strip.querySelector('[data-scroll-track]');
+    const previous = strip.querySelector('[data-scroll-prev]');
+    const next = strip.querySelector('[data-scroll-next]');
+    if (!track || !previous || !next) return;
+
+    const refreshControls = () => {
+      const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+      const canScroll = maxScroll > 2;
+      previous.hidden = !canScroll;
+      next.hidden = !canScroll;
+      previous.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= maxScroll - 2;
+      previous.setAttribute('aria-disabled', String(previous.disabled));
+      next.setAttribute('aria-disabled', String(next.disabled));
+    };
+    const scrollStep = () => Math.max(track.clientWidth * 0.8, track.querySelector(':scope > *')?.getBoundingClientRect().width || 0);
+
+    previous.addEventListener('click', () => track.scrollBy({ left: -scrollStep(), behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' }));
+    next.addEventListener('click', () => track.scrollBy({ left: scrollStep(), behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' }));
+    track.addEventListener('scroll', refreshControls, { passive: true });
+    window.addEventListener('resize', refreshControls, { passive: true });
+    refreshControls();
+  });
+
+  // ============================================================================
   // 5. Floating "Do góry" (Back to Top) Button
-  // ==========================================================================
+  // ============================================================================
   const scrollTopBtn = document.getElementById('scrollTopBtn');
   if (scrollTopBtn) {
     window.addEventListener('scroll', () => {
