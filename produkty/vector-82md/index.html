@@ -4,9 +4,9 @@
 <title>Vector 82MD | WOL-BUD Tarnów</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/site.css"><script defer src="../../assets/js/site.js"></script></head>
+<link rel="stylesheet" href="../../assets/css/site.css"><link rel="stylesheet" href="../../assets/visual-refinements.css"><script defer src="../../assets/js/site.js"></script></head>
 <body>
-<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><a href="../../oferta/">Oferta</a><a href="../../uslugi/">Usługi</a><a href="../../o-firmie/">O firmie</a><a href="../../nasze-sklepy/">Nasze sklepy</a><a href="../../kontakt/">Kontakt</a><a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="../../index.html">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>
+<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button><a href="../../index.html" data-desktop-href="../../index.html" data-mobile-home-href="../../index.html#start">Strona główna</a><a href="../../oferta/" data-desktop-href="../../oferta/" data-mobile-home-href="../../index.html#oferta">Oferta</a><a href="../../uslugi/" data-desktop-href="../../uslugi/" data-mobile-home-href="../../index.html#uslugi">Usługi</a><a href="../../o-firmie/" data-desktop-href="../../o-firmie/" data-mobile-home-href="../../index.html#ofirmie">O firmie</a><a href="../../nasze-sklepy/" data-desktop-href="../../nasze-sklepy/" data-mobile-home-href="../../index.html#nasze-sklepy">Nasze sklepy</a><a href="../../kontakt/" data-desktop-href="../../kontakt/" data-mobile-home-href="../../index.html#kontakt">Kontakt</a><a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="../../index.html">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>
 <main id="main" class="page-main">
   <div class="wrap">
     <div class="page-nav-bar">
@@ -27,34 +27,40 @@
     <button type="button" class="gallery-nav-arrow gallery-prev" data-gallery-prev aria-label="Poprzednie zdjęcie">
   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
 </button>
-    <div class="product-detail-visual" data-gallery-trigger title="Kliknij, aby powiększyć zdjęcie">
-      <img src="../../public/assets/scraped/products/vector-winchester-207x250.png" alt="Vector 82MD" id="mainGalleryImg" data-gallery-main decoding="async">
+    <button type="button" class="product-detail-visual" data-gallery-trigger aria-haspopup="dialog" aria-label="Powiększ zdjęcie produktu: Vector 82MD">
+      <img src="../../public/assets/source/products/gallery/vector-82md/01-source.png" alt="Vector 82MD" id="mainGalleryImg" data-gallery-main decoding="async">
       <div class="gallery-zoom-badge">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
         <span>Powiększ</span>
       </div>
       <div class="gallery-counter"><span data-gallery-curr>1</span> / <span>3</span></div>
-    </div>
+    </button>
     <button type="button" class="gallery-nav-arrow gallery-next" data-gallery-next aria-label="Następne zdjęcie">
   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
 </button>
   </div>
-  <div class="product-gallery-row" data-gallery-thumbs><button type="button" class="product-gallery-thumb is-active" data-index="0" data-src="../../public/assets/scraped/products/vector-winchester-207x250.png" aria-label="Zdjęcie 1 z 3">
-  <img src="../../public/assets/scraped/products/vector-winchester-207x250.png" alt="Vector 82MD">
-</button><button type="button" class="product-gallery-thumb" data-index="1" data-src="../../public/assets/scraped/products/vector-orzech-34x40.png" aria-label="Zdjęcie 2 z 3">
-  <img src="../../public/assets/scraped/products/vector-orzech-34x40.png" alt="Vector 82MD">
-</button><button type="button" class="product-gallery-thumb" data-index="2" data-src="../../public/assets/scraped/products/klasyfikacja-wla_ciwo_ci-vector-28x40.jpg" aria-label="Zdjęcie 3 z 3">
-  <img src="../../public/assets/scraped/products/klasyfikacja-wla_ciwo_ci-vector-28x40.jpg" alt="Vector 82MD">
+  <div class="photo-strip" data-scroll-gallery aria-label="Galeria zdjęć: Vector 82MD">
+  <button type="button" class="photo-strip-arrow" data-scroll-prev aria-label="Poprzednie zdjęcie" aria-disabled="true">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <div class="product-gallery-row" data-scroll-track tabindex="0" role="region" aria-label="Galeria zdjęć: Vector 82MD" data-gallery-thumbs><button type="button" class="product-gallery-thumb is-active" data-index="0" data-src="../../public/assets/source/products/gallery/vector-82md/01-source.png" data-ratio="0.82667" style="--gallery-ratio: 0.82667;" aria-label="Pokaż zdjęcie 1 z 3: Vector 82MD" aria-current="true">
+  <img src="../../public/assets/scraped/products/vector-winchester-207x250.webp" alt="Vector 82MD" loading="lazy" decoding="async">
+</button><button type="button" class="product-gallery-thumb" data-index="1" data-src="../../public/assets/source/products/gallery/vector-82md/02-source.png" data-ratio="0.86333" style="--gallery-ratio: 0.86333;" aria-label="Pokaż zdjęcie 2 z 3: Vector 82MD" aria-current="false">
+  <img src="../../public/assets/scraped/products/vector-orzech-34x40.webp" alt="Vector 82MD" loading="lazy" decoding="async">
+</button><button type="button" class="product-gallery-thumb" data-index="2" data-src="../../public/assets/source/products/gallery/vector-82md/03-source.jpg" data-ratio="0.70667" style="--gallery-ratio: 0.70667;" aria-label="Pokaż zdjęcie 3 z 3: Vector 82MD" aria-current="false">
+  <img src="../../public/assets/source/products/gallery/vector-82md/03-thumbnail.jpg" alt="Vector 82MD" loading="lazy" decoding="async">
 </button></div>
+  <button type="button" class="photo-strip-arrow" data-scroll-next aria-label="Następne zdjęcie" aria-disabled="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
 </div>
-        <div class="article-copy">
-          <p>Okna Domel Vector stanowią ciekawe połączenie klasycznego wyglądu, wyśrubowanych parametrów z bogactwem kolorów i nietypowych rozwiązań konstrukcyjnych.</p><p>Najważniejsze informacje na temat produktu:</p>
-        </div>
-        <div class="product-specs-box">
-  <h3>Parametry techniczne i charakterystyka</h3>
-  <ul class="specs-list"><li><span class="chk">✓</span><span>7-ciokomorowy w ościeżnicy i 6-ciokomorowy w skrzydle profil Veka Softline o głębokości 82 mm</span></li><li><span class="chk">✓</span><span>system trzech uszczelek z dodatkową uszczelką środkową – uszczelki wykonane z tworzywa EPDM</span></li><li><span class="chk">✓</span><span>wzmocnienie stalowe zamknięte o grubości 1,5 mm w ramie oraz 2 mm w skrzydle</span></li><li><span class="chk">✓</span><span>możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach</span></li><li><span class="chk">✓</span><span>okucia Winkhaus Activ Pilot</span></li><li><span class="chk">✓</span><span>pakiet 3-szybowy o grubości 48 mm – 4/18/4/18/4 z ciepłymi ramkami międzyszybowym</span></li><li><span class="chk">✓</span><span>możliwość wykonania rdzenia okna w czterech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy, brązowy i szary</span></li><li><span class="chk">✓</span><span>dla okien w jasnych okleinach drewnopodobnych obustronnych jak Złoty Dąb czy Winchester uszczelki okienne wykonane są w kolorze karmelowym</span></li></ul>
 </div>
-        
+        <details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
+  <summary>Opis, zalety i parametry produktu</summary>
+  <div class="mobile-details-body source-content-body"><h2>Opis</h2><p>Okna Domel Vector stanowią ciekawe połączenie klasycznego wyglądu, wyśrubowanych parametrów z bogactwem kolorów i nietypowych rozwiązań konstrukcyjnych.</p><p>Najważniejsze informacje na temat produktu:</p><ul class="source-list"><li>7-ciokomorowy w ościeżnicy i 6-ciokomorowy w skrzydle profil Veka Softline o głębokości 82 mm</li><li>system trzech uszczelek z dodatkową uszczelką środkową – uszczelki wykonane z tworzywa EPDM</li><li>wzmocnienie stalowe zamknięte o grubości 1,5 mm w ramie oraz 2 mm w skrzydle</li><li>możliwość wklejania do skrzydła pakietu szybowego przy pomocy opatentowanej taśmy STV dla jeszcze lepszej statyki okien – możliwość wykonania skrzydeł o bardzo dużych wymiarach</li><li>okucia Winkhaus Activ Pilot</li><li>pakiet 3-szybowy o grubości 48 mm – 4/18/4/18/4 z ciepłymi ramkami międzyszybowym</li><li>możliwość wykonania rdzenia okna w czterech kolorach dopasowanych do kolorystyki okien – biały, jasnobrązowy, brązowy i szary</li><li>dla okien w jasnych okleinach drewnopodobnych obustronnych jak Złoty Dąb czy Winchester uszczelki okienne wykonane są w kolorze karmelowym</li></ul><h2>Parametry</h2><ul class="source-list"><li>współczynnik przenikania ciepła dla całego okna referencyjnego o szerokości 123 cm i wysokości 148 cm – Uw = 0,77</li><li>współczynnik przenikania ciepła dla pakietu 3-szybowego – Ug = 0,50</li><li>współczynnik przenikania ciepła dla profilu – Uf = 1,0</li><li>klasa przepuszczalności powietrza – najwyższa 4 klasa szczelności okna</li><li>odporność na obciążenie wiatrem dla okna dwuskrzydłowego o wymiarach 150 cm x 150 cm – C5 co oznacza, że ugięcie profilu okna o 5 mm nastąpi dopiero przy prędkości wiatru powyżej 205 km/h</li><li>wodoszczelność dla okna dwuskrzydłowego o wymiarach 150 cm x 150 cm – E1350 co oznacza, że przeciek wody nastąpi dopiero po 5 minutach ciągłego działania deszczu i wiatru o prędkości powyżej 168 km/h</li></ul></div>
+</details>
+
+
         <nav class="product-nav-bar" aria-label="Nawigacja między produktami">
   <a class="pnav-btn pnav-prev" href="../../produkty/energetic-83md/">
   <small>← Poprzedni produkt</small>
@@ -69,7 +75,7 @@
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Zainteresował Cię ten produkt?</span>
           <h3>Zamów wycenę lub bezpłatny pomiar</h3>
-          <p>Skontaktuj się z naszymi doradcami. Pomożemy dobrać optymalną konfigurację dla Twojego budynku.</p>
+          <p>Bezpłatny i niewiążący pomiar, doradztwo i wycena są dostępne na budowie lub w naszych salonach sprzedaży.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
         </div>
       </div>

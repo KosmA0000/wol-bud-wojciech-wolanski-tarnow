@@ -7,7 +7,7 @@ Features:
 - Smart breadcrumbs and 'Wróć' back buttons returning directly to originating homepage section (not hero)
 - Individual 'Nawiguj w Google Maps ↗' buttons for every salon address
 - Floating 'Do góry' (Back to Top) scroll button
-- 100% authentic WOL-BUD content & verified 5-star Google reviews
+- Source-backed WOL-BUD content
 """
 
 from __future__ import annotations
@@ -17,13 +17,12 @@ import json
 import re
 import unicodedata
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRAPED_DATA_FILE = ROOT / "docs" / "full_scraped_data.json"
 SOURCE_DATA_FILE = ROOT / "docs" / "source-content.json"
-GOOGLE_REVIEWS_FILE = ROOT.parent / "zrodla" / "google.txt"
-
-GOOGLE_PROFILE = "https://www.google.com/maps/place/WOL-BUD+Wojciech+Wola%C5%84ski/@50.018426,20.948448,17z/data=!4m8!3m7!1s0x473d849d210e031b:0x4f5e253fc57bd81d!8m2!3d50.018426!4d20.948448!9m1!1b1!16s%2Fg%2F1pv5tkfkh?hl=pl"
+PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.json"
 
 # Navigation links for specific salon locations
 MAP_LINKS = {
@@ -34,85 +33,32 @@ MAP_LINKS = {
 
 # Primary categories displayed in menus and catalog
 PRIMARY_CATEGORIES = [
-    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/public/assets/scraped/thumbs/infinity-passive-130x163.jpg", "Okna energooszczędne i pasywne Gealan oraz Veka"),
-    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/public/assets/source/products/drzwi-zewnetrzne-wiked.jpg", "Drzwi stalowe Wikęd o wysokiej izolacyjności i bezpieczeństwie"),
-    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.png", "Drzwi ramiakowe okleinowane Intenso, Erkado, DRE"),
-    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/public/assets/scraped/thumbs/brama-garazowa-130x173.jpg", "Bramy segmentowe, rolowane i uchylne z automatyką"),
-    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/public/assets/scraped/thumbs/alu3-130x92.jpg", "Okna, drzwi, fasady szklane oraz ogrody zimowe"),
-    ("Rolety", "/kategorie/rolety/", "/public/assets/source/products/roleta-dzien-noc.jpg", "Rolety zewnętrzne adaptacyjne, podtynkowe, wewnętrzne i plisy"),
-    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/public/assets/scraped/thumbs/Botticino-130x86.jpg", "Aglomarmur, granit, marmur naturalny, parapety PCV i stalowe"),
-    ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.jpg", "Moskitiery ramkowe okienne i otwierane drzwiowe"),
+    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/public/assets/source/products/okno-infinity-passive-83md.webp", ""),
+    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/public/assets/source/products/drzwi-zewnetrzne-wiked.webp", ""),
+    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
+    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/public/assets/source/products/brama-segmentowa.webp", ""),
+    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/public/assets/scraped/products/alu3-306x217.webp", ""),
+    ("Rolety", "/kategorie/rolety/", "/public/assets/source/products/roleta-dzien-noc.webp", ""),
+    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/public/assets/scraped/products/Botticino-306x204.webp", ""),
+    ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.webp", ""),
 ]
 
 # Subcategories definition for parent categories
 SUBCATEGORIES = {
     "/kategorie/parapety-blaty/": [
-        ("Aglomarmur", "/kategorie/aglomarmur/", "/public/assets/scraped/thumbs/Botticino-130x86.jpg", "16 odmian konglomeratu marmurowego na parapety i blaty wewnętrzne.", "16 produktów"),
-        ("Granit", "/kategorie/granit/", "/public/assets/scraped/thumbs/Baltic-Brown-130x86.jpg", "10 odmian naturalnego granitu o najwyższej trwałości na zewnątrz i do wnętrz.", "10 produktów"),
-        ("Marmur", "/kategorie/marmur/", "/public/assets/scraped/thumbs/Crema-Marphil-130x86.jpg", "7 odmian szlachetnego marmuru naturalnego o unikalnej estetyce.", "7 produktów"),
-        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/public/assets/scraped/thumbs/PCV-Bia_y-130x86.jpg", "Parapety komorowe PCV oraz nakładki renowacyjne na stare parapety.", "2 produkty"),
-        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/public/assets/scraped/thumbs/RAL-8019-12-mm1-130x86.jpg", "Parapety zewnętrzne standard oraz zaokrąglona linia soft.", "4 produkty"),
+        ("Aglomarmur", "/kategorie/aglomarmur/", "/public/assets/scraped/thumbs/Botticino-130x86.webp", "", ""),
+        ("Granit", "/kategorie/granit/", "/public/assets/scraped/thumbs/Baltic-Brown-130x86.webp", "", ""),
+        ("Marmur", "/kategorie/marmur/", "/public/assets/scraped/thumbs/Crema-Marphil-130x86.webp", "", ""),
+        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/public/assets/scraped/thumbs/PCV-Bia_y-130x86.webp", "", ""),
+        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/public/assets/scraped/thumbs/RAL-8019-12-mm1-130x86.webp", "", ""),
     ],
     "/kategorie/rolety/": [
-        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/public/assets/scraped/thumbs/dzien-noc-2-130x86.jpg", "Rolety materiałowe w kasetach ALU i PCV, dzień-noc, dachowe i mini.", "8 produktów"),
-        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/public/assets/source/products/roleta-dzien-noc.jpg", "Rolety zewnętrzne w systemie adaptacyjnym oraz podtynkowym Integro.", "2 produkty"),
-        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/public/assets/source/products/zaluzje-drewniane.jpg", "Żaluzje drewniane, żaluzje aluminiowe poziome oraz plisy okienne.", "3 produkty"),
-        ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.jpg", "Siatki przeciw owadom: ramkowe okienne i otwierane drzwiowe.", "2 produkty"),
+        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/public/assets/scraped/thumbs/dzien-noc-2-130x86.webp", "", ""),
+        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/public/assets/source/products/roleta-dzien-noc.webp", "", ""),
+        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/public/assets/source/products/zaluzje-drewniane.webp", "", ""),
+        ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.webp", "", ""),
     ],
 }
-
-# Real Google reviews from Google Business profile
-REAL_REVIEWS = [
-    {
-        "author": "Damian Machalski",
-        "rating": 5,
-        "date": "rok temu",
-        "text": "Okna bardzo dobrej jakości. Fachowa obsługa, potrafią doradzić, montaż bez żadnych problemów.",
-    },
-    {
-        "author": "Stanislaw Tyrka",
-        "rating": 5,
-        "date": "miesiąc temu",
-        "text": "Firma z wieloletnim doświadczeniem i super ekipa. Polecam serdecznie",
-    },
-    {
-        "author": "Martyna Olszowka",
-        "rating": 5,
-        "date": "rok temu",
-        "text": "Serdecznie polecam ta firmę, dokładne wykonanie ,pełna profesjonalnosc . Jestem zadowolona montażem okiem polecam każdemu .",
-    },
-    {
-        "author": "Justyna S",
-        "rating": 5,
-        "date": "rok temu",
-        "text": "Polecam firmę Wol-bud. Zamawiałam okna, rolety, drzwi i bramę wszystko dostarczone na czas. Duży wybór drzwi, konkurencyjne ceny, bardzo dobry kontakt z klientem Pan Robert dołożył starań żeby jak najlepiej doradzić. Zgłaszałam drobne usterki i wszystko zostało wyregulowane i naprawione. Profesjonalny montaż 🙂",
-    },
-    {
-        "author": "Amor Patriae Nostra Lex",
-        "rating": 5,
-        "date": "rok temu",
-        "text": "Serdecznie polecam firmę , wykonali panowie u nas okna drzwi rolety, wszystko na pełnym profesjonalizmie 👏🤝 trzymają porządek na miejscu pracy, punktualni i kultura na pełnym poziomie 💪 panowie jechali do nas 150km na montaż 🙈 ale montaż i kontakt wzorowy!…",
-    },
-    {
-        "author": "Andrzej Kozlowski",
-        "rating": 5,
-        "date": "6 lat temu",
-        "text": "Firma i jej pracownicy z profesjonalnym podejściem do klienta i wykonywanych usług ! Wszystko zgodnie z zamówieniem i umową. Punktualnie i dokładnie wykonane. Przed podpisaniem umowy fachowe porady. Polecam.",
-    },
-    {
-        "author": "Beata Grenda",
-        "rating": 5,
-        "date": "6 lat temu",
-        "text": "Firma Wol-Bud fachowa obsługa i doradztwo na najwyższym poziomie, sprawny, szybki i terminowy montaż. Wystawiamy wiarygodny komentarz po 6 latach użytkowania od montażu. Okna po 6 latach od montażu szczelne i pracują bez problemów ,nie wspominając o bramie garażowej, roletach zewnętrznych ,drzwiach zewnętrznych i wewnętrznych które również zakupiliśmy w firmie Wol-Bud. Serwis na najwyższym poziomie w razie potrzeby. Z czystym sumieniem polecamy firmę Wol-Bud oraz wyroby budowlane które polecają i montują.",
-    },
-    {
-        "author": "Petr Zmuda (petr)",
-        "rating": 5,
-        "date": "4 lata temu",
-        "text": "Polecam. Profesjonalne podejście do tematu. Bardzo szybka reakcja na zgłoszenie zaciętej bramy garażowej. Serwis był w 20 min od zgłoszenia. Trudno dostępne części załatwione błyskawicznie.",
-    },
-]
-
 
 def esc(value: str) -> str:
     return html.escape(str(value or ""), quote=True)
@@ -168,17 +114,326 @@ def url_for(path: str, prefix: str) -> str:
     return f"{prefix}{path}"
 
 
+def source_route(page: dict) -> str:
+    path = urlsplit(page.get("url", "")).path or "/"
+    return route_url(path)
+
+
+def source_page_index(source_content: dict) -> dict:
+    pages = {}
+    for page in source_content.get("pages", []):
+        if page.get("httpStatus") != 200 or page.get("captureStatus") != "captured":
+            continue
+        pages.setdefault(source_route(page), page)
+    return pages
+
+
+def source_page_title(page: dict) -> str:
+    for block in page.get("blocks", []):
+        if block.get("type") == "heading" and block.get("level") == 1:
+            return block.get("text", "").strip()
+    return page.get("title", "WOL-BUD")
+
+
+def source_display_text(value: str) -> str:
+    value = str(value or "")
+    value = value.replace("działa już od 25 lat", "działa od 1995 roku")
+    value = value.replace("zajmujemy się już od 25 lat", "zajmujemy się od 1995 roku")
+    value = value.replace("25-letnie doświadczenie w branży okien i drzwi", "doświadczenie w branży okien i drzwi od 1995 roku")
+    return value
+
+
+def source_body_blocks(page: dict) -> list:
+    blocks = page.get("blocks", [])
+    title_index = next(
+        (i for i, block in enumerate(blocks) if block.get("type") == "heading" and block.get("level") == 1),
+        -1,
+    )
+    body = blocks[title_index + 1:] if title_index >= 0 else blocks[:]
+
+    # The capture keeps the original page body, followed by the site's repeated offer footer.
+    for i, block in enumerate(body):
+        if block.get("type") != "heading" or normalize(block.get("text", "")) != "oferta":
+            continue
+        following = body[i + 1:i + 3]
+        if any(
+            next_block.get("type") == "heading"
+            and normalize(next_block.get("text", "")) == "zobacz nasza oferte"
+            for next_block in following
+        ):
+            body = body[:i]
+            break
+    if urlsplit(page.get("url", "")).path.rstrip("/") == "/o-firmie":
+        body = [dict(block) for block in body]
+        for i, block in enumerate(body):
+            if block.get("type") != "list" or block.get("depth") != 1:
+                continue
+            items = list(block.get("items", []))
+            for item_index, item in enumerate(items):
+                match = re.match(r"(Uczciwość wobec Klienta na każdym etapie rozmów):\s*(szczegółowe doradztwo i przejrzyste przedstawienie oferty)", item, re.IGNORECASE)
+                if not match:
+                    continue
+                items[item_index] = match.group(1) + ":"
+                block["items"] = items
+                nested = next(
+                    (next_block for next_block in body[i + 1:] if next_block.get("type") == "list"),
+                    None,
+                )
+                if nested and int(nested.get("depth", 1) or 1) == 2:
+                    nested["items"] = [match.group(2), *nested.get("items", [])]
+                break
+    return body
+
+
+def render_source_list(node: dict) -> str:
+    tag = "ol" if node.get("listType") == "ordered" else "ul"
+    items = []
+    for item in node.get("items", []):
+        children = "".join(render_source_list(child) for child in item.get("children", []))
+        items.append(f"<li>{esc(source_display_text(item.get('text', '')))}{children}</li>")
+    return f'<{tag} class="source-list">{"".join(items)}</{tag}>'
+
+
+def render_source_blocks(blocks: list, prefix: str = "", anchor_map: dict | None = None) -> str:
+    rendered = []
+    roots = []
+    stack = []
+
+    def flush_lists() -> None:
+        if roots:
+            rendered.extend(render_source_list(root) for root in roots)
+            roots.clear()
+        stack.clear()
+
+    for block in blocks:
+        block_type = block.get("type")
+        if block_type == "list":
+            items = [{"text": item, "children": []} for item in block.get("items", [])]
+            if not items:
+                continue
+            depth = max(1, int(block.get("depth", 1) or 1))
+            node = {"listType": block.get("listType"), "items": items}
+            if depth == 1 and stack and len(stack) > 1:
+                stack[0]["items"].extend(items)
+                stack[:] = [stack[0]]
+                continue
+            if depth == 1 or not stack:
+                roots.append(node)
+                stack[:] = [node]
+                continue
+            parent_depth = min(depth - 2, len(stack) - 1)
+            parent = stack[parent_depth]
+            parent["items"][-1]["children"].append(node)
+            stack[:] = stack[:parent_depth + 1] + [node]
+            continue
+
+        flush_lists()
+        if block_type == "heading":
+            text = source_display_text(block.get("text", "").strip())
+            level = min(4, max(2, int(block.get("level", 2) or 2)))
+            heading_id = (anchor_map or {}).get(normalize(text), "")
+            id_attr = f' id="{esc(heading_id)}"' if heading_id else ""
+            rendered.append(f"<h{level}{id_attr}>{esc(text)}</h{level}>")
+        elif block_type == "paragraph":
+            text = source_display_text(block.get("text", "").strip())
+            if normalize(text) in {"opis", "parametry", "zalety", "cechy", "dane techniczne"}:
+                rendered.append(f"<h2>{esc(text)}</h2>")
+            elif text:
+                rendered.append(f"<p>{esc(text).replace(chr(10), '<br>')}</p>")
+        elif block_type == "table":
+            headers = block.get("headers", [])
+            rows = block.get("rows", [])
+            head_html = "".join(f"<th scope=\"col\">{esc(source_display_text(cell))}</th>" for cell in headers)
+            body_html = "".join(
+                "<tr>" + "".join(f"<td>{esc(source_display_text(cell))}</td>" for cell in row) + "</tr>"
+                for row in rows
+            )
+            rendered.append(
+                f'<div class="source-table-scroll"><table><thead><tr>{head_html}</tr></thead><tbody>{body_html}</tbody></table></div>'
+            )
+        elif block_type == "image":
+            src = url_for(block.get("src", ""), prefix)
+            alt = esc(block.get("alt", ""))
+            rendered.append(f'<figure class="source-image"><img src="{esc(src)}" alt="{alt}" loading="lazy" decoding="async"></figure>')
+
+    flush_lists()
+    return "".join(rendered)
+
+
+def source_content_panel(page: dict | None, prefix: str = "", summary: str = "Pełny opis źródłowy", anchor_map: dict | None = None, anchor_id: str | None = None) -> str:
+    if not page:
+        return ""
+    body = render_source_blocks(source_body_blocks(page), prefix, anchor_map)
+    if not body:
+        return ""
+    id_attr = f' id="{esc(anchor_id)}"' if anchor_id else ""
+    return f'''<details class="mobile-details source-content-disclosure"{id_attr} open data-responsive-disclosure>
+  <summary>{esc(summary)}</summary>
+  <div class="mobile-details-body source-content-body">{body}</div>
+</details>'''
+
+
+def source_first_sentence(value: str) -> str:
+    value = source_display_text(value).strip()
+    match = re.search(r"^(.+?[.!?])(?:\s|$)", value)
+    return match.group(1) if match else value
+
+
+def source_teaser(page: dict | None) -> str:
+    if not page:
+        return ""
+    for block in source_body_blocks(page):
+        if block.get("type") == "paragraph" and block.get("text", "").strip():
+            return source_first_sentence(block["text"])
+    for block in source_body_blocks(page):
+        if block.get("type") == "list" and block.get("items"):
+            return source_first_sentence(block["items"][0])
+    return ""
+
+
+def source_service_sections(page: dict | None) -> list:
+    if not page:
+        return []
+    sections = []
+    current = None
+    for block in source_body_blocks(page):
+        if block.get("type") == "heading" and int(block.get("level", 2) or 2) == 2:
+            if current:
+                sections.append(current)
+            current = {"title": block.get("text", ""), "blocks": []}
+        elif current:
+            current["blocks"].append(block)
+    if current:
+        sections.append(current)
+    return sections
+
+
+_image_dimension_cache: dict[str, tuple[int, int] | None] = {}
+_product_gallery_source_map: dict | None = None
+
+
+def image_dimensions(image_path: str) -> tuple[int, int] | None:
+    if image_path in _image_dimension_cache:
+        return _image_dimension_cache[image_path]
+    path = ROOT / image_path.lstrip("/")
+    size_match = re.search(r"(?:[-_])(\d{1,4})x(\d{1,4})(?=\.[^.]+$)", path.name, re.IGNORECASE)
+    if size_match:
+        dimensions = (int(size_match.group(1)), int(size_match.group(2)))
+    else:
+        try:
+            from PIL import Image
+
+            with Image.open(path) as image:
+                dimensions = image.size
+        except Exception:
+            dimensions = None
+    _image_dimension_cache[image_path] = dimensions
+    return dimensions
+
+
+def horizontal_photo_strip(content: str, track_class: str, label: str, track_attributes: str = "") -> str:
+    return f'''<div class="photo-strip" data-scroll-gallery aria-label="{esc(label)}">
+  <button type="button" class="photo-strip-arrow" data-scroll-prev aria-label="Poprzednie zdjęcie" aria-disabled="true">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <div class="{track_class}" data-scroll-track tabindex="0" role="region" aria-label="{esc(label)}" {track_attributes}>{content}</div>
+  <button type="button" class="photo-strip-arrow" data-scroll-next aria-label="Następne zdjęcie" aria-disabled="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+</div>'''
+
+
+def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
+    """Use every original product-gallery item, paired with its source thumbnail."""
+    global _product_gallery_source_map
+    if _product_gallery_source_map is None:
+        try:
+            _product_gallery_source_map = json.loads(PRODUCT_GALLERY_SOURCE_MAP_FILE.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            _product_gallery_source_map = {}
+
+    source_page = _product_gallery_source_map.get("pages", {}).get(route, {})
+    source_items = source_page.get("items", [])
+    if source_items:
+        gallery_images = []
+        gallery_thumbnails = []
+        for item in source_items:
+            image = item.get("image", "")
+            thumbnail = item.get("thumbnail", "")
+            local_image_exists = bool(image and not image.startswith(("http://", "https://")) and (ROOT / image.lstrip("/")).is_file())
+            local_thumbnail_exists = bool(thumbnail and not thumbnail.startswith(("http://", "https://")) and (ROOT / thumbnail.lstrip("/")).is_file())
+            if (
+                item.get("imageStatus") == "original-fetch-failed"
+                and item.get("thumbnailStatus") == "source-thumb-fetch-failed"
+                and not local_image_exists
+                and not local_thumbnail_exists
+            ):
+                # Both authentic source files are gone, so do not emit a broken image.
+                continue
+            image_exists = bool(image and (image.startswith("http://") or image.startswith("https://") or (ROOT / image.lstrip("/")).is_file()))
+            thumbnail_exists = bool(thumbnail and (thumbnail.startswith("http://") or thumbnail.startswith("https://") or (ROOT / thumbnail.lstrip("/")).is_file()))
+            if not image_exists:
+                # If the linked original is gone, keep the source thumbnail as the clickable item.
+                image = item.get("sourceThumb", "") or item.get("sourceImage", "")
+                thumbnail = item.get("sourceThumb", "") or image
+            elif not thumbnail_exists:
+                thumbnail = image
+            if image:
+                gallery_images.append(image)
+                gallery_thumbnails.append(thumbnail or image)
+        if gallery_images:
+            return gallery_images, gallery_thumbnails
+
+    # Legacy fallback for routes absent from the source gallery audit.
+    hero_overrides = {
+        "/produkty/infinity-passive-83md/": "/public/assets/source/products/okno-infinity-passive-83md.webp",
+        "/produkty/drzwi-wewnetrzne-intenso/": "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp",
+        "/produkty/ogrody-zimowe/": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
+    }
+    garden_variants = {
+        "ogr_d3-44x33": "/public/assets/source/products/ogrod-zimowy-variant-3.webp",
+        "ogr_d2-29x40": "/public/assets/source/products/ogrod-zimowy-variant-2.webp",
+        "ogr_d-44x31": "/public/assets/source/products/ogrod-zimowy-variant.webp",
+    }
+    displayed = []
+    small_assets = []
+    for image in images:
+        dimensions = image_dimensions(image)
+        if dimensions and min(dimensions) < 80:
+            small_assets.append(image)
+        else:
+            displayed.append(image)
+    hero = hero_overrides.get(route)
+    if hero and (ROOT / hero.lstrip("/")).exists():
+        original_hero = images[0] if images else ""
+        displayed = [hero] + [image for image in displayed if image != original_hero and image != hero]
+        if route != "/produkty/ogrody-zimowe/":
+            small_assets = [image for image in small_assets if image not in {hero, original_hero}]
+    if route == "/produkty/ogrody-zimowe/":
+        for image in small_assets:
+            variant = garden_variants.get(Path(image).stem.lower())
+            if variant and (ROOT / variant.lstrip("/")).exists() and variant not in displayed:
+                displayed.append(variant)
+    return displayed, []
+
+
 def header(prefix: str) -> str:
     links = [
-        ("Oferta", "/oferta/"),
-        ("Usługi", "/uslugi/"),
-        ("O firmie", "/o-firmie/"),
-        ("Nasze sklepy", "/nasze-sklepy/"),
-        ("Kontakt", "/kontakt/"),
+        ("Strona główna", "/", "/#start"),
+        ("Oferta", "/oferta/", "/#oferta"),
+        ("Usługi", "/uslugi/", "/#uslugi"),
+        ("O firmie", "/o-firmie/", "/#ofirmie"),
+        ("Nasze sklepy", "/nasze-sklepy/", "/#nasze-sklepy"),
+        ("Kontakt", "/kontakt/", "/#kontakt"),
     ]
-    menu_links = "".join(f'<a href="{url_for(href, prefix)}">{label}</a>' for label, href in links)
+    menu_links = "".join(
+        f'<a href="{url_for(href, prefix)}"'
+        + (f' data-desktop-href="{url_for(href, prefix)}" data-mobile-home-href="{url_for(mobile_href, prefix)}"' if mobile_href else "")
+        + f'>{label}</a>'
+        for label, href, mobile_href in links
+    )
     brand_href = url_for("/", prefix)
-    return f'''<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne">{menu_links}<a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="{brand_href}">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>'''
+    return f'''<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button>{menu_links}<a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="{brand_href}">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>'''
 
 
 def footer(prefix: str) -> str:
@@ -196,13 +451,13 @@ def footer(prefix: str) -> str:
 def document(route: str, title: str, description: str, body: str) -> str:
     prefix = asset_prefix(route)
     safe_description = esc(description[:220])
-    return f'''<!doctype html>
+    html_doc = f'''<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1b1b19"><meta name="description" content="{safe_description}">
 <title>{esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{prefix}assets/css/site.css"><script defer src="{prefix}assets/js/site.js"></script></head>
+<link rel="stylesheet" href="{prefix}assets/css/site.css"><link rel="stylesheet" href="{prefix}assets/visual-refinements.css"><script defer src="{prefix}assets/js/site.js"></script></head>
 <body>
 {header(prefix)}
 {body}
@@ -238,32 +493,62 @@ def document(route: str, title: str, description: str, body: str) -> str:
 </button>
 
 </body></html>'''
+    return re.sub(r"(?m)^[ \t]+$", "", html_doc)
 
 
-def home_page(scraped_data: dict) -> str:
+def home_page(scraped_data: dict, services_source_page: dict | None = None) -> str:
     prefix = ""
     intro = "WOL-BUD to firma Wojciecha Wolańskiego, założona w 1995 roku. Oferuje okna PCV i aluminiowe, drzwi, bramy garażowe, rolety, parapety, doradztwo i montaż."
-
-    # Authentic reviews markup for slider
-    reviews_markup = []
-    for r in REAL_REVIEWS:
-        reviews_markup.append(f'''<li class="review">
-  <div class="stars" role="img" aria-label="Ocena 5 na 5">★★★★★</div>
-  <blockquote>{esc(r["text"])}</blockquote>
-  <div class="review-author">{esc(r["author"])} · 5/5 · {esc(r["date"])}<span>Opinia Google</span></div>
-</li>''')
+    service_teasers = {
+        normalize(section["title"]): source_teaser({"blocks": section["blocks"]})
+        for section in source_service_sections(services_source_page)
+    }
 
     # Category Cards (8 primary)
     cat_cards_markup = []
     for cat_name, cat_href, cat_thumb, cat_desc in PRIMARY_CATEGORIES:
+        cat_desc_html = f'<p>{esc(cat_desc)}</p>' if cat_desc else ""
         cat_cards_markup.append(f'''<a class="home-cat-card" href="{url_for(cat_href, prefix)}">
   <div class="home-cat-thumb">
     <img src="{url_for(cat_thumb, prefix)}" alt="{esc(cat_name)}" loading="lazy" decoding="async">
   </div>
   <div class="home-cat-body">
     <h3>{esc(cat_name)}</h3>
-    <p>{esc(cat_desc)}</p>
+    {cat_desc_html}
     <div class="home-cat-cta">Zobacz ofertę <span>↗</span></div>
+  </div>
+</a>''')
+
+    additional_categories = [
+        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/"),
+        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/"),
+        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"),
+    ]
+    extra_category_markup = "".join(
+        f'<a class="home-extra-category" href="{url_for(route, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a>'
+        for name, route in additional_categories
+    )
+
+    featured_product_markup = []
+    featured_products = [
+        ("/produkty/infinity-passive-83md/", "Infinity Passive 83MD"),
+        ("/produkty/wiked-drzwi-zewnetrzne-stalowe/", "Wikęd – drzwi zewnętrzne stalowe"),
+    ]
+    product_data = scraped_data.get("products", {})
+    for route, featured_title in featured_products:
+        product = product_data.get(route, {})
+        images, _ = product_gallery_images(route, product.get("images", []))
+        image_html = ""
+        if images:
+            image_html = f'<img src="{url_for(images[0], prefix)}" alt="{esc(featured_title)}" loading="lazy" decoding="async">'
+        paragraph = next((item for item in product.get("paragraphs", []) if item.strip()), "")
+        teaser = source_first_sentence(paragraph) if paragraph else ""
+        featured_product_markup.append(f'''<a class="home-featured-product" href="{url_for(route, prefix)}">
+  <div class="home-featured-media">{image_html}</div>
+  <div class="home-featured-copy">
+    <h4>{esc(featured_title)}</h4>
+    {f'<p>{esc(teaser)}</p>' if teaser else ''}
+    <span>Zobacz produkt ↗</span>
   </div>
 </a>''')
 
@@ -281,18 +566,19 @@ def home_page(scraped_data: dict) -> str:
     for idx, s in enumerate(scraped_data.get("services", []), 1):
         stitle = s.get("title", "")
         anch = service_anchors.get(stitle, slugify(stitle))
-        para = s.get("paragraphs", [""])[0] if s.get("paragraphs") else ""
-        link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/" if "Ciepły" in stitle else f"/uslugi/#{anch}"
-        services_markup.append(f'''<a class="home-service-item" href="{url_for(link, prefix)}">
-  <span class="home-service-item-n">0{idx} USŁUGA</span>
-  <h4>{esc(stitle)}</h4>
-  <p>{esc(para[:130])}...</p>
-  <span class="arr">Dowiedz się więcej ↗</span>
-</a>''')
+        para = "\n".join(s.get("paragraphs", []))
+        teaser = service_teasers.get(normalize(stitle)) or source_first_sentence(para)
+        link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/#pelny-opis-montazu" if "Ciepły" in stitle else f"/uslugi/#{anch}"
+        service_href = url_for(link, prefix)
+        services_markup.append(f'''<article class="home-service-item">
+  <h4><a class="home-service-item-title-link" href="{service_href}">{esc(stitle)}</a></h4>
+  <p class="home-service-item-teaser">{esc(teaser)}</p>
+  <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(stitle)}">Dowiedz się więcej ↗</a>
+</article>''')
 
     partner_logos = [
-        ("partner-domel.jpg", "DOMEL"), ("partner-fill.png", "FILL"), ("partner-wiked.jpg", "WIKĘD"),
-        ("partner-erkado.jpg", "ERKADO"), ("partner-intenso.jpg", "INTENSO"), ("partner-lagrus.jpg", "LAGRUS"),
+        ("partner-domel.webp", "DOMEL"), ("partner-fill.webp", "FILL"), ("partner-wiked.webp", "WIKĘD"),
+        ("partner-erkado.webp", "ERKADO"), ("partner-intenso.webp", "INTENSO"), ("partner-lagrus.webp", "LAGRUS"),
     ]
     partner_entries = "".join(f'<div class="partner-logo"><img src="{url_for(f"/public/assets/source/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in partner_logos)
 
@@ -301,7 +587,7 @@ def home_page(scraped_data: dict) -> str:
 <section class="hero" id="start">
   <div class="sticky">
     <div class="hero-frame" id="heroFrame">
-      <img src="{url_for('/public/assets/source/products/fasada-aluminiowa.jpg', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1376" height="768" decoding="async">
+      <img src="{url_for('/public/assets/source/products/fasada-aluminiowa.webp', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1376" height="768" decoding="async">
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
@@ -322,99 +608,22 @@ def home_page(scraped_data: dict) -> str:
   </div>
 </section>
 
-<!-- MONTAŻ U CIEBIE (100% Authentic WOL-BUD Text) -->
+<!-- POMIAR I WYCENA -->
 <section class="trust" id="ofirmie">
   <div class="wrap">
-    <div class="trust-head">
-      <span class="eyebrow">Montaż</span>
-      <h2>Zamontujemy u Ciebie</h2>
-    </div>
-    <div class="mz-grid">
-      <div class="mz-copy">
-        <p class="mz-lead">W trosce o Państwa wygodę i bezpieczeństwo inwestycji zapewniamy profesjonalny montaż w <strong>Tarnowie</strong>, <strong>Radłowie</strong> i okolicznych miejscowościach.</p>
-        <p>WOL-BUD to firma Wojciecha Wolańskiego, założona w 1995 roku. Oferujemy okna PCV i aluminiowe, drzwi, bramy garażowe, rolety, parapety, doradztwo i montaż. Dobrze znamy produkty, które sprzedajemy. Montujemy dokładnie i dbamy o szczegóły.</p>
-        <p>Specjalizujemy się w energooszczędnym ciepłym montażu warstwowym z zastosowaniem folii paroszczelnych i paroprzepuszczalnych ProTape oraz termoparapetów Klinar.</p>
-        <figure class="glos glos--dark">
-          <blockquote>„Okna bardzo dobrej jakości. Fachowa obsługa, potrafią doradzić, montaż bez żadnych problemów.”</blockquote>
-          <figcaption><span aria-hidden="true">★★★★★</span> Damian Machalski · opinia Google</figcaption>
-        </figure>
-        <p class="mz-cta">
-          <span>Potrzebujesz bezpłatnego pomiaru?</span>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
-        </p>
-      </div>
-      <figure class="mz-mapa" aria-label="Schemat obszaru montażu: Tarnów, Radłów i okoliczne miejscowości">
-        <svg viewBox="0 0 440 300" role="img" aria-hidden="true" focusable="false">
-          <defs>
-            <radialGradient id="mzHalo" cx="50%" cy="50%" r="50%">
-              <stop offset="0" stop-color="#ffb200" stop-opacity=".24"/>
-              <stop offset=".62" stop-color="#ffb200" stop-opacity=".08"/>
-              <stop offset="1" stop-color="#ffb200" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <ellipse class="mz-halo" cx="220" cy="150" rx="205" ry="138" fill="url(#mzHalo)"/>
-          <path d="M260 110 C 220 140 160 150 120 190" fill="none" stroke="rgba(244,243,236,.22)" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"/>
-          <path class="mz-trasa" d="M260 110 C 220 140 160 150 120 190" fill="none" stroke="#ffb200" stroke-width="3" stroke-linecap="round"/>
-          <circle class="mz-puls" cx="260" cy="110" r="20" fill="none" stroke="#ffb200" stroke-opacity=".45"/>
-          <circle cx="260" cy="110" r="8" fill="#ffb200"/>
-          <text class="mz-l1" x="278" y="104" fill="#f4f3ec" font-size="19" font-weight="600">Tarnów</text>
-          <text class="mz-adr" x="278" y="124" fill="rgba(244,243,236,.62)" font-size="12">WOL-BUD, ul. Giełdowa 5 / Szkotnik 2B</text>
-          <g class="mz-cel">
-            <circle cx="120" cy="190" r="7" fill="#f4f3ec"/>
-            <text class="mz-l2" x="136" y="210" fill="#f4f3ec" font-size="17" font-weight="600">Radłów</text>
-            <text class="mz-adr" x="136" y="226" fill="rgba(244,243,236,.62)" font-size="12">ul. Leśna 17A</text>
-          </g>
-          <text class="mz-l3" x="24" y="276" fill="rgba(244,243,236,.62)" font-size="13" font-style="italic">i okoliczne miejscowości</text>
-        </svg>
-        <figcaption>Schemat obszaru montażu, bez skali</figcaption>
-      </figure>
-    </div>
-    <div class="mz-kroki">
-      <span class="eyebrow">Harmonogram obsługi inwestycji</span>
-      <ol>
-        <li><span class="mz-n">01</span><b>Pomiar i doradztwo</b><span class="mz-t">Zapewniamy bezpłatny i niewiążący pomiar, doradztwo i wycenę na miejscu budowy lub w naszych salonach.</span></li>
-        <li><span class="mz-n">02</span><b>Dobór stolarki</b><span class="mz-t">Oferujemy okna energooszczędne Domel, drzwi Wikęd, bramy garażowe, rolety i parapety.</span></li>
-        <li><span class="mz-n">03</span><b>Ciepły montaż</b><span class="mz-t">Własne wykwalifikowane ekipy montażowe z wieloletnim doświadczeniem w szczelnym montażu trójwarstwowym.</span></li>
-        <li><span class="mz-n">04</span><b>Serwis i gwarancja</b><span class="mz-t">Zapewniamy pełny serwis gwarancyjny i pogwarancyjny, regulację okuć oraz wymianę części.</span></li>
-      </ol>
-      <figure class="glos glos--dark glos--krotki">
-        <blockquote>„Firma z wieloletnim doświadczeniem i super ekipa. Polecam serdecznie”</blockquote>
-        <figcaption><span aria-hidden="true">★★★★★</span> Stanislaw Tyrka · opinia Google</figcaption>
-      </figure>
-    </div>
-  </div>
-</section>
-
-<!-- OPINIE (100% Genuine Google Reviews) -->
-<section class="reviews" id="opinie">
-  <div class="wrap">
-    <div class="reviews-head">
+    <div class="trust-compact">
       <div>
-        <span class="eyebrow">Opinie Google</span>
-        <h2>Co mówią nasi klienci</h2>
+        <span class="eyebrow">Od 1995 roku</span>
+        <h2>WOL-BUD Wojciech Wolański</h2>
+        <p>WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 25 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty.</p>
       </div>
-      <div class="reviews-score">
-        <span class="score-value">4,3</span>
-        <div>
-          <div class="stars" aria-hidden="true">★★★★★</div>
-          <p class="score-meta">Średnia ocen w Google<br>na podstawie 47 opinii</p>
-          <a class="reviews-link" href="{GOOGLE_PROFILE}" target="_blank" rel="noopener noreferrer">
-            Zobacz profil w Google
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>
-          </a>
-        </div>
+      <div class="trust-compact-actions">
+        <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę i referencje ↗</a>
+        <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
       </div>
-    </div>
-    <ul class="reviews-track" id="reviewsTrack">
-      {''.join(reviews_markup)}
-    </ul>
-    <div class="reviews-nav">
-      <button class="rev-prev" type="button" aria-label="Poprzednia opinia">←</button>
-      <button class="rev-next" type="button" aria-label="Następna opinia">→</button>
     </div>
   </div>
 </section>
-
 <!-- CZEGO SZUKASZ? (Intuitive Catalog Cards Grid + Services) -->
 <section class="offer" id="oferta">
   <div class="wrap">
@@ -430,9 +639,16 @@ def home_page(scraped_data: dict) -> str:
     <div class="home-catalog-grid">
       {''.join(cat_cards_markup)}
     </div>
+    <div class="home-extra-categories" aria-label="Dodatkowe kategorie produktów">
+      {extra_category_markup}
+    </div>
+    <section class="home-featured-section" aria-labelledby="home-featured-title">
+      <div class="home-featured-heading"><span class="eyebrow eyebrow--gold">Polecane produkty</span><h3 id="home-featured-title">Warto sprawdzić</h3></div>
+      <div class="home-featured-grid">{''.join(featured_product_markup)}</div>
+    </section>
 
     <!-- 7 Services Box -->
-    <div class="home-services-box">
+    <div class="home-services-box" id="uslugi">
       <div class="home-services-head">
         <div>
           <span class="eyebrow eyebrow--gold">Kompleksowa obsługa</span>
@@ -445,10 +661,6 @@ def home_page(scraped_data: dict) -> str:
       </div>
     </div>
 
-    <figure class="glos glos--wide">
-      <blockquote>„Serdecznie polecam ta firmę, dokładne wykonanie ,pełna profesjonalnosc . Jestem zadowolona montażem okiem polecam każdemu .”</blockquote>
-      <figcaption><span aria-hidden="true">★★★★★</span> Martyna Olszowka · opinia Google</figcaption>
-    </figure>
   </div>
 </section>
 
@@ -487,7 +699,7 @@ def home_page(scraped_data: dict) -> str:
           Sprzedaż i profesjonalny montaż stolarki okiennej i drzwiowej od 1995 roku.
         </div>
       </div>
-      <div class="kt-adres">
+      <div class="kt-adres" id="nasze-sklepy">
         <span class="kt-lab">Salony sprzedaży</span>
 
         <div class="kt-store-item">
@@ -511,6 +723,7 @@ def home_page(scraped_data: dict) -> str:
           <a class="store-nav-btn" href="{MAP_LINKS['radlow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
         </div>
 
+        <a class="store-full-copy-link" href="{url_for('/nasze-sklepy/', prefix)}">Pełny opis salonów i ekspozycji ↗</a>
       </div>
     </div>
   </div>
@@ -560,7 +773,7 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
 </aside>'''
 
 
-def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
+def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: dict | None = None) -> str:
     prefix = asset_prefix(route)
     title = cat_data.get("title") or route.strip("/").split("/")[-1].replace("-", " ").title()
     desc = cat_data.get("description", "")
@@ -582,30 +795,34 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
             p_title = p.get("title", "")
             p_href = route_url(p.get("href", ""))
             p_img = p.get("image", "")
-            if not p_img.startswith("/"):
+            if p_img and not p_img.startswith("/"):
                 p_img = "/" + p_img
 
             clean_route = route_url(p_href)
             prod_detail = scraped_data.get("products", {}).get(clean_route, {})
-            snippet = ""
-            if prod_detail.get("specs"):
-                snippet = prod_detail["specs"][0]
-            elif prod_detail.get("paragraphs"):
-                snippet = prod_detail["paragraphs"][0]
-            if len(snippet) > 110:
-                snippet = snippet[:110] + "..."
-
             p_href_rel = url_for(p_href, prefix)
+            category_image_overrides = {
+                "/produkty/ogrody-zimowe": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
+                "/produkty/fasady": "/public/assets/source/products/fasada-aluminiowa.webp",
+            }
+            p_img = category_image_overrides.get(clean_route.rstrip("/"), p_img)
+            if clean_route.rstrip("/") not in category_image_overrides:
+                detail_images, _ = product_gallery_images(clean_route, prod_detail.get("images", []))
+                if detail_images:
+                    p_img = detail_images[0]
             p_img_rel = url_for(p_img, prefix)
+            p_media = (
+                f'<img src="{p_img_rel}" alt="{esc(p_title)}" loading="lazy" decoding="async">'
+                if p_img else '<span aria-hidden="true"></span>'
+            )
 
             cards_html.append(f'''<article class="cat-prod-card">
   <a class="cat-prod-media" href="{p_href_rel}" aria-label="{esc(p_title)}">
-    <img src="{p_img_rel}" alt="{esc(p_title)}" loading="lazy" decoding="async">
+    {p_media}
   </a>
   <div class="cat-prod-body">
     <span class="cat-prod-tag">WOL-BUD Tarnów</span>
     <h3 class="cat-prod-title"><a href="{p_href_rel}">{esc(p_title)}</a></h3>
-    <p class="cat-prod-snippet">{esc(snippet)}</p>
     <a class="cat-prod-btn" href="{p_href_rel}">Zobacz parametry <span>↗</span></a>
   </div>
 </article>''')
@@ -615,14 +832,16 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
         for sub_title, sub_href, sub_thumb, sub_desc, sub_count in SUBCATEGORIES[route]:
             sub_href_rel = url_for(sub_href, prefix)
             sub_thumb_rel = url_for(sub_thumb, prefix)
+            sub_desc_html = f'<p>{esc(sub_desc)}</p>' if sub_desc else ""
+            sub_count_html = f'<span class="subcat-card-count">{esc(sub_count)}</span>' if sub_count else ""
             cards_html.append(f'''<a class="subcat-card" href="{sub_href_rel}">
   <div class="subcat-card-media">
     <img src="{sub_thumb_rel}" alt="{esc(sub_title)}" loading="lazy" decoding="async">
   </div>
   <div class="subcat-card-body">
-    <span class="subcat-card-count">{esc(sub_count)}</span>
+    {sub_count_html}
     <h3>{esc(sub_title)}</h3>
-    <p>{esc(sub_desc)}</p>
+    {sub_desc_html}
     <span class="cat-prod-btn">Przejdź do oferty <span>↗</span></span>
   </div>
 </a>''')
@@ -642,7 +861,9 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
   <div class="cat-quick-nav-pills">{''.join(quick_pills)}</div>
 </div>'''
 
-    desc_html = f'<p class="subpage-lead">{esc(desc)}</p>' if desc else ''
+    source_markup = source_content_panel(source_page, prefix, "Pełny opis kategorii")
+    teaser = source_teaser(source_page)
+    desc_html = f'<p class="subpage-lead">{esc(teaser or desc)}</p>' if teaser or (desc and not source_markup) else ''
 
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
@@ -664,6 +885,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
     <div class="subpage-grid">
       <div class="subpage-content">
         {content_grid}
+        {source_markup}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Zainteresowała Cię nasza oferta?</span>
           <h3>Zamów bezpłatny pomiar i wycenę</h3>
@@ -678,12 +900,12 @@ def category_page(route: str, cat_data: dict, scraped_data: dict) -> str:
     return document(route, f"{title} | WOL-BUD Tarnów", desc or f"{title} — sprzedaż i montaż w WOL-BUD Tarnów.", main)
 
 
-def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
+def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page: dict | None = None) -> str:
     prefix = asset_prefix(route)
     title = prod.get("title", "")
     paragraphs = prod.get("paragraphs", [])
     specs = prod.get("specs", [])
-    images = prod.get("images", [])
+    images, small_assets = product_gallery_images(route, prod.get("images", []))
     pdfs = prod.get("pdfs", [])
 
     # Find parent category
@@ -737,10 +959,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
 
     # Hero visual & interactive gallery with stage arrows and zoom
     visual_html = ""
-    if not images:
-        images = ["/public/assets/source/products/fasada-aluminiowa.jpg"]
-
-    main_img = url_for(images[0], prefix)
+    main_img = url_for(images[0], prefix) if images else ""
     has_multiple = len(images) > 1
 
     prev_arrow = f'''<button type="button" class="gallery-nav-arrow gallery-prev" data-gallery-prev aria-label="Poprzednie zdjęcie">
@@ -753,44 +972,59 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
 
     counter_html = f'''<div class="gallery-counter"><span data-gallery-curr>1</span> / <span>{len(images)}</span></div>''' if has_multiple else ""
 
-    thumbs_html = ""
-    if has_multiple:
-        thumb_list = []
-        for i, img in enumerate(images):
-            act_cls = " is-active" if i == 0 else ""
-            img_rel = url_for(img, prefix)
-            thumb_list.append(f'''<button type="button" class="product-gallery-thumb{act_cls}" data-index="{i}" data-src="{img_rel}" aria-label="Zdjęcie {i+1} z {len(images)}">
-  <img src="{img_rel}" alt="{esc(title)}">
+    gallery_thumbs = []
+    thumbnail_images = small_assets if len(small_assets) == len(images) else images
+    for i, img in enumerate(images):
+        image_rel = url_for(img, prefix)
+        thumb_src = url_for(thumbnail_images[i], prefix)
+        width, height = image_dimensions(img) or (4, 3)
+        ratio = width / height
+        act_cls = " is-active" if i == 0 else ""
+        gallery_thumbs.append(f'''<button type="button" class="product-gallery-thumb{act_cls}" data-index="{i}" data-src="{image_rel}" data-ratio="{ratio:.5f}" style="--gallery-ratio: {ratio:.5f};" aria-label="Pokaż zdjęcie {i+1} z {len(images)}: {esc(title)}" aria-current="{str(i == 0).lower()}">
+  <img src="{thumb_src}" alt="{esc(title)}" loading="lazy" decoding="async">
 </button>''')
-        thumbs_html = f'<div class="product-gallery-row" data-gallery-thumbs>{"".join(thumb_list)}</div>'
+    thumbs_html = horizontal_photo_strip(
+        "".join(gallery_thumbs), "product-gallery-row", f"Galeria zdjęć: {title}", "data-gallery-thumbs"
+    ) if gallery_thumbs else ""
 
-    visual_html = f'''<div class="product-gallery" data-gallery>
+    door_gallery_class = " product-gallery--door" if any(
+        "drzwi" in normalize(value) for value in (title, parent_cat_name, route)
+    ) else ""
+    visual_html = f'''<div class="product-gallery{door_gallery_class}" data-gallery>
   <div class="product-gallery-stage">
     {prev_arrow}
-    <div class="product-detail-visual" data-gallery-trigger title="Kliknij, aby powiększyć zdjęcie">
+    <button type="button" class="product-detail-visual" data-gallery-trigger aria-haspopup="dialog" aria-label="Powiększ zdjęcie produktu: {esc(title)}">
       <img src="{main_img}" alt="{esc(title)}" id="mainGalleryImg" data-gallery-main decoding="async">
       <div class="gallery-zoom-badge">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
         <span>Powiększ</span>
       </div>
       {counter_html}
-    </div>
+    </button>
     {next_arrow}
   </div>
   {thumbs_html}
-</div>'''
+</div>''' if images else ""
 
     # Description paragraphs
     desc_html = "".join(f'<p>{esc(p)}</p>' for p in paragraphs if p.strip())
+    desc_details = f'''<details class="mobile-details" open data-responsive-disclosure>
+  <summary>Opis produktu</summary>
+  <div class="mobile-details-body"><div class="article-copy">{desc_html}</div></div>
+</details>''' if desc_html else ""
 
     # Specs box
     specs_html = ""
     if specs:
         items = "".join(f'<li><span class="chk">✓</span><span>{esc(s)}</span></li>' for s in specs)
-        specs_html = f'''<div class="product-specs-box">
-  <h3>Parametry techniczne i charakterystyka</h3>
-  <ul class="specs-list">{items}</ul>
-</div>'''
+        specs_html = f'''<details class="product-specs-box mobile-details" open data-responsive-disclosure>
+  <summary>Parametry techniczne i charakterystyka</summary>
+  <div class="mobile-details-body"><ul class="specs-list">{items}</ul></div>
+</details>'''
+
+    if source_page:
+        desc_details = source_content_panel(source_page, prefix, "Opis, zalety i parametry produktu")
+        specs_html = ""
 
     # PDF downloads
     downloads_html = ""
@@ -822,16 +1056,14 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
     <div class="subpage-grid">
       <div class="subpage-content">
         {visual_html}
-        <div class="article-copy">
-          {desc_html}
-        </div>
+        {desc_details}
         {specs_html}
         {downloads_html}
         {product_nav_bar}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Zainteresował Cię ten produkt?</span>
           <h3>Zamów wycenę lub bezpłatny pomiar</h3>
-          <p>Skontaktuj się z naszymi doradcami. Pomożemy dobrać optymalną konfigurację dla Twojego budynku.</p>
+          <p>Bezpłatny i niewiążący pomiar, doradztwo i wycena są dostępne na budowie lub w naszych salonach sprzedaży.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
         </div>
       </div>
@@ -843,7 +1075,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict) -> str:
     return document(route, f"{title} | WOL-BUD Tarnów", description, main)
 
 
-def services_page(scraped_data: dict) -> str:
+def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
     route = "/uslugi/"
     prefix = asset_prefix(route)
     services = scraped_data.get("services", [])
@@ -874,18 +1106,64 @@ def services_page(scraped_data: dict) -> str:
             feature_box = f'''<div class="service-feature-box">
   <div>
     <span class="eyebrow eyebrow--gold">Fotoreportaż z budowy</span>
-    <p>Zobacz pełny 11-etapowy przewodnik fotograficzny z ciepłego montażu warstwowego w naszej firmie.</p>
+    <p>Zobacz zdjęcia z ciepłego montażu warstwowego.</p>
   </div>
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
 </div>'''
 
         cards.append(f'''<article class="service-card" id="{anch}">
-  <div class="service-card__num">0{idx} USŁUGA WOL-BUD</div>
   <h2>{esc(stitle)}</h2>
-  {paras_html}
-  {bullets_html}
-  {feature_box}
+  <details class="mobile-details" open data-responsive-disclosure>
+    <summary>Opis usługi</summary>
+    <div class="mobile-details-body">
+      {paras_html}
+      {bullets_html}
+      {feature_box}
+    </div>
+  </details>
 </article>''')
+
+    if source_page:
+        service_content_cards = []
+        source_sections = source_service_sections(source_page)
+        for section in source_sections:
+            stitle = source_display_text(section["title"])
+            anch = service_anchors.get(stitle, slugify(stitle))
+            blocks = section["blocks"]
+            first_paragraph = next(
+                (block.get("text", "") for block in blocks if block.get("type") == "paragraph" and block.get("text", "").strip()),
+                "",
+            )
+            teaser = source_first_sentence(first_paragraph)
+            full_body = render_source_blocks(blocks, prefix)
+            feature_box = ""
+            if "Ciepły" in stitle:
+                feature_box = f'''<div class="service-feature-box">
+  <div>
+    <span class="eyebrow eyebrow--gold">Fotoreportaż z budowy</span>
+    <p>Zobacz zdjęcia z ciepłego montażu warstwowego.</p>
+  </div>
+  <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
+</div>'''
+            service_content_cards.append(f'''<article class="service-card" id="{esc(anch)}">
+  <h2>{esc(stitle)}</h2>
+  {f'<p class="service-card-teaser">{esc(teaser)}</p>' if teaser else ''}
+  <details class="mobile-details" open data-responsive-disclosure>
+    <summary>Opis usługi</summary>
+    <div class="mobile-details-body source-content-body">{full_body}{feature_box}</div>
+  </details>
+</article>''')
+        service_content = "".join(service_content_cards)
+        warm_montage_link = f'''<div class="service-feature-box">
+  <div>
+    <span class="eyebrow eyebrow--gold">Ciepły montaż</span>
+    <p>Zdjęcia i pełny opis ciepłego montażu warstwowego.</p>
+  </div>
+  <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz opis montażu ↗</a>
+</div>'''
+        service_content += warm_montage_link
+    else:
+        service_content = "".join(cards)
 
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
@@ -901,15 +1179,14 @@ def services_page(scraped_data: dict) -> str:
     <header class="subpage-head">
       <span class="eyebrow">WOL-BUD Tarnów</span>
       <h1>Usługi montażowe i serwisowe</h1>
-      <p class="subpage-lead">Świadczymy kompleksowe usługi montażu stolarki otworowej, energooszczędnego ciepłego montażu warstwowego, serwisu okien i drzwi oraz prac wykończeniowych dla klientów indywidualnych i instytucji.</p>
     </header>
     <div class="subpage-grid">
       <div class="subpage-content">
-        {''.join(cards)}
+        {service_content}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Skorzystaj z naszych usług</span>
           <h3>Umów bezpłatny pomiar i wycenę</h3>
-          <p>Przyjedziemy na budowę, dokonamy pomiarów i doradzimy optymalne rozwiązania.</p>
+          <p>Pomiar, doradztwo i wycena są bezpłatne i niewiążące — na budowie lub w naszych salonach sprzedaży.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
         </div>
       </div>
@@ -917,10 +1194,10 @@ def services_page(scraped_data: dict) -> str:
     </div>
   </div>
 </main>'''
-    return document(route, "Usługi montażowe i serwisowe | WOL-BUD Tarnów", "Kompleksowy montaż okien, drzwi, bram, ciepły montaż warstwowy i serwis stolarki w Tarnowie i okolicach.", main)
+    return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, ciepły montaż, serwis, prace wykończeniowe i murarskie, brukowanie, daszki poliwęglanowe.", main)
 
 
-def warm_montage_page(scraped_data: dict) -> str:
+def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> str:
     route = "/promocje/cieply-montaz-warstwowy-okien-drzwi/"
     prefix = asset_prefix(route)
     montage = scraped_data.get("warm_montage", {})
@@ -936,11 +1213,10 @@ def warm_montage_page(scraped_data: dict) -> str:
         simg = url_for(s.get("img", ""), prefix)
         steps_html.append(f'''<article class="montage-step-card">
   <div class="montage-step-media">
-    <img src="{simg}" alt="{esc(stitle)}" loading="lazy" decoding="async">
+    <img src="{simg}" alt="{esc(stitle)}" data-lightbox-trigger data-lightbox-src="{simg}" data-lightbox-group="warm-montage" loading="lazy" decoding="async">
   </div>
   <div class="montage-step-info">
-    <span class="montage-step-n">ETAP 0{idx if idx < 10 else idx}</span>
-    <h3 class="montage-step-title">{esc(stitle)}</h3>
+          <h3 class="montage-step-title">{esc(stitle)}</h3>
   </div>
 </article>''')
 
@@ -958,23 +1234,21 @@ def warm_montage_page(scraped_data: dict) -> str:
     <header class="subpage-head">
       <span class="eyebrow">Fotoreportaż i technologia</span>
       <h1>{esc(title)}</h1>
-      <p class="subpage-lead">Energooszczędny, szczelny montaż trójwarstwowy okien i drzwi z wykorzystaniem folii ProTape, taśm rozprężnych i termoparapetów podokiennych Klinar.</p>
+      <p class="subpage-lead">{esc(source_teaser(source_page) or (paragraphs[0] if paragraphs else ''))}</p>
     </header>
     <div class="subpage-grid">
       <div class="subpage-content">
         <div class="article-copy">
-          {paras_html}
+          {source_content_panel(source_page, prefix, "Pełny opis montażu", anchor_id="pelny-opis-montazu") or paras_html}
         </div>
         <div class="subpage-section">
-          <h2>Harmonogram wykonania krok po kroku</h2>
-          <div class="montage-steps-grid">
-            {''.join(steps_html)}
-          </div>
+          <h2>Zdjęcia z montażu</h2>
+          {horizontal_photo_strip(''.join(steps_html), "montage-steps-grid", "Zdjęcia z montażu")}
         </div>
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Chcesz zamówić ciepły montaż?</span>
-          <h3>Skonsultuj swoją inwestycję z ekspertem</h3>
-          <p>Nasi wykwalifikowani montażyści zapewnią idealne parametry szczelności i termiki w Twoim domu.</p>
+          <h3>Zapytaj o ciepły montaż</h3>
+          <p>Skontaktuj się z WOL-BUD, aby uzyskać informacje o ciepłym montażu okien i drzwi.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
         </div>
       </div>
@@ -982,7 +1256,7 @@ def warm_montage_page(scraped_data: dict) -> str:
     </div>
   </div>
 </main>'''
-    return document(route, f"{title} | WOL-BUD Tarnów", "Ciepły montaż warstwowy okien i drzwi — harmonogram, technologia i 11 etapów z fotoreportażem.", main)
+    return document(route, f"{title} | WOL-BUD Tarnów", "Ciepły montaż warstwowy okien i drzwi — opis technologii i zdjęcia z montażu.", main)
 
 
 def catalog_index_page() -> str:
@@ -990,13 +1264,14 @@ def catalog_index_page() -> str:
     prefix = asset_prefix(route)
     cards = []
     for cat_name, cat_href, cat_thumb, cat_desc in PRIMARY_CATEGORIES:
+        cat_desc_html = f'<p>{esc(cat_desc)}</p>' if cat_desc else ""
         cards.append(f'''<a class="home-cat-card" href="{url_for(cat_href, prefix)}">
   <div class="home-cat-thumb">
     <img src="{url_for(cat_thumb, prefix)}" alt="{esc(cat_name)}" loading="lazy" decoding="async">
   </div>
   <div class="home-cat-body">
     <h3>{esc(cat_name)}</h3>
-    <p>{esc(cat_desc)}</p>
+    {cat_desc_html}
     <div class="home-cat-cta">Zobacz ofertę <span>↗</span></div>
   </div>
 </a>''')
@@ -1014,7 +1289,7 @@ def catalog_index_page() -> str:
     {crumb}
     <header class="subpage-head">
       <span class="eyebrow">Katalog WOL-BUD</span>
-      <h1>Pełna oferta produktów</h1>
+      <h1>Oferta produktów</h1>
       <p class="subpage-lead">Kompleksowa stolarka otworowa dla domu i inwestycji: okna, drzwi, bramy, rolety i parapety od sprawdzonych producentów.</p>
     </header>
     <div class="home-catalog-grid">
@@ -1022,7 +1297,7 @@ def catalog_index_page() -> str:
     </div>
     <div class="cta-banner-dark">
       <span class="eyebrow eyebrow--gold">Potrzebujesz wyceny lub doradztwa?</span>
-      <h3>Skontaktuj się z naszymi ekspertami</h3>
+      <h3>Skontaktuj się z WOL-BUD</h3>
       <p>Pomożemy dobrać okna, drzwi i bramy dopasowane do Twojego projektu.</p>
       <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
     </div>
@@ -1031,9 +1306,34 @@ def catalog_index_page() -> str:
     return document(route, "Pełna oferta produktów | WOL-BUD Tarnów", "Okna, drzwi, bramy garażowe, rolety i parapety w ofercie firmy WOL-BUD Tarnów.", main)
 
 
-def about_page(source_content: dict) -> str:
+def references_gallery(prefix: str = "") -> str:
+    source_order = [12, 1, 2, 3, 4, 9, 8, 7, 6, 5, 15, 14, 13, 11, 10]
+    cards = []
+    for number in source_order:
+        filename = f"referencja-{number:02d}.webp"
+        image_url = url_for(f"/public/assets/source/references/{filename}", prefix)
+        cards.append(f'''<figure class="reference-card">
+  <a href="{image_url}" data-lightbox-trigger data-lightbox-src="{image_url}" data-lightbox-group="references" aria-label="Powiększ skan referencji nr {number}">
+    <img src="{image_url}" alt="Skan referencji nr {number}" loading="lazy" decoding="async" width="212" height="300">
+  </a>
+  <figcaption>Referencja nr {number}</figcaption>
+</figure>''')
+    return f'''<details class="mobile-details reference-gallery-disclosure" open data-responsive-disclosure>
+  <summary>Zobacz skany referencji (15)</summary>
+  <div class="mobile-details-body">
+    <section class="reference-gallery" aria-labelledby="reference-gallery-title">
+      <h2 id="reference-gallery-title">Referencje</h2>
+      {horizontal_photo_strip("".join(cards), "reference-gallery-grid", "Skanowane referencje WOL-BUD")}
+    </section>
+  </div>
+</details>'''
+
+
+def about_page(source_page: dict | None = None) -> str:
     route = "/o-firmie/"
     prefix = asset_prefix(route)
+    company_story = source_content_panel(source_page, prefix, "O firmie: doświadczenie, atuty i dostawcy")
+    references = references_gallery(prefix) if source_page else ""
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -1046,30 +1346,18 @@ def about_page(source_content: dict) -> str:
   <div class="wrap">
     {crumb}
     <header class="subpage-head">
-      <span class="eyebrow">Tradycja i doświadczenie</span>
+      <span class="eyebrow">Od 1995 roku</span>
       <h1>O firmie WOL-BUD</h1>
-      <p class="subpage-lead">Firma Wojciecha Wolańskiego od 1995 roku dostarcza i profesjonalnie montuje stolarkę okienną i drzwiową w Tarnowie, Radłowie i Małopolsce.</p>
+      <p class="subpage-lead">Firma Wojciecha Wolańskiego zajmuje się sprzedażą i montażem stolarki okiennej i drzwiowej od 1995 roku.</p>
     </header>
     <div class="subpage-grid">
       <div class="subpage-content article-copy">
-        <p>Sprzedażą i montażem stolarki okiennej i drzwiowej zajmujemy się od 1995 roku, zdobywając zaufanie inwestorów indywidualnych oraz instytucji, o czym świadczą liczne referencje i zadowoleni klienci powracający po latach.</p>
-        <p>W naszej ofercie znajdą Państwo wyłącznie wyroby renomowanych producentów, charakteryzujące się najwyższą jakością wykonania, trwałością oraz doskonałymi parametrami termicznymi i akustycznymi.</p>
-        <p>Posiadamy własne, wykwalifikowane ekipy montażowe, które regularnie podnoszą swoje kwalifikacje na szkoleniach technicznych. Dzięki temu gwarantujemy rzetelne wykonanie każdego zlecenia — od prostego montażu po zaawansowany ciepły montaż trójwarstwowy w budownictwie pasywnym.</p>
-        <div class="subpage-section">
-          <h2>Dlaczego WOL-BUD?</h2>
-          <ul>
-            <li>Doświadczenie w branży okien i drzwi od 1995 roku</li>
-            <li>Własna, sprawdzona ekipa montażystów</li>
-            <li>Autoryzowany partner renomowanych producentów (Domel, Wikęd, Intenso, Erkado)</li>
-            <li>Trzy dogodne salony sprzedaży w Tarnowie i Radłowie</li>
-            <li>Bezpłatny pomiar, fachowe doradztwo techniczne i wycena na budowie</li>
-            <li>Kompleksowy serwis gwarancyjny i pogwarancyjny</li>
-          </ul>
-        </div>
+        {company_story}
+        {references}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--gold">Porozmawiajmy o Twojej inwestycji</span>
           <h3>Odwiedź nasz salon lub zadzwoń</h3>
-          <p>Chętnie odpowiemy na wszystkie pytania i dobierzemy idealną stolarkę.</p>
+          <p>Informacje o produktach, usługach i salonach znajdziesz na naszej stronie.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
         </div>
       </div>
@@ -1077,16 +1365,40 @@ def about_page(source_content: dict) -> str:
     </div>
   </div>
 </main>'''
-    return document(route, "O firmie | WOL-BUD Wojciech Wolański Tarnów", "WOL-BUD — ponad 25 lat doświadczenia w sprzedaży i montażu okien, drzwi i bram w Tarnowie i Radłowie.", main)
+    return document(route, "O firmie | WOL-BUD Wojciech Wolański Tarnów", "WOL-BUD — sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku.", main)
 
 
-def locations_page() -> str:
+def source_document_page(route: str, source_page: dict) -> str:
+    prefix = asset_prefix(route)
+    title = source_page_title(source_page)
+    source_markup = source_content_panel(source_page, prefix, "Pełny opis źródłowy")
+    crumb = f'''<div class="page-nav-bar">
+  <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <span>Wróć</span>
+  </button>
+  <nav class="breadcrumbs" aria-label="Okruszki"><a href="{url_for('/#oferta', prefix)}" data-home-link>Strona główna</a><span>/</span><span aria-current="page">{esc(title)}</span></nav>
+</div>'''
+    main = f'''<main id="main" class="page-main">
+  <div class="wrap">
+    {crumb}
+    <header class="subpage-head"><h1>{esc(title)}</h1></header>
+    <div class="subpage-grid">
+      <div class="subpage-content">{source_markup}</div>
+      {sidebar_markup(route, prefix)}
+    </div>
+  </div>
+</main>'''
+    return document(route, f"{title} | WOL-BUD", title, main)
+
+
+def locations_page(source_page: dict | None = None) -> str:
     route = "/nasze-sklepy/"
     prefix = asset_prefix(route)
     locations = [
-        ("Salon Tarnów-Chyszów", "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów", "14 626 80 32", "534 091 021", "salon-tarnow-chyszow.jpg", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['chyszow']),
-        ("Salon w Tarnowie", "ul. Szkotnik 2b, 33-100 Tarnów", "14 628 84 90", "693 870 505", "salon-tarnow-szkotnik.jpg", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['szkotnik']),
-        ("Punkt w Radłowie", "ul. Leśna 17a, 33-130 Radłów", "14 678 23 65", "609 734 290", "salon-radlow.jpg", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['radlow']),
+        ("Salon Tarnów-Chyszów", "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów", "14 626 80 32", "534 091 021", "salon-tarnow-chyszow.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['chyszow']),
+        ("Salon w Tarnowie", "ul. Szkotnik 2b, 33-100 Tarnów", "14 628 84 90", "693 870 505", "salon-tarnow-szkotnik.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['szkotnik']),
+        ("Punkt w Radłowie", "ul. Leśna 17a, 33-130 Radłów", "14 678 23 65", "609 734 290", "salon-radlow.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['radlow']),
     ]
     cards = []
     for name, address, tel_fixed, tel_mobile, photo, hours, map_url in locations:
@@ -1107,6 +1419,9 @@ def locations_page() -> str:
   </div>
 </article>''')
 
+    source_details = source_content_panel(source_page, prefix, "Informacje o salonach i ekspozycji")
+    source_intro = source_teaser(source_page)
+
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -1121,16 +1436,12 @@ def locations_page() -> str:
     <header class="subpage-head">
       <span class="eyebrow">Salony stacjonarne</span>
       <h1>Nasze sklepy i ekspozycje</h1>
-      <p class="subpage-lead">Zapraszamy do naszych salonów sprzedaży okien i drzwi w Tarnowie oraz Radłowie. Na miejscu zobaczysz pełne wzorniki i porozmawiasz z doradcą technicznym.</p>
+      <p class="subpage-lead">{esc(source_intro or 'Zapraszamy do salonów sprzedaży w Tarnowie i Radłowie.')}</p>
     </header>
     <div class="location-grid">
       {''.join(cards)}
     </div>
-    <div class="cta-banner-dark">
-      <span class="eyebrow eyebrow--gold">Potrzebujesz pomocy w doborze?</span>
-      <h3>Zadzwoń do wybranego punktu lub na infolinię</h3>
-      <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
-    </div>
+    {source_details}
   </div>
 </main>'''
     return document(route, "Nasze sklepy i salony | WOL-BUD Tarnów, Radłów", "Adresy salonów sprzedaży WOL-BUD w Tarnowie i Radłowie. Godziny otwarcia, telefony i wskazówki dojazdu.", main)
@@ -1168,6 +1479,10 @@ def contact_page() -> str:
           <b>WOL-BUD Wojciech Wolański</b>
           Sprzedaż i profesjonalny montaż stolarki okiennej i drzwiowej od 1995 roku.
         </div>
+        <div class="kt-oferta">
+          <b>Firma Usługowo–Handlowa „WOL-BUD” Wojciech Wolański</b>
+          NIP: 8731011790
+        </div>
       </div>
       <div class="kt-adres">
         <span class="kt-lab">Salony sprzedaży</span>
@@ -1204,16 +1519,17 @@ def main() -> None:
     print("Loading data...")
     scraped_data = json.loads(SCRAPED_DATA_FILE.read_text(encoding="utf-8"))
     source_content = json.loads(SOURCE_DATA_FILE.read_text(encoding="utf-8"))
+    source_pages = source_page_index(source_content)
 
     # 1. Generate Home Page
     print("Generating Home Page...")
-    (ROOT / "index.html").write_text(home_page(scraped_data), encoding="utf-8")
+    (ROOT / "index.html").write_text(home_page(scraped_data, source_pages.get("/uslugi/")), encoding="utf-8")
 
     # 2. Generate Primary and Secondary Category Pages
     print("Generating Category Pages...")
     categories = scraped_data.get("categories", {})
     for cat_route, cat_data in categories.items():
-        html_content = category_page(cat_route, cat_data, scraped_data)
+        html_content = category_page(cat_route, cat_data, scraped_data, source_pages.get(cat_route))
         dest = output_path(cat_route)
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(html_content, encoding="utf-8")
@@ -1223,7 +1539,7 @@ def main() -> None:
     for parent_cat in ["/kategorie/parapety-blaty/", "/kategorie/rolety/"]:
         if parent_cat not in categories:
             cat_data = {"title": "Parapety i blaty" if "parapety" in parent_cat else "Rolety", "products": []}
-            html_content = category_page(parent_cat, cat_data, scraped_data)
+            html_content = category_page(parent_cat, cat_data, scraped_data, source_pages.get(parent_cat))
             dest = output_path(parent_cat)
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(html_content, encoding="utf-8")
@@ -1233,7 +1549,7 @@ def main() -> None:
     print("Generating Product Detail Pages...")
     products = scraped_data.get("products", {})
     for prod_route, prod_data in products.items():
-        html_content = product_detail_page(prod_route, prod_data, scraped_data)
+        html_content = product_detail_page(prod_route, prod_data, scraped_data, source_pages.get(prod_route))
         dest = output_path(prod_route)
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(html_content, encoding="utf-8")
@@ -1242,12 +1558,12 @@ def main() -> None:
     # 4. Generate Services Page
     print("Generating Services Page...")
     (ROOT / "uslugi" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "uslugi" / "index.html").write_text(services_page(scraped_data), encoding="utf-8")
+    (ROOT / "uslugi" / "index.html").write_text(services_page(scraped_data, source_pages.get("/uslugi/")), encoding="utf-8")
 
     # 5. Generate Warm Montage Page
     print("Generating Warm Montage Page...")
     (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").write_text(warm_montage_page(scraped_data), encoding="utf-8")
+    (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").write_text(warm_montage_page(scraped_data, source_pages.get("/promocje/cieply-montaz-warstwowy-okien-drzwi/")), encoding="utf-8")
 
     # 6. Generate Catalog Index (Oferta)
     print("Generating Catalog Index Page...")
@@ -1257,13 +1573,31 @@ def main() -> None:
     # 7. Generate Standalone Pages: O firmie, Nasze sklepy, Kontakt
     print("Generating Static Content Pages...")
     (ROOT / "o-firmie" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "o-firmie" / "index.html").write_text(about_page(source_content), encoding="utf-8")
+    (ROOT / "o-firmie" / "index.html").write_text(about_page(source_pages.get("/o-firmie/")), encoding="utf-8")
 
     (ROOT / "nasze-sklepy" / "index.html").parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / "nasze-sklepy" / "index.html").write_text(locations_page(), encoding="utf-8")
+    (ROOT / "nasze-sklepy" / "index.html").write_text(
+        locations_page(source_pages.get("/nasze-sklepy/")),
+        encoding="utf-8",
+    )
 
     (ROOT / "kontakt" / "index.html").parent.mkdir(parents=True, exist_ok=True)
     (ROOT / "kontakt" / "index.html").write_text(contact_page(), encoding="utf-8")
+
+    # Render captured source routes without a specialized catalogue template as complete content pages.
+    generated_routes = {
+        "/", "/oferta/", "/uslugi/", "/o-firmie/", "/nasze-sklepy/", "/kontakt/",
+        "/promocje/cieply-montaz-warstwowy-okien-drzwi/",
+        *categories.keys(), *products.keys(),
+    }
+    for source_route_path, source_page in source_pages.items():
+        if source_route_path in generated_routes:
+            continue
+        dest = output_path(source_route_path)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(source_document_page(source_route_path, source_page), encoding="utf-8")
+        generated_routes.add(source_route_path)
+        print(f"  Source page {source_route_path}")
 
     print("\nSite build complete! All pages generated with interactive galleries, navigation, and map links.")
 
