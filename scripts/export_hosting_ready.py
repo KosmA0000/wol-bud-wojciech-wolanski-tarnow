@@ -20,7 +20,7 @@ GITHUB_INFO_DIR.mkdir(parents=True, exist_ok=True)
 # Copy web directories
 web_dirs = [
     "assets",
-    "public",
+    "img",
     "kategorie",
     "produkty",
     "uslugi",

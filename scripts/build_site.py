@@ -33,30 +33,30 @@ MAP_LINKS = {
 
 # Primary categories displayed in menus and catalog
 PRIMARY_CATEGORIES = [
-    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/public/assets/source/products/okno-infinity-passive-83md.webp", ""),
-    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/public/assets/source/products/drzwi-zewnetrzne-wiked.webp", ""),
-    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
-    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/public/assets/source/products/brama-segmentowa.webp", ""),
-    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/public/assets/scraped/products/alu3-306x217.webp", ""),
-    ("Rolety", "/kategorie/rolety/", "/public/assets/source/products/roleta-dzien-noc.webp", ""),
-    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/public/assets/scraped/products/Botticino-306x204.webp", ""),
-    ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.webp", ""),
+    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/img/products/okno-infinity-passive-83md.webp", ""),
+    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-wiked.webp", ""),
+    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
+    ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
+    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/alu3-306x217.webp", ""),
+    ("Rolety", "/kategorie/rolety/", "/img/products/roleta-dzien-noc.webp", ""),
+    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/Botticino-306x204.webp", ""),
+    ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", ""),
 ]
 
 # Subcategories definition for parent categories
 SUBCATEGORIES = {
     "/kategorie/parapety-blaty/": [
-        ("Aglomarmur", "/kategorie/aglomarmur/", "/public/assets/scraped/thumbs/Botticino-130x86.webp", "", ""),
-        ("Granit", "/kategorie/granit/", "/public/assets/scraped/thumbs/Baltic-Brown-130x86.webp", "", ""),
-        ("Marmur", "/kategorie/marmur/", "/public/assets/scraped/thumbs/Crema-Marphil-130x86.webp", "", ""),
-        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/public/assets/scraped/thumbs/PCV-Bia_y-130x86.webp", "", ""),
-        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/public/assets/scraped/thumbs/RAL-8019-12-mm1-130x86.webp", "", ""),
+        ("Aglomarmur", "/kategorie/aglomarmur/", "/img/thumbs/Botticino-130x86.webp", "", ""),
+        ("Granit", "/kategorie/granit/", "/img/thumbs/Baltic-Brown-130x86.webp", "", ""),
+        ("Marmur", "/kategorie/marmur/", "/img/thumbs/Crema-Marphil-130x86.webp", "", ""),
+        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/img/thumbs/PCV-Bia_y-130x86.webp", "", ""),
+        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/img/thumbs/RAL-8019-12-mm1-130x86.webp", "", ""),
     ],
     "/kategorie/rolety/": [
-        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/public/assets/scraped/thumbs/dzien-noc-2-130x86.webp", "", ""),
-        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/public/assets/source/products/roleta-dzien-noc.webp", "", ""),
-        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/public/assets/source/products/zaluzje-drewniane.webp", "", ""),
-        ("Moskitiery", "/kategorie/moskitiery/", "/public/assets/source/products/moskitiera-okienna.webp", "", ""),
+        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/img/thumbs/dzien-noc-2-130x86.webp", "", ""),
+        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/img/products/roleta-dzien-noc.webp", "", ""),
+        ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/img/products/zaluzje-drewniane.webp", "", ""),
+        ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", "", ""),
     ],
 }
 
@@ -97,21 +97,29 @@ def route_url(route: str) -> str:
     return route if route.endswith("/") else route + "/"
 
 
+def with_index(path: str) -> str:
+    """Point directory links at index.html so pages also work when opened from disk (file://)."""
+    clean, hash_mark, fragment = path.partition("#")
+    if clean.endswith("/"):
+        clean += "index.html"
+    return clean + hash_mark + fragment
+
+
 def url_for(path: str, prefix: str) -> str:
     if not path:
-        return prefix or "./"
+        return f"{prefix}index.html"
     if path.startswith("http://") or path.startswith("https://") or path.startswith("tel:") or path.startswith("mailto:"):
         return path
     if path == "/":
-        return f"{prefix}index.html" if prefix else "./"
+        return f"{prefix}index.html"
     if path.startswith("/#"):
         return f"{prefix}index.html{path[1:]}" if prefix else path[1:]
     if path.startswith("#"):
         return path
     if path.startswith("/"):
         clean = path.lstrip("/")
-        return f"{prefix}{clean}"
-    return f"{prefix}{path}"
+        return with_index(f"{prefix}{clean}")
+    return with_index(f"{prefix}{path}")
 
 
 def source_route(page: dict) -> str:
@@ -386,14 +394,14 @@ def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], li
 
     # Legacy fallback for routes absent from the source gallery audit.
     hero_overrides = {
-        "/produkty/infinity-passive-83md/": "/public/assets/source/products/okno-infinity-passive-83md.webp",
-        "/produkty/drzwi-wewnetrzne-intenso/": "/public/assets/source/products/drzwi-wewnetrzne-malaga-w5.webp",
-        "/produkty/ogrody-zimowe/": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
+        "/produkty/infinity-passive-83md/": "/img/products/okno-infinity-passive-83md.webp",
+        "/produkty/drzwi-wewnetrzne-intenso/": "/img/products/drzwi-wewnetrzne-malaga-w5.webp",
+        "/produkty/ogrody-zimowe/": "/img/products/ogrod-zimowy-source-hero.jpg",
     }
     garden_variants = {
-        "ogr_d3-44x33": "/public/assets/source/products/ogrod-zimowy-variant-3.webp",
-        "ogr_d2-29x40": "/public/assets/source/products/ogrod-zimowy-variant-2.webp",
-        "ogr_d-44x31": "/public/assets/source/products/ogrod-zimowy-variant.webp",
+        "ogr_d3-44x33": "/img/products/ogrod-zimowy-variant-3.webp",
+        "ogr_d2-29x40": "/img/products/ogrod-zimowy-variant-2.webp",
+        "ogr_d-44x31": "/img/products/ogrod-zimowy-variant.webp",
     }
     displayed = []
     small_assets = []
@@ -433,7 +441,8 @@ def header(prefix: str) -> str:
         for label, href, mobile_href in links
     )
     brand_href = url_for("/", prefix)
-    return f'''<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button>{menu_links}<a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="{brand_href}">WOL-BUD</a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>'''
+    logo_src = url_for("/img/wolbud-logo.webp", prefix)
+    return f'''<header class="bar"><div class="bar-in"><div class="menu" id="menu"><button class="pill" id="menuButton" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>Menu</button><nav class="menu-panel" id="site-menu" data-menu-panel hidden aria-label="Menu główne"><button class="menu-close" type="button" data-menu-close aria-label="Zamknij menu">×</button>{menu_links}<a class="menu-phone" href="tel:+48534091021"><i></i>534 091 021</a></nav></div><a class="brand" href="{brand_href}" aria-label="WOL-BUD – strona główna"><img src="{logo_src}" alt="WOL-BUD – okna, drzwi, rolety, bramy" width="363" height="96"></a><a class="pill phone" href="tel:+48534091021"><i></i>534 091 021</a></div></header>'''
 
 
 def footer(prefix: str) -> str:
@@ -457,7 +466,7 @@ def document(route: str, title: str, description: str, body: str) -> str:
 <title>{esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{prefix}assets/css/site.css"><link rel="stylesheet" href="{prefix}assets/visual-refinements.css"><script defer src="{prefix}assets/js/site.js"></script></head>
+<link rel="icon" type="image/png" href="{prefix}img/favicon.png"><link rel="apple-touch-icon" href="{prefix}img/favicon.png"><link rel="stylesheet" href="{prefix}assets/site.css"><script defer src="{prefix}assets/site.js"></script></head>
 <body>
 {header(prefix)}
 {body}
@@ -580,14 +589,14 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         ("partner-domel.webp", "DOMEL"), ("partner-fill.webp", "FILL"), ("partner-wiked.webp", "WIKĘD"),
         ("partner-erkado.webp", "ERKADO"), ("partner-intenso.webp", "INTENSO"), ("partner-lagrus.webp", "LAGRUS"),
     ]
-    partner_entries = "".join(f'<div class="partner-logo"><img src="{url_for(f"/public/assets/source/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in partner_logos)
+    partner_entries = "".join(f'<div class="partner-logo"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in partner_logos)
 
     body = f'''<main id="main">
 <!-- HERO -->
 <section class="hero" id="start">
   <div class="sticky">
     <div class="hero-frame" id="heroFrame">
-      <img src="{url_for('/public/assets/source/products/fasada-aluminiowa.webp', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1376" height="768" decoding="async">
+      <img src="{url_for('/img/products/fasada-aluminiowa.webp', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1376" height="768" decoding="async">
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
@@ -625,7 +634,8 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
   </div>
 </section>
 <!-- CZEGO SZUKASZ? (Intuitive Catalog Cards Grid + Services) -->
-<section class="offer" id="oferta">
+<section class="offer offer--house" id="oferta">
+  <div class="offer-bg" aria-hidden="true"><div class="offer-bg-img"></div></div>
   <div class="wrap">
     <div class="offer-head">
       <div>
@@ -802,8 +812,8 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
             prod_detail = scraped_data.get("products", {}).get(clean_route, {})
             p_href_rel = url_for(p_href, prefix)
             category_image_overrides = {
-                "/produkty/ogrody-zimowe": "/public/assets/source/products/ogrod-zimowy-source-hero.jpg",
-                "/produkty/fasady": "/public/assets/source/products/fasada-aluminiowa.webp",
+                "/produkty/ogrody-zimowe": "/img/products/ogrod-zimowy-source-hero.jpg",
+                "/produkty/fasady": "/img/products/fasada-aluminiowa.webp",
             }
             p_img = category_image_overrides.get(clean_route.rstrip("/"), p_img)
             if clean_route.rstrip("/") not in category_image_overrides:
@@ -1311,7 +1321,7 @@ def references_gallery(prefix: str = "") -> str:
     cards = []
     for number in source_order:
         filename = f"referencja-{number:02d}.webp"
-        image_url = url_for(f"/public/assets/source/references/{filename}", prefix)
+        image_url = url_for(f"/img/references/{filename}", prefix)
         cards.append(f'''<figure class="reference-card">
   <a href="{image_url}" data-lightbox-trigger data-lightbox-src="{image_url}" data-lightbox-group="references" aria-label="Powiększ skan referencji nr {number}">
     <img src="{image_url}" alt="Skan referencji nr {number}" loading="lazy" decoding="async" width="212" height="300">
@@ -1404,7 +1414,7 @@ def locations_page(source_page: dict | None = None) -> str:
     for name, address, tel_fixed, tel_mobile, photo, hours, map_url in locations:
         mobile_digits = re.sub(r"\D", "", tel_mobile)
         fixed_digits = re.sub(r"\D", "", tel_fixed)
-        photo_url = url_for(f"/public/assets/source/stores/{photo}", prefix)
+        photo_url = url_for(f"/img/stores/{photo}", prefix)
         cards.append(f'''<article class="location-card">
   <div class="location-card__photo"><img src="{photo_url}" alt="{esc(name)}" loading="lazy" decoding="async"></div>
   <div class="location-card__body">

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Append gallery, lightbox, navigation, and store map button styles to assets/css/site.css."""
+"""Append gallery, lightbox, navigation, and store map button styles to assets/site.css."""
 
 from pathlib import Path
 
-css_path = Path("assets/css/site.css")
+css_path = Path("assets/site.css")
 content = css_path.read_text(encoding="utf-8")
 
 extra_css = """

@@ -17,7 +17,7 @@ ctx.verify_mode = ssl.CERT_NONE
 
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 BASE_URL = 'https://wol-bud.com.pl'
-IMG_DIR = os.path.join('public', 'assets', 'scraped')
+IMG_DIR = 'img'
 
 def safe_download(url, subfolder=''):
     if not url:
@@ -57,7 +57,7 @@ def safe_download(url, subfolder=''):
             else:
                 return ''
     
-    rel_path = os.path.join('/public/assets/scraped', subfolder, safe_fname).replace('\\', '/')
+    rel_path = os.path.join('/img', subfolder, safe_fname).replace('\\', '/')
     return rel_path
 
 def fetch_soup(url):

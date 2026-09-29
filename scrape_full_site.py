@@ -92,7 +92,7 @@ for cat_path in CATEGORIES:
                 
                 img = li.find('img')
                 img_src = img.get('src', '') if img else ''
-                local_img = download_image(img_src, 'public/assets/scraped/thumbs') if img_src else ''
+                local_img = download_image(img_src, 'img/thumbs') if img_src else ''
                 
                 if prod_href:
                     all_product_urls.add(prod_href)
