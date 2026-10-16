@@ -924,7 +924,9 @@ def realizations_page() -> str:
         for path in group["photos"]:
             full = url_for(path, prefix)
             thumb = realization_thumb(path)
-            photos.append(f'''<figure class="realization-photo">
+            width, height = image_dimensions(thumb) or (4, 3)
+            # The photo's own proportions, so the gallery shows it whole instead of cropping it to 4:3.
+            photos.append(f'''<figure class="realization-photo" style="--ar: {width / height:.4f}">
   <a href="{full}" data-lightbox-trigger data-lightbox-src="{full}" data-lightbox-group="realizacja-{slug}" aria-label="Powiększ zdjęcie: {alt}">
     <img src="{url_for(thumb, prefix)}" alt="{alt}"{realization_img_size(thumb)} loading="lazy" decoding="async">
   </a>

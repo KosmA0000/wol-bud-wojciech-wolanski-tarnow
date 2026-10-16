@@ -4203,18 +4203,28 @@ body.lightbox-open {
   white-space: nowrap;
 }
 
+/* Justified rows: each photo keeps its own proportions (--ar from the build), so nothing is cropped
+   and the photos of one row share a height. */
 .realization-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.8rem;
 }
 
+/* Takes the spare room in the last row, so its photos are not blown up. */
+.realization-grid::after {
+  content: "";
+  flex: 1000 1 0;
+}
+
 .realization-photo {
+  flex: calc(var(--ar, 1.3333) * 100) 1 calc(var(--ar, 1.3333) * 13rem);
   margin: 0;
   min-width: 0;
 }
 
 .realization-photo a {
+  aspect-ratio: var(--ar, 4 / 3);
   border-radius: 12px;
 }
 
@@ -4239,6 +4249,8 @@ body.lightbox-open {
   /* On phones each realization is one swipeable row instead of a tall grid. */
   .realization-grid {
     display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 0.7rem;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -4247,5 +4259,7 @@ body.lightbox-open {
     scrollbar-width: none;
   }
   .realization-grid::-webkit-scrollbar { display: none; height: 0; }
-  .realization-photo { flex: 0 0 86%; scroll-snap-align: start; }
+  .realization-grid::after { content: none; }
+  /* The whole photo: up to 15rem tall, never wider than the strip, so the next one still peeks in. */
+  .realization-photo { flex: 0 0 min(92%, calc(var(--ar, 1.3333) * 15rem)); scroll-snap-align: start; }
 }
