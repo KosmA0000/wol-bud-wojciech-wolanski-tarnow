@@ -264,14 +264,21 @@ NEW_PRODUCTS = [
 # Primary categories displayed in menus and catalog
 PRIMARY_CATEGORIES = [
     ("Okna PCV", "/kategorie/okna-pcv/", "/img/products/okno-infinity-passive-83md.webp", ""),
-    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-stalowe.webp", ""),
+    ("Drzwi wejściowe", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-stalowe.webp", ""),
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
-    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/alu3-306x217.webp", ""),
-    ("Rolety", "/kategorie/rolety/", "/img/products/roleta-dzien-noc.webp", ""),
+    ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
+    ("Rolety", "/kategorie/rolety/", "/img/products/gallery/do-okien-dachowych-dekolux/01-source.webp", ""),
     ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/Botticino-306x204.webp", ""),
     ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", ""),
 ]
+
+# Category links in the "Kategorie:" bar and the sidebar: the main categories plus Żaluzje i plisy after Rolety.
+NAV_CATEGORIES = []
+for _name, _href, _, _ in PRIMARY_CATEGORIES:
+    NAV_CATEGORIES.append((_name, _href))
+    if _href == "/kategorie/rolety/":
+        NAV_CATEGORIES.append(("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"))
 
 # Subcategories definition for parent categories
 SUBCATEGORIES = {
@@ -1028,7 +1035,7 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
         for store in STORES
     )
     category_links = []
-    for cat_name, cat_href, _, _ in PRIMARY_CATEGORIES:
+    for cat_name, cat_href in NAV_CATEGORIES:
         is_active = ' style="font-weight:700; color:var(--gold);"' if current_route == cat_href else ''
         category_links.append(f'<li><a href="{url_for(cat_href, prefix)}"{is_active}>{esc(cat_name)}</a></li>')
 
@@ -1133,7 +1140,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
 
     # Category Quick-Nav Bar
     quick_pills = []
-    for c_name, c_href, _, _ in PRIMARY_CATEGORIES:
+    for c_name, c_href in NAV_CATEGORIES:
         is_cur = ' is-active' if route == c_href else ''
         quick_pills.append(f'<a href="{url_for(c_href, prefix)}" class="cat-nav-pill{is_cur}">{esc(c_name)}</a>')
     quick_pills.append(f'<a href="{url_for("/uslugi/", prefix)}" class="cat-nav-pill">Usługi montażowe</a>')
@@ -1836,6 +1843,8 @@ def apply_client_corrections(scraped_data: dict, source_pages: dict) -> None:
         "paragraphs": [],
         "products": [],
     }
+    # The client calls this tab "Drzwi wejściowe" (PDF p. 5); the address /kategorie/drzwi-zewnetrzne/ stays.
+    categories["/kategorie/drzwi-zewnetrzne/"]["title"] = "Drzwi wejściowe"
     for route in REMOVED_ROUTES:
         products.pop(route, None)
         source_pages.pop(route, None)
