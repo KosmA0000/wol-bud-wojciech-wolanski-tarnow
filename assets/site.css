@@ -2955,6 +2955,11 @@ body.lightbox-open {
   flex-wrap: wrap;
 }
 
+/* The bar's own margin spaces the row; a breadcrumb margin here would lift it above the button's centre. */
+.page-nav-bar .breadcrumbs {
+  margin-bottom: 0;
+}
+
 .btn-back {
   display: inline-flex;
   align-items: center;
