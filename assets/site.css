@@ -2,12 +2,13 @@
 
 /* ==========================================================================
    WOL-BUD — Awwwards Style (DAKO-Kalisz Reference Design)
-   Figtree typography, warm porcelain #f6f4f0, rich charcoal #1b1b19, gold #ffb200
+   Figtree typography, warm porcelain #f6f4f0, logo-hue green #2c4d19, gold #ffb200
    ========================================================================== */
 
 :root {
   --bg: #f6f4f0;
-  --dark: #1b1b19;
+  /* Dark surfaces take the logo's hue (#62cd26, 98°) darkened so white text keeps 9.6:1; body text stays charcoal. */
+  --dark: #2c4d19;
   --ink: #1b1b19;
   --muted: #6f6d67;
   --accent: #eeeae2;
@@ -147,7 +148,7 @@ p, li, blockquote {
   padding: 0 22px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: rgba(20, 18, 16, 0.58);
+  background: rgba(44, 77, 25, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #fff;
@@ -160,7 +161,7 @@ p, li, blockquote {
 }
 
 .pill:hover {
-  background: rgba(20, 18, 16, 0.85);
+  background: rgba(44, 77, 25, 0.88);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -222,7 +223,7 @@ p, li, blockquote {
   padding: 0 24px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: rgba(20, 18, 16, 0.58);
+  background: rgba(44, 77, 25, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #fff;
@@ -270,8 +271,8 @@ p, li, blockquote {
   inset: 8px;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
-  background: radial-gradient(120% 80% at 50% 8%, #3a352a 0%, rgba(58, 53, 42, 0) 62%),
-              linear-gradient(180deg, #26241d 0%, #1a1916 54%, #0d0d0b 100%);
+  background: radial-gradient(120% 80% at 50% 8%, #3b5d28 0%, rgba(59, 93, 40, 0) 62%),
+              linear-gradient(180deg, #243b16 0%, #182a0e 54%, #0b1406 100%);
 }
 
 .hero-frame img {
@@ -284,7 +285,7 @@ p, li, blockquote {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(10, 9, 8, 0.25) 0%, rgba(10, 9, 8, 0.12) 40%, rgba(10, 9, 8, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(11, 20, 6, 0.25) 0%, rgba(11, 20, 6, 0.12) 40%, rgba(11, 20, 6, 0.8) 100%);
 }
 
 .hero-copy {
@@ -355,7 +356,7 @@ p, li, blockquote {
   padding: 0 32px;
   border-radius: 999px;
   background: var(--gold);
-  color: #12181f;
+  color: var(--dark);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -607,7 +608,7 @@ p, li, blockquote {
   position: relative;
   z-index: 4;
   padding: clamp(5rem, 9vw, 8rem) 0;
-  background: #141412;
+  background: #182a0e;
   color: var(--bg);
   border-top: 1px solid rgba(244, 243, 236, 0.1);
 }
@@ -2715,7 +2716,7 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(27, 27, 25, 0.82);
+  background: rgba(44, 77, 25, 0.85);
   backdrop-filter: blur(6px);
   color: #ffffff;
   font-size: 0.76rem;
