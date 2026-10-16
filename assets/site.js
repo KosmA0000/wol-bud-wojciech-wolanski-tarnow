@@ -633,34 +633,6 @@
   }
 
   // ==========================================================================
-  // 5b. Home Services: masonry, so a short text does not leave a tall empty card
-  // ==========================================================================
-  const servicesGrid = document.querySelector('.home-services-grid');
-  if (servicesGrid) {
-    const serviceItems = servicesGrid.querySelectorAll('.home-service-item');
-    let servicesFrame = 0;
-    const layoutServices = () => {
-      servicesFrame = 0;
-      const columns = getComputedStyle(servicesGrid).gridTemplateColumns.split(' ').length;
-      servicesGrid.classList.toggle('is-masonry', columns > 1);
-      const gap = parseFloat(getComputedStyle(servicesGrid).columnGap) || 0;
-      // Rows are 1px tall, so a card spans its own height plus the gap below it.
-      serviceItems.forEach((item) => {
-        item.style.gridRowEnd = columns > 1 ? `span ${Math.ceil(item.getBoundingClientRect().height + gap)}` : '';
-      });
-    };
-    const scheduleServices = () => {
-      if (!servicesFrame) servicesFrame = requestAnimationFrame(layoutServices);
-    };
-    layoutServices();
-    window.addEventListener('resize', scheduleServices, { passive: true });
-    if ('ResizeObserver' in window) {
-      const servicesObserver = new ResizeObserver(scheduleServices);
-      serviceItems.forEach((item) => servicesObserver.observe(item));
-    }
-  }
-
-  // ==========================================================================
   // 6. Smooth Anchor Scroll
   // ==========================================================================
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
