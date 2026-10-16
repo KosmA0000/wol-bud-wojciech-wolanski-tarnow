@@ -280,6 +280,57 @@ for _name, _href, _, _ in PRIMARY_CATEGORIES:
     if _href == "/kategorie/rolety/":
         NAV_CATEGORIES.append(("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"))
 
+# Realizacje in place of the reference letters (client PDF p. 1). The client's photos came unlabelled,
+# so they are split into three kinds of work; within "Okna" photos of the same house stay together.
+# Photos only, no descriptions (client, 10.2026). The first photo is the cover; its grid thumbnail is
+# /img/realizacje/miniatury/<file name of the photo>.
+REALIZATIONS = [
+    {
+        "slug": "okna",
+        "title": "Okna",
+        "photos": [
+            "/img/products/fasada-dom-szczytowy.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-02.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-03.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-04.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-05.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-06.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-01.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-02.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-03.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-04.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-05.webp",
+            "/img/realizacje/dom-z-dachem-czterospadowym-01.webp",
+            "/img/realizacje/dom-z-dachem-czterospadowym-02.webp",
+            "/img/realizacje/okna-narozne-01.webp",
+            "/img/realizacje/okna-narozne-02.webp",
+            "/img/montage/zabezpieczenie-folii.webp",
+            "/img/montage/zabezpieczenie-folii-2.webp",
+            "/img/montage/zabezpieczenie-folii-od-zewn_trz-1.webp",
+            "/img/montage/zabezpieczenie-folii-od-zewn_trz-2.webp",
+            "/img/montage/termoparapet-balkonowy.webp",
+            "/img/products/okna-alu-przesuwne.webp",
+            "/img/montage/klinaryt-drzwi-HST.webp",
+        ],
+    },
+    {
+        "slug": "bramy",
+        "title": "Bramy",
+        "photos": [
+            "/img/realizacje/okna-nad-brama-garazowa-01.webp",
+            "/img/realizacje/okna-nad-brama-garazowa-02.webp",
+        ],
+    },
+    {
+        "slug": "drzwi",
+        "title": "Drzwi",
+        "photos": [
+            "/img/realizacje/drzwi-wejsciowe-01.webp",
+            "/img/realizacje/drzwi-wejsciowe-02.webp",
+        ],
+    },
+]
+
 # Subcategories definition for parent categories
 SUBCATEGORIES = {
     "/kategorie/parapety-blaty/": [
@@ -732,6 +783,7 @@ def header(prefix: str) -> str:
         ("Strona główna", "/", "/#start"),
         ("Oferta", "/oferta/", "/#oferta"),
         ("Usługi", "/uslugi/", "/#uslugi"),
+        ("Realizacje", "/realizacje/", "/#realizacje"),
         ("O firmie", "/o-firmie/", "/#ofirmie"),
         ("Nasze sklepy", "/nasze-sklepy/", "/#nasze-sklepy"),
         ("Kontakt", "/kontakt/", "/#kontakt"),
@@ -751,6 +803,7 @@ def footer(prefix: str) -> str:
     links = [
         ("Oferta", "/oferta/"),
         ("Usługi", "/uslugi/"),
+        ("Realizacje", "/realizacje/"),
         ("O firmie", "/o-firmie/"),
         ("Nasze sklepy", "/nasze-sklepy/"),
         ("Kontakt", "/kontakt/"),
@@ -805,6 +858,120 @@ def document(route: str, title: str, description: str, body: str) -> str:
 
 </body></html>'''
     return re.sub(r"(?m)^[ \t]+$", "", html_doc)
+
+
+def photo_count_label(count: int) -> str:
+    if count == 1:
+        return "1 zdjęcie"
+    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
+        return f"{count} zdjęcia"
+    return f"{count} zdjęć"
+
+
+def realization_thumb(photo: str) -> str:
+    return f"/img/realizacje/miniatury/{Path(photo).name}"
+
+
+def realization_alt(group: dict) -> str:
+    return f"{group['title']} – realizacja WOL-BUD"
+
+
+def realization_img_size(path: str) -> str:
+    dimensions = image_dimensions(path)
+    return f' width="{dimensions[0]}" height="{dimensions[1]}"' if dimensions else ""
+
+
+def realizations_home_section(prefix: str = "") -> str:
+    cards = []
+    for group in REALIZATIONS:
+        cover = realization_thumb(group["photos"][0])
+        cards.append(f'''<a class="realization-card" href="{url_for(f'/realizacje/#{group["slug"]}', prefix)}">
+  <div class="realization-card-media"><img src="{url_for(cover, prefix)}" alt="{esc(realization_alt(group))}"{realization_img_size(cover)} loading="lazy" decoding="async"></div>
+  <div class="realization-card-body">
+    <h3>{esc(group["title"])}</h3>
+    <span>{photo_count_label(len(group["photos"]))} ↗</span>
+  </div>
+</a>''')
+    return f'''<!-- REALIZACJE -->
+<section class="realizations-home" id="realizacje">
+  <div class="wrap">
+    <div class="offer-head">
+      <div>
+        <span class="eyebrow eyebrow--highlight">Zdjęcia z naszych montaży</span>
+        <h2>Realizacje</h2>
+      </div>
+    </div>
+    <div class="realization-cards">
+      {''.join(cards)}
+    </div>
+    <a class="realizations-more" href="{url_for('/realizacje/', prefix)}">Zobacz wszystkie realizacje ↗</a>
+  </div>
+</section>'''
+
+
+def realizations_page() -> str:
+    route = "/realizacje/"
+    prefix = asset_prefix(route)
+    pills = "".join(
+        f'<a href="#{group["slug"]}" class="cat-nav-pill">{esc(group["title"])}</a>'
+        for group in REALIZATIONS
+    )
+    sections = []
+    for group in REALIZATIONS:
+        slug = group["slug"]
+        photos = []
+        alt = esc(realization_alt(group))
+        for path in group["photos"]:
+            full = url_for(path, prefix)
+            thumb = realization_thumb(path)
+            photos.append(f'''<figure class="realization-photo">
+  <a href="{full}" data-lightbox-trigger data-lightbox-src="{full}" data-lightbox-group="realizacja-{slug}" aria-label="Powiększ zdjęcie: {alt}">
+    <img src="{url_for(thumb, prefix)}" alt="{alt}"{realization_img_size(thumb)} loading="lazy" decoding="async">
+  </a>
+</figure>''')
+        sections.append(f'''<section class="realization-group" id="{slug}" aria-labelledby="{slug}-title">
+  <div class="realization-group-head">
+    <h2 id="{slug}-title">{esc(group["title"])}</h2>
+    <span class="realization-count">{photo_count_label(len(group["photos"]))}</span>
+  </div>
+  {horizontal_photo_strip("".join(photos), "realization-grid", f"Zdjęcia: {group['title']}")}
+</section>''')
+
+    crumb = f'''<div class="page-nav-bar">
+  <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <span>Wróć</span>
+  </button>
+  <nav class="breadcrumbs" aria-label="Okruszki"><a href="{url_for('/#realizacje', prefix)}" data-home-link>Strona główna</a><span>/</span><span aria-current="page">Realizacje</span></nav>
+</div>'''
+
+    main = f'''<main id="main" class="page-main">
+  <div class="wrap">
+    {crumb}
+    <header class="subpage-head">
+      <span class="eyebrow">Zdjęcia z naszych montaży</span>
+      <h1>Realizacje</h1>
+      <p class="subpage-lead">Kliknij zdjęcie, aby je powiększyć.</p>
+    </header>
+    <div class="cat-quick-nav" aria-label="Szybka nawigacja po realizacjach">
+      <span class="cat-quick-nav-label">Realizacje:</span>
+      <div class="cat-quick-nav-pills">{pills}</div>
+    </div>
+    <div class="subpage-grid">
+      <div class="subpage-content">
+        {''.join(sections)}
+        <div class="cta-banner-dark">
+          <span class="eyebrow eyebrow--highlight">Planujesz budowę lub wymianę okien?</span>
+          <h3>Umów bezpłatny pomiar i wycenę</h3>
+          <p>Pomiar, doradztwo i wycena są bezpłatne i niewiążące — na budowie lub w naszych salonach sprzedaży.</p>
+          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+        </div>
+      </div>
+      {sidebar_markup(route, prefix)}
+    </div>
+  </div>
+</main>'''
+    return document(route, "Realizacje | WOL-BUD Tarnów", "Realizacje WOL-BUD: zdjęcia okien, bram i drzwi zamontowanych w domach jednorodzinnych.", main)
 
 
 def home_page(scraped_data: dict, services_source_page: dict | None = None) -> str:
@@ -976,6 +1143,8 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 
   </div>
 </section>
+
+{realizations_home_section(prefix)}
 
 <!-- DOSTAWCY / PARTNERZY -->
 <section class="partners-section">
@@ -1929,6 +2098,11 @@ def main() -> None:
     (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").parent.mkdir(parents=True, exist_ok=True)
     (ROOT / "promocje" / "cieply-montaz-warstwowy-okien-drzwi" / "index.html").write_text(warm_montage_page(scraped_data, source_pages.get("/promocje/cieply-montaz-warstwowy-okien-drzwi/")), encoding="utf-8")
 
+    # 5b. Generate Realizations Page
+    print("Generating Realizations Page...")
+    (ROOT / "realizacje" / "index.html").parent.mkdir(parents=True, exist_ok=True)
+    (ROOT / "realizacje" / "index.html").write_text(realizations_page(), encoding="utf-8")
+
     # 6. Generate Catalog Index (Oferta)
     print("Generating Catalog Index Page...")
     (ROOT / "oferta" / "index.html").parent.mkdir(parents=True, exist_ok=True)
@@ -1957,7 +2131,7 @@ def main() -> None:
 
     # Render captured source routes without a specialized catalogue template as complete content pages.
     generated_routes = {
-        "/", "/oferta/", "/uslugi/", "/o-firmie/", "/nasze-sklepy/", "/kontakt/",
+        "/", "/oferta/", "/uslugi/", "/realizacje/", "/o-firmie/", "/nasze-sklepy/", "/kontakt/",
         "/promocje/cieply-montaz-warstwowy-okien-drzwi/",
         *categories.keys(), *products.keys(), *REMOVED_ROUTES.keys(),
     }
