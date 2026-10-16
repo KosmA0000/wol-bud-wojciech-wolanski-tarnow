@@ -4219,12 +4219,23 @@ body.lightbox-open {
 }
 
 @media (max-width: 760px) {
-  /* Three cards stack as rows: photo on the left, name and photo count on the right. */
-  .realization-cards { grid-template-columns: 1fr; gap: 0.7rem; }
-  .realization-card { flex-direction: row; }
-  .realization-card-media { flex: 0 0 42%; aspect-ratio: auto; height: 112px; }
-  .realization-card-body { padding: 0.75rem 0.85rem 0.8rem; }
-  .realization-card-body h3 { font-size: 1.05rem; }
+  /* Photo tiles with the name on the photo: the first one full width, the other two side by side. */
+  .realization-cards { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .realization-card { position: relative; border: 0; }
+  .realization-card:first-child { grid-column: 1 / -1; }
+  .realization-card-media { aspect-ratio: 1 / 1; }
+  .realization-card:first-child .realization-card-media { aspect-ratio: 16 / 10; }
+  .realization-card-body {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    gap: 0.1rem;
+    padding: 2.4rem 0.85rem 0.75rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+  }
+  .realization-card-body h3 { color: #fff; font-size: 1.15rem; }
+  .realization-card-body span { color: rgba(255, 255, 255, 0.88); }
   /* On phones each realization is one swipeable row instead of a tall grid. */
   .realization-grid {
     display: flex;
