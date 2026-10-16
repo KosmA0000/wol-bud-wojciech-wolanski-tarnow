@@ -27,14 +27,243 @@ PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.js
 # Navigation links for specific salon locations
 MAP_LINKS = {
     "chyszow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Gie%C5%82dowa+5,+33-100+Tarn%C3%B3w",
-    "szkotnik": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Szkotnik+2b,+33-100+Tarn%C3%B3w",
+    "gieldowa10": "https://www.google.com/maps/dir/?api=1&destination=ul.+Gie%C5%82dowa+10,+33-100+Tarn%C3%B3w",
     "radlow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Le%C5%9Bna+17a,+33-130+Rad%C5%82%C3%B3w",
+    "kolejowa": "https://www.google.com/maps/dir/?api=1&destination=ul.+Kolejowa+5,+33-130+Rad%C5%82%C3%B3w",
 }
+
+# Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed, Giełdowa 10 and Kolejowa 5 added.
+# The client gave no phone numbers, opening hours or photos for the new points, so those stay empty.
+STORES = [
+    {
+        "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 5",
+        "address": "ul. Giełdowa 5 (przy placu targowym), 33-100 Tarnów",
+        "address_full": "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów",
+        "tel": "14 626 80 32", "mobile": "534 091 021", "photo": "salon-tarnow-chyszow.webp",
+        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["chyszow"],
+    },
+    {
+        "name": "Tarnów, ul. Giełdowa 10", "city": "Tarnów", "street": "ul. Giełdowa 10",
+        "address": "ul. Giełdowa 10, 33-100 Tarnów", "address_full": "ul. Giełdowa 10, 33-100 Tarnów",
+        "tel": "", "mobile": "", "photo": "", "hours": "", "map": MAP_LINKS["gieldowa10"],
+    },
+    {
+        "name": "Punkt Radłów", "city": "Radłów", "street": "ul. Leśna 17a",
+        "address": "ul. Leśna 17a, 33-130 Radłów", "address_full": "ul. Leśna 17a, 33-130 Radłów",
+        "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "salon-radlow.webp",
+        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["radlow"],
+    },
+    {
+        "name": "Radłów, ul. Kolejowa 5", "city": "Radłów", "street": "ul. Kolejowa 5",
+        "address": "ul. Kolejowa 5, 33-130 Radłów", "address_full": "ul. Kolejowa 5, 33-130 Radłów",
+        "tel": "", "mobile": "", "photo": "", "hours": "", "map": MAP_LINKS["kolejowa"],
+    },
+]
+
+MAP_PIN_SVG = '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+
+# Pages dropped by the client corrections; the old address forwards to the closest current page.
+REMOVED_ROUTES = {
+    "/kategorie/okna-pcv-domel/": "/kategorie/okna-pcv/",
+    "/produkty/infinity-passive-83md/": "/kategorie/okna-pcv/",
+    "/produkty/energetic-83md/": "/kategorie/okna-pcv/",
+    "/produkty/vector-82md/": "/kategorie/okna-pcv/",
+    "/produkty/fusion/": "/kategorie/okna-pcv/",
+    "/produkty/synergic/": "/kategorie/okna-pcv/",
+    "/produkty/ogrody-zimowe/": "/kategorie/stolarka-aluminiowa/",
+    "/produkty/effectline/": "/kategorie/okna-pcv/",
+}
+
+# Service names shown on the site (client: "Prawidłowy – szczelny montaż" instead of "Ciepły montaż").
+SERVICE_TITLE_RENAMES = {
+    "Ciepły montaż": "Prawidłowy – szczelny montaż",
+}
+
+# Window profiles presented with a photo on the left and the description beside it.
+PCV_PROFILES = [
+    {
+        "name": "Okno PROTECTO", "kicker": "Okna na profilach Gealan Kontur", "image": "/img/profiles/pcv-protecto.webp",
+        "blocks": [
+            ("h", "Zwiększone bezpieczeństwo"),
+            ("p", "Okna na profilu Gealan Kontur zapewniają wyższy poziom bezpieczeństwa. W produkcie zastosowano innowacyjną „płetwę antywłamaniową” wykonaną z PCV. To rozwiązanie antywłamaniowe uniemożliwia włamywaczom wyważenie okna. Płetwa antywłamaniowa jest skuteczną barierą dla włamywacza próbującego wyważyć skrzydło okienne za pomocą np. śrubokręta."),
+            ("h", "Profil"),
+            ("ul", [
+                "6-komorowy profil GEALAN",
+                "kształtownik wzmocnienia tworzy w ramie siódmą komorę",
+                "innowacyjna płetwa antywłamaniowa wykonana z PCV",
+                "szerokość zabudowy 82,5 mm",
+                "gładka powierzchnia ramy ułatwia mycie i konserwację",
+                "system uszczelek przyszybowych zapewniający szczelność i niezawodność okna",
+                "wzmocnienia stalowe zimnogięte ocynkowane, rama grubość 1,5 mm, skrzydło grubość 2 mm",
+            ]),
+        ],
+    },
+    {
+        "name": "Okno ENERGETIC", "kicker": "Okna na profilach Gealan S 9000 MD", "image": "/img/profiles/pcv-energetic.webp",
+        "blocks": [
+            ("h", "Standard pasywny"),
+            ("p", "Energetic to innowacyjny system na profilach Gealan S 9000 wyposażony w środkową uszczelkę, dedykowany dla okien, drzwi oraz drzwi podnoszono-przesuwnych. Przy zastosowaniu standardowych wzmocnień stalowych spełnia standard pasywny."),
+            ("h", "Profil"),
+            ("ul", [
+                "6-komorowa budowa ramy i skrzydła",
+                "szerokość zabudowy 82,5 mm",
+                "kształtownik wzmocnienia stalowego tworzy w ramie siódmą komorę",
+                "gładka powierzchnia ramy ułatwia mycie i konserwację",
+                "inteligentny system uszczelek rozmieszczonych w trzech płaszczyznach",
+                "wzmocnienia stalowe zimnogięte ocynkowane, rama grubość 1,5 mm, skrzydło grubość 1,5 mm",
+                "środkowa uszczelka w postaci przylgi",
+            ]),
+        ],
+    },
+    {
+        "name": "Okno VECTOR", "kicker": "Okna 7-komorowe oparte na systemie Veka Softline 82 MD", "image": "/img/profiles/pcv-vector.webp",
+        "blocks": [
+            ("h", "Skuteczna ochrona przed zimnem i hałasem"),
+            ("p", "Okna 7-komorowe Vector, oparte na systemie Veka Softline 82, to idealne rozwiązanie dla domów energooszczędnych i pasywnych. Dzięki innowacyjnej konstrukcji okna PCV 7-komorowe skutecznie chronią wnętrza przed zimnem, wilgocią i hałasem, jednocześnie obniżając koszty ogrzewania budynku. Profil klasy A oraz doskonała izolacja termiczna sprawiają, że to rozwiązanie spełnia najwyższe standardy energooszczędności."),
+            ("h", "Profil"),
+            ("ul", [
+                "układ trzech uszczelek (zewnętrznej, środkowej i wewnętrznej) doskonale izoluje hałas, wilgoć, zimno i przeciągi; uszczelka środkowa jest solidnie zamocowana do ramy",
+                "stalowe wzmocnienia zimnogięte ocynkowane gwarantują wysoką statykę oraz odporność na uszkodzenia",
+                "profil o szerokości zabudowy 82 mm, w klasie A (grubość ścianek zewnętrznych 3 mm)",
+            ]),
+        ],
+    },
+    {
+        "name": "Okno CONTUR", "kicker": "Okna oparte na systemie Gealan Linear", "image": "/img/profiles/pcv-contur.webp",
+        "blocks": [
+            ("h", "Nowoczesny wygląd"),
+            ("p", "Prosta, przejrzysta koncepcja projektowa systemu Gealan Linear uwzględnia trendy architektoniczne, w ramach których proponowane są okna o prostych, wyrazistych konturach. Dzięki smukłemu i eleganckiemu wyglądowi okna stanowią idealne dopełnienie nowoczesnego budownictwa, a zwłaszcza minimalistycznych, prostych wnętrz."),
+            ("h", "Profil"),
+            ("ul", ["6-komorowy profil GEALAN", "szerokość zabudowy 74 mm"]),
+        ],
+    },
+    {
+        "name": "Okno HENSPERFECT", "kicker": "Okna oparte na systemie Deceuninck", "image": "/img/profiles/pcv-hensperfect.webp",
+        "blocks": [
+            ("h", "Tradycyjne wzornictwo"),
+            ("p", "Tradycyjna, ponadczasowa koncepcja projektowa systemu HENSPERFECT uwzględnia klasyczne trendy architektoniczne, w ramach których proponowane są okna o wyrazistych przylgach i eleganckim wyglądzie. Dzięki solidnemu wykończeniu okna stanowią idealne dopełnienie tradycyjnego oraz energooszczędnego budownictwa, a zwłaszcza obiektów poddawanych renowacji."),
+            ("h", "Wszechstronność zastosowań"),
+            ("p", "Kompletny system premium przeznaczony do budowy okien oraz drzwi balkonowych o głębokości zabudowy 84 mm. Zoptymalizowana, 6-komorowa konstrukcja profili zapewnia najwyższą kompatybilność, szczelność oraz doskonałą izolację termiczną."),
+        ],
+    },
+    {
+        "name": "Schüco LivIng", "kicker": "Okna na profilach Schüco", "image": "/img/profiles/pcv-schuco-living.webp",
+        "blocks": [
+            ("p", "To system, który wyznacza nowoczesne standardy dla okien PVC. Dzięki zastosowaniu zaawansowanych profili oraz technologii wielokomorowej okna oferują:"),
+            ("ul", [
+                "znakomitą izolację termiczną i akustyczną",
+                "wytrzymałość na warunki atmosferyczne",
+                "możliwość personalizacji kształtu i koloru",
+                "bezpieczeństwo dzięki okuciom Winkhaus activPilot",
+            ]),
+            ("p", "To rozwiązania, które łączą energooszczędność z minimalistyczną estetyką."),
+        ],
+    },
+    {
+        "name": "Salamander bluEvolution 82", "kicker": "Okna na profilach Salamander", "image": "/img/profiles/pcv-salamander-bluevolution-82.webp",
+        "blocks": [
+            ("p", "To energooszczędny, 6-komorowy profil okienny z PVC o głębokości zabudowy 82 mm i eleganckiej estetyce."),
+            ("h", "Ciepło i oszczędność"),
+            ("p", "Trzy uszczelki i głęboki profil (82 mm) skutecznie zatrzymują ciepło w domu, obniżając rachunki za ogrzewanie."),
+        ],
+    },
+]
+
+ALU_PROFILES = [
+    {
+        "name": "Aluprof MB-79N", "kicker": "Ekonomiczny system okienno-drzwiowy", "image": "/img/profiles/alu-aluprof-mb79n.webp",
+        "blocks": [
+            ("p", "Aluprof MB-79N to ekonomiczny system okienno-drzwiowy o podwyższonych wymaganiach izolacyjności termicznej. Służy on do wykonywania konstrukcji, wśród których znajdują się okna stałe, rozwierne, uchylne, uchylno-rozwierane, uchylno-przesuwne, a także drzwi zewnętrzne jedno- i dwuskrzydłowe oraz rozwiązania witrynowe z drzwiami."),
+        ],
+    },
+    {
+        "name": "Aluron AS 75", "kicker": "Trzykomorowy system z technologią ANTI-BI-METAL", "image": "/img/profiles/alu-aluron-as75.webp",
+        "blocks": [
+            ("p", "Trzykomorowy system AS 75 przeznaczony do produkcji izolowanych termicznie konstrukcji okien i drzwi z zastosowaniem innowacyjnej technologii ANTI-BI-METAL, która zapobiega odkształcaniu się skrzydeł drzwiowych podczas nagrzania promieniami słonecznymi, jak i również przy bardzo niskich temperaturach. System spełnia wymagania wszystkich aktualnych i przyszłych norm izolacji termicznej."),
+        ],
+    },
+]
+
+# New category copy from the client corrections. Routes listed here replace the captured source text.
+CATEGORY_CONTENT = {
+    "/kategorie/okna-pcv/": {
+        "lead": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander.",
+        "profiles": PCV_PROFILES,
+    },
+    "/kategorie/drzwi-zewnetrzne/": {
+        "paragraphs": [
+            "Szukasz ochrony bez kompromisów? Nasze drzwi stalowe łączą pancerną konstrukcję z eleganckim, nowoczesnym wzornictwem. To idealny wybór dla domów jednorodzinnych, mieszkań oraz obiektów komercyjnych. Zapewniają doskonałą izolację ciepła, odporność na włamania i trwałość, której możesz zaufać.",
+        ],
+        "photo": ("/img/products/drzwi-zewnetrzne-stalowe.webp", "Drzwi zewnętrzne stalowe"),
+        "brands_title": "Drzwi zewnętrzne stalowe – producenci",
+        "brands": [("Wikęd", "/produkty/wiked-drzwi-zewnetrzne-stalowe/"), ("Erkado", ""), ("Martom", "")],
+    },
+    "/kategorie/drzwi-wewnetrzne/": {
+        "paragraphs": [
+            "Drzwi wewnętrzne to znacznie więcej niż tylko ruchoma przegroda dzieląca pokoje. To kluczowy element aranżacji, który łączy w sobie funkcjonalność, intymność oraz estetykę. W naszym sklepie znajdziesz bogatą ofertę skrzydeł drzwiowych, które idealnie wpiszą się w charakter każdego wnętrza – od klasycznej elegancji po surowy minimalizm.",
+        ],
+        "photo": ("/img/products/drzwi-wewnetrzne-aranzacja.webp", "Drzwi wewnętrzne w aranżacji wnętrza"),
+        "brands_title": "Producenci drzwi wewnętrznych",
+        "brands": [("Erkado", ""), ("Porta", ""), ("Polskone", ""), ("Intenso", "/produkty/drzwi-wewnetrzne-intenso/")],
+    },
+}
+
+# Main photo placed first in a product gallery.
+PRODUCT_MAIN_PHOTOS = {
+    "/produkty/fasady/": "/img/products/fasada-dom-szczytowy.webp",
+    "/produkty/okna-drzwi-alu/": "/img/products/okna-alu-przesuwne.webp",
+}
+
+# Profile rows shown on product pages.
+PRODUCT_PROFILES = {
+    "/produkty/okna-drzwi-alu/": ALU_PROFILES,
+}
+
+ALU_COPY = [
+    ("p", "Szukasz stolarki okiennej, która połączy bezkompromisową wytrzymałość z minimalistycznym designem? Wybierz okna aluminiowe – rozwiązanie stworzone z myślą o nowoczesnej architekturze, domach energooszczędnych oraz spektakularnych wielkogabarytowych przeszkleniach. Zapomnij o ograniczeniach konstrukcyjnych i postaw na profile, które przetrwają próbę czasu."),
+    ("p", "Dzięki plastyczności aluminium oraz zaawansowanym systemom technologicznym realizujemy nawet najbardziej śmiałe wizje architektoniczne:"),
+    ("ul", [
+        "Wielkie systemy przesuwne (HS): efektowne, bezprogowe wyjścia na taras, które płynnie łączą salon z ogrodem.",
+        "Nowoczesne domy i rezydencje: przeszklenia narożne, fasady szklane oraz okna z ukrytym skrzydłem, nadające bryle budynku lekkości.",
+        "Konstrukcje nietypowe: okna o niestandardowych gabarytach i kształtach dopasowane do indywidualnych projektów.",
+    ]),
+    ("p", "W naszej ofercie znajdziesz konstrukcje oparte na flagowych, sprawdzonych systemach Aluprof, Aluron oraz Procural (dawne Ponzio), które gwarantują najwyższą jakość technologiczną i design na światowym poziomie."),
+]
+
+# Product descriptions rewritten by the client; they replace the captured text of the old site.
+PRODUCT_COPY = {
+    "/produkty/okna-drzwi-alu/": ALU_COPY,
+}
+
+# Products added by the client corrections: (category route, product route, title, image, paragraphs, bullet list).
+NEW_PRODUCTS = [
+    (
+        "/kategorie/zewnetrzne/", "/produkty/zaluzje-fasadowe/", "Żaluzje fasadowe", "/img/products/zaluzje-fasadowe.webp",
+        [
+            "Żaluzje fasadowe to nowoczesne systemy osłon zewnętrznych, które stanowią idealne dopełnienie współczesnej architektury. W przeciwieństwie do tradycyjnych rolet pozwalają na płynną regulację kąta nachylenia lameli, co daje pełną kontrolę nad ilością światła wpadającego do wnętrza bez konieczności całkowitego zasłaniania widoku za oknem.",
+            "W ofercie posiadamy dwa najpopularniejsze typy profili: C80 (o tradycyjnym kształcie litery C, zapewniający płynny obrót lameli w obie strony) oraz Z90 (o kształcie litery Z, gwarantujący maksymalne zaciemnienie i podwyższoną odporność na wiatr). Oferujemy zarówno systemy podtynkowe do budynków w trakcie budowy, jak i natynkowe, idealne do obiektów już wykończonych.",
+        ],
+        [],
+    ),
+    (
+        "/kategorie/moskitiery/", "/produkty/moskitiery-plisowane/", "Moskitiery plisowane", "/img/products/moskitiera-plisowana.webp",
+        [
+            "Moskitiera plisowana to najnowocześniejsze i najbardziej komfortowe rozwiązanie, które skutecznie chroni Twój dom przed komarami, muchami oraz innymi insektami. Dzięki unikalnej konstrukcji, w której siatka układa się w charakterystyczną harmonijkę, produkt ten doskonale sprawdza się w przypadku dużych przeszkleń, takich jak drzwi tarasowe, balkonowe czy wyjścia na ogród zimowy.",
+        ],
+        [
+            "Oszczędność miejsca: siatka po złożeniu całkowicie chowa się w aluminiowym profilu bocznym, dzięki czemu nie zajmuje miejsca w świetle przejścia.",
+            "Niski próg (bez barier): płaski próg ułatwia swobodne przechodzenie i jest w 100% bezpieczny dla dzieci, osób starszych oraz poruszających się na wózkach.",
+            "Płynne przesuwanie: konstrukcja pozwala na zatrzymanie moskitiery w dowolnym miejscu – nie musisz otwierać jej do końca, aby wyjść na taras.",
+            "Trwałość na lata: profile wykonane z ekstrudowanego aluminium są odporne na warunki atmosferyczne, a plisowana siatka z włókna szklanego nie odkształca się i nie płowieje od słońca.",
+            "Estetyczny design: minimalistyczny wygląd idealnie wpisuje się w nowoczesną architekturę i nie zaburza wyglądu Twoich okien.",
+        ],
+    ),
+]
 
 # Primary categories displayed in menus and catalog
 PRIMARY_CATEGORIES = [
-    ("Okna PCV firmy Domel", "/kategorie/okna-pcv-domel/", "/img/products/okno-infinity-passive-83md.webp", ""),
-    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-wiked.webp", ""),
+    ("Okna PCV", "/kategorie/okna-pcv/", "/img/products/okno-infinity-passive-83md.webp", ""),
+    ("Drzwi zewnętrzne", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-stalowe.webp", ""),
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/alu3-306x217.webp", ""),
@@ -145,9 +374,16 @@ def source_page_title(page: dict) -> str:
 
 def source_display_text(value: str) -> str:
     value = str(value or "")
-    value = value.replace("działa już od 25 lat", "działa od 1995 roku")
-    value = value.replace("zajmujemy się już od 25 lat", "zajmujemy się od 1995 roku")
-    value = value.replace("25-letnie doświadczenie w branży okien i drzwi", "doświadczenie w branży okien i drzwi od 1995 roku")
+    # Client corrections of 29.09: "Firma działa od 31 lat" (founded in 1995).
+    value = value.replace("działa już od 25 lat", "działa już od 31 lat")
+    value = value.replace("zajmujemy się już od 25 lat", "zajmujemy się już od 31 lat")
+    value = value.replace("25-letnie doświadczenie w branży okien i drzwi", "31-letnie doświadczenie w branży okien i drzwi")
+    # Winter gardens are no longer offered and the PETECKI name is removed from the aluminium pages.
+    value = value.replace("okna i drzwi aluminiowe, ogrody zimowe oraz fasady aluminiowe", "okna i drzwi aluminiowe oraz fasady aluminiowe")
+    value = value.replace("Firma „PETECKI” przy budowie ścian osłonowych korzysta", "Przy budowie ścian osłonowych korzystamy")
+    value = value.replace("Wysoka jakość wykonania produktów Firmy „PETECKI” oraz", "Wysoka jakość wykonania oferowanych przez nas fasad oraz")
+    # ul. Szkotnik 2B is closed, so the number of sales points changed.
+    value = value.replace("Trzy salony sprzedaży w Tarnowie i Radłowie", "Salony sprzedaży w Tarnowie i Radłowie")
     return value
 
 
@@ -351,7 +587,7 @@ def horizontal_photo_strip(content: str, track_class: str, label: str, track_att
 </div>'''
 
 
-def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
+def source_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
     """Use every original product-gallery item, paired with its source thumbnail."""
     global _product_gallery_source_map
     if _product_gallery_source_map is None:
@@ -394,35 +630,90 @@ def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], li
 
     # Legacy fallback for routes absent from the source gallery audit.
     hero_overrides = {
-        "/produkty/infinity-passive-83md/": "/img/products/okno-infinity-passive-83md.webp",
         "/produkty/drzwi-wewnetrzne-intenso/": "/img/products/drzwi-wewnetrzne-malaga-w5.webp",
-        "/produkty/ogrody-zimowe/": "/img/products/ogrod-zimowy-source-hero.jpg",
-    }
-    garden_variants = {
-        "ogr_d3-44x33": "/img/products/ogrod-zimowy-variant-3.webp",
-        "ogr_d2-29x40": "/img/products/ogrod-zimowy-variant-2.webp",
-        "ogr_d-44x31": "/img/products/ogrod-zimowy-variant.webp",
     }
     displayed = []
-    small_assets = []
     for image in images:
         dimensions = image_dimensions(image)
-        if dimensions and min(dimensions) < 80:
-            small_assets.append(image)
-        else:
+        if not (dimensions and min(dimensions) < 80):
             displayed.append(image)
     hero = hero_overrides.get(route)
     if hero and (ROOT / hero.lstrip("/")).exists():
         original_hero = images[0] if images else ""
         displayed = [hero] + [image for image in displayed if image != original_hero and image != hero]
-        if route != "/produkty/ogrody-zimowe/":
-            small_assets = [image for image in small_assets if image not in {hero, original_hero}]
-    if route == "/produkty/ogrody-zimowe/":
-        for image in small_assets:
-            variant = garden_variants.get(Path(image).stem.lower())
-            if variant and (ROOT / variant.lstrip("/")).exists() and variant not in displayed:
-                displayed.append(variant)
     return displayed, []
+
+
+def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
+    """Gallery for a product page, led by the client's main photo when one is set."""
+    gallery, thumbnails = source_gallery_images(route, images)
+    main_photo = PRODUCT_MAIN_PHOTOS.get(route)
+    if main_photo and (ROOT / main_photo.lstrip("/")).is_file():
+        gallery = [main_photo] + [image for image in gallery if image != main_photo]
+        if thumbnails:
+            thumbnails = [main_photo] + thumbnails
+    return gallery, thumbnails
+
+
+def copy_blocks_markup(blocks: list) -> str:
+    rendered = []
+    for kind, value in blocks:
+        if kind == "h":
+            rendered.append(f"<h3>{esc(value)}</h3>")
+        elif kind == "p":
+            rendered.append(f"<p>{esc(value)}</p>")
+        elif kind == "ul":
+            rendered.append('<ul class="source-list">' + "".join(f"<li>{esc(item)}</li>" for item in value) + "</ul>")
+    return "".join(rendered)
+
+
+def profile_rows_markup(profiles: list, prefix: str, label: str) -> str:
+    rows = []
+    for profile in profiles:
+        image_url = url_for(profile["image"], prefix)
+        rows.append(f'''<article class="profile-row" id="{esc(slugify(profile["name"]))}">
+  <figure class="profile-row__media">
+    <img src="{image_url}" alt="{esc(profile["name"])} – przekrój profilu" data-lightbox-trigger data-lightbox-src="{image_url}" data-lightbox-group="profile" loading="lazy" decoding="async">
+  </figure>
+  <div class="profile-row__body">
+    <span class="profile-row__kicker">{esc(profile["kicker"])}</span>
+    <h2>{esc(profile["name"])}</h2>
+    {copy_blocks_markup(profile["blocks"])}
+  </div>
+</article>''')
+    return f'<section class="profile-list" aria-label="{esc(label)}">{"".join(rows)}</section>'
+
+
+def store_phone_line(store: dict) -> str:
+    parts = []
+    if store["tel"]:
+        parts.append(f"Tel. {store['tel']}")
+    if store["mobile"]:
+        parts.append(f"Kom. {store['mobile']}")
+    return " · ".join(parts)
+
+
+def store_items_markup() -> str:
+    items = []
+    for store in STORES:
+        phone_line = store_phone_line(store)
+        phone_html = f'\n  <div class="kt-store-phone">{esc(phone_line)}</div>' if phone_line else ""
+        items.append(f'''<div class="kt-store-item">
+  <div class="kt-store-title">{esc(store["name"])}</div>
+  <div class="kt-store-addr">{esc(store["address"])}</div>{phone_html}
+  <a class="store-nav-btn" href="{store["map"]}" target="_blank" rel="noopener noreferrer"><i>{MAP_PIN_SVG}</i>Nawiguj w Google Maps ↗</a>
+</div>''')
+    return "\n".join(items)
+
+
+def redirect_page(route: str, target: str) -> str:
+    target_url = url_for(target, asset_prefix(route))
+    return f'''<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url={target_url}">
+<title>Strona przeniesiona | WOL-BUD</title></head>
+<body><p>Ta strona została przeniesiona: <a href="{target_url}">przejdź dalej</a>.</p></body></html>
+'''
 
 
 def header(prefix: str) -> str:
@@ -540,7 +831,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 
     featured_product_markup = []
     featured_products = [
-        ("/produkty/infinity-passive-83md/", "Infinity Passive 83MD"),
+        ("/produkty/okna-drzwi-alu/", "Okna i drzwi aluminiowe"),
         ("/produkty/wiked-drzwi-zewnetrzne-stalowe/", "Wikęd – drzwi zewnętrzne stalowe"),
     ]
     product_data = scraped_data.get("products", {})
@@ -579,10 +870,11 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         teaser = service_teasers.get(normalize(stitle)) or source_first_sentence(para)
         link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/#pelny-opis-montazu" if "Ciepły" in stitle else f"/uslugi/#{anch}"
         service_href = url_for(link, prefix)
+        shown_title = SERVICE_TITLE_RENAMES.get(stitle, stitle)
         services_markup.append(f'''<article class="home-service-item">
-  <h4><a class="home-service-item-title-link" href="{service_href}">{esc(stitle)}</a></h4>
+  <h4><a class="home-service-item-title-link" href="{service_href}">{esc(shown_title)}</a></h4>
   <p class="home-service-item-teaser">{esc(teaser)}</p>
-  <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(stitle)}">Dowiedz się więcej ↗</a>
+  <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(shown_title)}">Dowiedz się więcej ↗</a>
 </article>''')
 
     partner_logos = [
@@ -600,7 +892,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
-        <span>Tarnów, ul. Giełdowa 5 / Szkotnik 2B</span>
+        <span>Tarnów, ul. Giełdowa 5 / Giełdowa 10 · Radłów</span>
         <span>Sprzedaż i montaż</span>
         <span>Od 1995 roku</span>
       </div>
@@ -624,7 +916,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       <div>
         <span class="eyebrow">Od 1995 roku</span>
         <h2>WOL-BUD Wojciech Wolański</h2>
-        <p>WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 25 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty.</p>
+        <p>WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 31 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty.</p>
       </div>
       <div class="trust-compact-actions">
         <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę i referencje ↗</a>
@@ -712,26 +1004,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       <div class="kt-adres" id="nasze-sklepy">
         <span class="kt-lab">Salony sprzedaży</span>
 
-        <div class="kt-store-item">
-          <div class="kt-store-title">Salon Tarnów-Chyszów</div>
-          <div class="kt-store-addr">ul. Giełdowa 5 (przy placu targowym), 33-100 Tarnów</div>
-          <div class="kt-store-phone">Tel. 14 626 80 32 · Kom. 534 091 021</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['chyszow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
-
-        <div class="kt-store-item">
-          <div class="kt-store-title">Salon Tarnów</div>
-          <div class="kt-store-addr">ul. Szkotnik 2b, 33-100 Tarnów</div>
-          <div class="kt-store-phone">Tel. 14 628 84 90 · Kom. 693 870 505</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['szkotnik']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
-
-        <div class="kt-store-item">
-          <div class="kt-store-title">Punkt Radłów</div>
-          <div class="kt-store-addr">ul. Leśna 17a, 33-130 Radłów</div>
-          <div class="kt-store-phone">Tel. 14 678 23 65 · Kom. 609 734 290</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['radlow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
+        {store_items_markup()}
 
         <a class="store-full-copy-link" href="{url_for('/nasze-sklepy/', prefix)}">Pełny opis salonów i ekspozycji ↗</a>
       </div>
@@ -743,6 +1016,13 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 
 
 def sidebar_markup(current_route: str, prefix: str = "") -> str:
+    sidebar_stores = "\n".join(
+        f'''<div class="sidebar-store">
+      <p><strong>{esc(store["city"])}:</strong> {esc(store["street"])}</p>
+      <a class="sidebar-map-link" href="{store["map"]}" target="_blank" rel="noopener noreferrer">Nawiguj w Google Maps ↗</a>
+    </div>'''
+        for store in STORES
+    )
     category_links = []
     for cat_name, cat_href, _, _ in PRIMARY_CATEGORIES:
         is_active = ' style="font-weight:700; color:var(--gold);"' if current_route == cat_href else ''
@@ -758,18 +1038,7 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
 
   <div class="sidebar-box">
     <span class="eyebrow">Salony sprzedaży</span>
-    <div class="sidebar-store">
-      <p><strong>Tarnów:</strong> ul. Giełdowa 5</p>
-      <a class="sidebar-map-link" href="{MAP_LINKS['chyszow']}" target="_blank" rel="noopener noreferrer">Nawiguj w Google Maps ↗</a>
-    </div>
-    <div class="sidebar-store">
-      <p><strong>Tarnów:</strong> ul. Szkotnik 2B</p>
-      <a class="sidebar-map-link" href="{MAP_LINKS['szkotnik']}" target="_blank" rel="noopener noreferrer">Nawiguj w Google Maps ↗</a>
-    </div>
-    <div class="sidebar-store">
-      <p><strong>Radłów:</strong> ul. Leśna 17A</p>
-      <a class="sidebar-map-link" href="{MAP_LINKS['radlow']}" target="_blank" rel="noopener noreferrer">Nawiguj w Google Maps ↗</a>
-    </div>
+    {sidebar_stores}
     <a class="sidebar-link" href="{url_for('/nasze-sklepy/', prefix)}">Zobacz godziny i ekspozycje ↗</a>
   </div>
 
@@ -777,7 +1046,7 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
     <span class="eyebrow">Kategorie produktów</span>
     <ul class="sidebar-links">
       {''.join(category_links)}
-      <li><a href="{url_for('/uslugi/', prefix)}">Ciepły montaż i usługi</a></li>
+      <li><a href="{url_for('/uslugi/', prefix)}">Szczelny montaż i usługi</a></li>
     </ul>
   </div>
 </aside>'''
@@ -812,8 +1081,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
             prod_detail = scraped_data.get("products", {}).get(clean_route, {})
             p_href_rel = url_for(p_href, prefix)
             category_image_overrides = {
-                "/produkty/ogrody-zimowe": "/img/products/ogrod-zimowy-source-hero.jpg",
-                "/produkty/fasady": "/img/products/fasada-aluminiowa.webp",
+                "/produkty/fasady": "/img/products/fasada-dom-szczytowy.webp",
             }
             p_img = category_image_overrides.get(clean_route.rstrip("/"), p_img)
             if clean_route.rstrip("/") not in category_image_overrides:
@@ -873,6 +1141,35 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
 
     source_markup = source_content_panel(source_page, prefix, "Pełny opis kategorii")
     teaser = source_teaser(source_page)
+    client_markup = ""
+    client_content = CATEGORY_CONTENT.get(route)
+    if client_content:
+        # The client's own copy replaces the captured text of the old site.
+        source_markup = ""
+        paragraphs = client_content.get("paragraphs", [])
+        teaser = client_content.get("lead", "")
+        parts = []
+        if client_content.get("photo"):
+            photo_src, photo_alt = client_content["photo"]
+            photo_url = url_for(photo_src, prefix)
+            parts.append(f'''<figure class="category-feature">
+  <img src="{photo_url}" alt="{esc(photo_alt)}" data-lightbox-trigger data-lightbox-src="{photo_url}" data-lightbox-group="category" decoding="async">
+</figure>''')
+        if paragraphs:
+            parts.append('<div class="article-copy category-copy">' + "".join(f"<p>{esc(text)}</p>" for text in paragraphs) + "</div>")
+        if client_content.get("brands"):
+            chips = "".join(
+                f'<li><a href="{url_for(href, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a></li>' if href
+                else f"<li><span>{esc(name)}</span></li>"
+                for name, href in client_content["brands"]
+            )
+            parts.append(f'''<div class="brand-box">
+  <h2>{esc(client_content.get("brands_title", "Producenci"))}</h2>
+  <ul class="brand-chips">{chips}</ul>
+</div>''')
+        if client_content.get("profiles"):
+            parts.append(profile_rows_markup(client_content["profiles"], prefix, f"Profile: {title}"))
+        client_markup = "\n".join(parts)
     desc_html = f'<p class="subpage-lead">{esc(teaser or desc)}</p>' if teaser or (desc and not source_markup) else ''
 
     crumb = f'''<div class="page-nav-bar">
@@ -894,6 +1191,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
     {cat_quick_nav}
     <div class="subpage-grid">
       <div class="subpage-content">
+        {client_markup}
         {content_grid}
         {source_markup}
         <div class="cta-banner-dark">
@@ -1032,9 +1330,16 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
   <div class="mobile-details-body"><ul class="specs-list">{items}</ul></div>
 </details>'''
 
-    if source_page:
+    if route in PRODUCT_COPY:
+        desc_details = f'''<details class="mobile-details" open data-responsive-disclosure>
+  <summary>Opis produktu</summary>
+  <div class="mobile-details-body"><div class="article-copy">{copy_blocks_markup(PRODUCT_COPY[route])}</div></div>
+</details>'''
+        specs_html = ""
+    elif source_page:
         desc_details = source_content_panel(source_page, prefix, "Opis, zalety i parametry produktu")
         specs_html = ""
+    profiles_html = profile_rows_markup(PRODUCT_PROFILES[route], prefix, f"Systemy: {title}") if route in PRODUCT_PROFILES else ""
 
     # PDF downloads
     downloads_html = ""
@@ -1067,6 +1372,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
       <div class="subpage-content">
         {visual_html}
         {desc_details}
+        {profiles_html}
         {specs_html}
         {downloads_html}
         {product_nav_bar}
@@ -1122,7 +1428,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
 </div>'''
 
         cards.append(f'''<article class="service-card" id="{anch}">
-  <h2>{esc(stitle)}</h2>
+  <h2>{esc(SERVICE_TITLE_RENAMES.get(stitle, stitle))}</h2>
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
     <div class="mobile-details-body">
@@ -1139,6 +1445,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
         for section in source_sections:
             stitle = source_display_text(section["title"])
             anch = service_anchors.get(stitle, slugify(stitle))
+            shown_title = SERVICE_TITLE_RENAMES.get(stitle, stitle)
             blocks = section["blocks"]
             first_paragraph = next(
                 (block.get("text", "") for block in blocks if block.get("type") == "paragraph" and block.get("text", "").strip()),
@@ -1156,7 +1463,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
 </div>'''
             service_content_cards.append(f'''<article class="service-card" id="{esc(anch)}">
-  <h2>{esc(stitle)}</h2>
+  <h2>{esc(shown_title)}</h2>
   {f'<p class="service-card-teaser">{esc(teaser)}</p>' if teaser else ''}
   <details class="mobile-details" open data-responsive-disclosure>
     <summary>Opis usługi</summary>
@@ -1166,7 +1473,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
         service_content = "".join(service_content_cards)
         warm_montage_link = f'''<div class="service-feature-box">
   <div>
-    <span class="eyebrow eyebrow--gold">Ciepły montaż</span>
+    <span class="eyebrow eyebrow--gold">Prawidłowy – szczelny montaż</span>
     <p>Zdjęcia i pełny opis ciepłego montażu warstwowego.</p>
   </div>
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz opis montażu ↗</a>
@@ -1204,7 +1511,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
     </div>
   </div>
 </main>'''
-    return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, ciepły montaż, serwis, prace wykończeniowe i murarskie, brukowanie, daszki poliwęglanowe.", main)
+    return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, prawidłowy – szczelny montaż, serwis, prace wykończeniowe i murarskie, brukowanie, daszki poliwęglanowe.", main)
 
 
 def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> str:
@@ -1405,27 +1712,27 @@ def source_document_page(route: str, source_page: dict) -> str:
 def locations_page(source_page: dict | None = None) -> str:
     route = "/nasze-sklepy/"
     prefix = asset_prefix(route)
-    locations = [
-        ("Salon Tarnów-Chyszów", "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów", "14 626 80 32", "534 091 021", "salon-tarnow-chyszow.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['chyszow']),
-        ("Salon w Tarnowie", "ul. Szkotnik 2b, 33-100 Tarnów", "14 628 84 90", "693 870 505", "salon-tarnow-szkotnik.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['szkotnik']),
-        ("Punkt w Radłowie", "ul. Leśna 17a, 33-130 Radłów", "14 678 23 65", "609 734 290", "salon-radlow.webp", "Pn–Pt 9–17 · Sb 9–13", MAP_LINKS['radlow']),
-    ]
     cards = []
-    for name, address, tel_fixed, tel_mobile, photo, hours, map_url in locations:
-        mobile_digits = re.sub(r"\D", "", tel_mobile)
-        fixed_digits = re.sub(r"\D", "", tel_fixed)
-        photo_url = url_for(f"/img/stores/{photo}", prefix)
+    for store in STORES:
+        name = store["name"]
+        if store["photo"]:
+            photo_url = url_for(f"/img/stores/{store['photo']}", prefix)
+            photo_html = f'<div class="location-card__photo"><img src="{photo_url}" alt="{esc(name)}" loading="lazy" decoding="async"></div>'
+        else:
+            photo_html = f'<div class="location-card__photo location-card__photo--empty" aria-hidden="true"><i>{MAP_PIN_SVG}</i><span>{esc(store["city"])}</span></div>'
+        phone_links = "".join(
+            f'\n      <a href="tel:{re.sub(r"[^0-9]", "", number)}">{label} {esc(number)}</a>'
+            for label, number in (("Kom.", store["mobile"]), ("Tel.", store["tel"]))
+            if number
+        )
+        links_html = f'\n    <div class="location-card__links">{phone_links}\n    </div>' if phone_links else ""
+        hours_html = f'\n    <p class="location-card__hours">{esc(store["hours"])} · niedz. zamknięte</p>' if store["hours"] else ""
         cards.append(f'''<article class="location-card">
-  <div class="location-card__photo"><img src="{photo_url}" alt="{esc(name)}" loading="lazy" decoding="async"></div>
+  {photo_html}
   <div class="location-card__body">
     <h2>{esc(name)}</h2>
-    <address>{esc(address)}</address>
-    <div class="location-card__links">
-      <a href="tel:{mobile_digits}">Kom. {esc(tel_mobile)}</a>
-      <a href="tel:{fixed_digits}">Tel. {esc(tel_fixed)}</a>
-    </div>
-    <p class="location-card__hours">{esc(hours)} · niedz. zamknięte</p>
-    <a class="store-nav-btn" href="{map_url}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
+    <address>{esc(store["address_full"])}</address>{links_html}{hours_html}
+    <a class="store-nav-btn" href="{store["map"]}" target="_blank" rel="noopener noreferrer"><i>{MAP_PIN_SVG}</i>Nawiguj w Google Maps ↗</a>
   </div>
 </article>''')
 
@@ -1497,26 +1804,7 @@ def contact_page() -> str:
       <div class="kt-adres">
         <span class="kt-lab">Salony sprzedaży</span>
 
-        <div class="kt-store-item">
-          <div class="kt-store-title">Salon Tarnów-Chyszów</div>
-          <div class="kt-store-addr">ul. Giełdowa 5 (przy placu targowym), 33-100 Tarnów</div>
-          <div class="kt-store-phone">Tel. 14 626 80 32 · Kom. 534 091 021</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['chyszow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
-
-        <div class="kt-store-item">
-          <div class="kt-store-title">Salon Tarnów</div>
-          <div class="kt-store-addr">ul. Szkotnik 2b, 33-100 Tarnów</div>
-          <div class="kt-store-phone">Tel. 14 628 84 90 · Kom. 693 870 505</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['szkotnik']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
-
-        <div class="kt-store-item">
-          <div class="kt-store-title">Punkt Radłów</div>
-          <div class="kt-store-addr">ul. Leśna 17a, 33-130 Radłów</div>
-          <div class="kt-store-phone">Tel. 14 678 23 65 · Kom. 609 734 290</div>
-          <a class="store-nav-btn" href="{MAP_LINKS['radlow']}" target="_blank" rel="noopener noreferrer"><i><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></i>Nawiguj w Google Maps ↗</a>
-        </div>
+        {store_items_markup()}
 
       </div>
     </div>
@@ -1525,11 +1813,60 @@ def contact_page() -> str:
     return document(route, "Kontakt | WOL-BUD Wojciech Wolański Tarnów", "Dane kontaktowe WOL-BUD. Salony w Tarnowie i Radłowie, telefony, godziny otwarcia i formularz.", main)
 
 
+def apply_client_corrections(scraped_data: dict, source_pages: dict) -> None:
+    """Bring the captured data in line with the client corrections of 29.09."""
+    categories = scraped_data["categories"]
+    products = scraped_data["products"]
+    removed = {route.rstrip("/") for route in REMOVED_ROUTES}
+
+    # "Okna PCV" without the word Domel; the client's profiles replace the old product list.
+    old_pcv = categories.pop("/kategorie/okna-pcv-domel/", {})
+    categories["/kategorie/okna-pcv/"] = {
+        **old_pcv,
+        "title": "Okna PCV",
+        "description": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander – sprzedaż i montaż WOL-BUD Tarnów.",
+        "paragraphs": [],
+        "products": [],
+    }
+    for route in REMOVED_ROUTES:
+        products.pop(route, None)
+        source_pages.pop(route, None)
+    for cat_data in categories.values():
+        cat_data["products"] = [p for p in cat_data.get("products", []) if p.get("href", "").rstrip("/") not in removed]
+        cat_data["paragraphs"] = [source_display_text(text) for text in cat_data.get("paragraphs", [])]
+
+    stolarka = source_pages.get("/kategorie/stolarka-aluminiowa/")
+    if stolarka:
+        stolarka["blocks"] = [
+            {**block, "items": [item for item in block.get("items", []) if normalize(item) != "ogrody zimowe"]}
+            if block.get("type") == "list" else block
+            for block in stolarka.get("blocks", [])
+        ]
+    stores = source_pages.get("/nasze-sklepy/")
+    if stores:
+        # The captured address list still names ul. Szkotnik; the store cards above it carry the current data.
+        stores["blocks"] = [
+            block for block in stores.get("blocks", [])
+            if not (block.get("type") == "list" and any("Szkotnik" in item for item in block.get("items", [])))
+        ]
+
+    for route, copy in PRODUCT_COPY.items():
+        if route in products:
+            products[route]["paragraphs"] = [value for kind, value in copy if kind == "p"]
+    for route in products:
+        products[route]["paragraphs"] = [source_display_text(text) for text in products[route].get("paragraphs", [])]
+
+    for cat_route, prod_route, title, image, paragraphs, bullets in NEW_PRODUCTS:
+        categories[cat_route]["products"].append({"title": title, "href": prod_route.rstrip("/"), "image": image})
+        products[prod_route] = {"title": title, "paragraphs": paragraphs, "specs": bullets, "images": [image], "pdfs": []}
+
+
 def main() -> None:
     print("Loading data...")
     scraped_data = json.loads(SCRAPED_DATA_FILE.read_text(encoding="utf-8"))
     source_content = json.loads(SOURCE_DATA_FILE.read_text(encoding="utf-8"))
     source_pages = source_page_index(source_content)
+    apply_client_corrections(scraped_data, source_pages)
 
     # 1. Generate Home Page
     print("Generating Home Page...")
@@ -1594,11 +1931,18 @@ def main() -> None:
     (ROOT / "kontakt" / "index.html").parent.mkdir(parents=True, exist_ok=True)
     (ROOT / "kontakt" / "index.html").write_text(contact_page(), encoding="utf-8")
 
+    # Old addresses of removed pages forward visitors and search engines to the current page.
+    for old_route, target in REMOVED_ROUTES.items():
+        dest = output_path(old_route)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(redirect_page(old_route, target), encoding="utf-8")
+        print(f"  Redirect {old_route} -> {target}")
+
     # Render captured source routes without a specialized catalogue template as complete content pages.
     generated_routes = {
         "/", "/oferta/", "/uslugi/", "/o-firmie/", "/nasze-sklepy/", "/kontakt/",
         "/promocje/cieply-montaz-warstwowy-okien-drzwi/",
-        *categories.keys(), *products.keys(),
+        *categories.keys(), *products.keys(), *REMOVED_ROUTES.keys(),
     }
     for source_route_path, source_page in source_pages.items():
         if source_route_path in generated_routes:
