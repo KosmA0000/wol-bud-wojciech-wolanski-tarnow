@@ -191,6 +191,7 @@ CATEGORY_CONTENT = {
         "profiles": PCV_PROFILES,
     },
     "/kategorie/drzwi-zewnetrzne/": {
+        "lead": "Szukasz ochrony bez kompromisów? Nasze drzwi stalowe łączą pancerną konstrukcję z eleganckim, nowoczesnym wzornictwem.",
         "paragraphs": [
             "Szukasz ochrony bez kompromisów? Nasze drzwi stalowe łączą pancerną konstrukcję z eleganckim, nowoczesnym wzornictwem. To idealny wybór dla domów jednorodzinnych, mieszkań oraz obiektów komercyjnych. Zapewniają doskonałą izolację ciepła, odporność na włamania i trwałość, której możesz zaufać.",
         ],
@@ -678,7 +679,10 @@ def profile_rows_markup(profiles: list, prefix: str, label: str) -> str:
   <div class="profile-row__body">
     <span class="profile-row__kicker">{esc(profile["kicker"])}</span>
     <h2>{esc(profile["name"])}</h2>
-    {copy_blocks_markup(profile["blocks"])}
+    <details class="mobile-details profile-row__details" open data-responsive-disclosure>
+      <summary>Opis i parametry profilu</summary>
+      <div class="mobile-details-body">{copy_blocks_markup(profile["blocks"])}</div>
+    </details>
   </div>
 </article>''')
     return f'<section class="profile-list" aria-label="{esc(label)}">{"".join(rows)}</section>'
@@ -1147,7 +1151,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
         # The client's own copy replaces the captured text of the old site.
         source_markup = ""
         paragraphs = client_content.get("paragraphs", [])
-        teaser = client_content.get("lead", "")
+        teaser = client_content.get("lead") or (source_first_sentence(paragraphs[0]) if paragraphs else "")
         parts = []
         if client_content.get("photo"):
             photo_src, photo_alt = client_content["photo"]
@@ -1156,7 +1160,11 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
   <img src="{photo_url}" alt="{esc(photo_alt)}" data-lightbox-trigger data-lightbox-src="{photo_url}" data-lightbox-group="category" decoding="async">
 </figure>''')
         if paragraphs:
-            parts.append('<div class="article-copy category-copy">' + "".join(f"<p>{esc(text)}</p>" for text in paragraphs) + "</div>")
+            # Same disclosure as the source description: collapsed on phones, below the product names.
+            source_markup = f'''<details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
+  <summary>Pełny opis kategorii</summary>
+  <div class="mobile-details-body source-content-body"><div class="article-copy">{"".join(f"<p>{esc(text)}</p>" for text in paragraphs)}</div></div>
+</details>'''
         if client_content.get("brands"):
             chips = "".join(
                 f'<li><a href="{url_for(href, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a></li>' if href
@@ -1331,9 +1339,9 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
 </details>'''
 
     if route in PRODUCT_COPY:
-        desc_details = f'''<details class="mobile-details" open data-responsive-disclosure>
-  <summary>Opis produktu</summary>
-  <div class="mobile-details-body"><div class="article-copy">{copy_blocks_markup(PRODUCT_COPY[route])}</div></div>
+        desc_details = f'''<details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
+  <summary>Opis, zalety i parametry produktu</summary>
+  <div class="mobile-details-body source-content-body"><div class="article-copy">{copy_blocks_markup(PRODUCT_COPY[route])}</div></div>
 </details>'''
         specs_html = ""
     elif source_page:
