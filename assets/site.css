@@ -270,8 +270,7 @@ p, li, blockquote {
 
 .hero-frame {
   position: absolute;
-  inset: 8px;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  inset: 0;
   overflow: hidden;
   background: radial-gradient(120% 80% at 50% 8%, #3b5d28 0%, rgba(59, 93, 40, 0) 62%),
               linear-gradient(180deg, #243b16 0%, #182a0e 54%, #0b1406 100%);
@@ -390,7 +389,6 @@ p, li, blockquote {
   padding: clamp(5rem, 9vw, 9rem) 0;
   background: var(--dark);
   color: var(--surface);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .trust-head {
@@ -773,7 +771,6 @@ p, li, blockquote {
   padding: clamp(5rem, 9vw, 9rem) 0;
   background: var(--bg);
   color: var(--ink);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .offer-head {
@@ -1029,7 +1026,6 @@ p, li, blockquote {
   z-index: 6;
   padding: clamp(5rem, 9vw, 9rem) 0;
   background: var(--accent);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 /* Home contact section on a photo of a finished realization (client, 10.2026). */
@@ -1075,7 +1071,7 @@ p, li, blockquote {
 
 .kt {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(min-content, 0.85fr) minmax(0, 1.15fr);
   gap: clamp(1rem, 2vw, 1.5rem);
 }
 
@@ -3856,7 +3852,7 @@ body.lightbox-open {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  clip-path: inset(0 round var(--radius-xl) var(--radius-xl) 0 0);
+  clip-path: inset(0);
 }
 
 .offer-bg-img {
@@ -4254,23 +4250,12 @@ body.lightbox-open {
 }
 
 @media (max-width: 760px) {
-  /* Photo tiles with the name on the photo: the first one full width, the other two side by side. */
-  .realization-cards { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .realization-card { position: relative; border: 0; }
-  .realization-card:first-child { grid-column: 1 / -1; }
-  .realization-card-media { aspect-ratio: 1 / 1; }
-  .realization-card:first-child .realization-card-media { aspect-ratio: 16 / 10; }
-  .realization-card-body {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    gap: 0.1rem;
-    padding: 2.4rem 0.85rem 0.75rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
-  }
-  .realization-card-body h3 { color: #fff; font-size: 1.15rem; }
-  .realization-card-body span { color: rgba(255, 255, 255, 0.88); }
+  /* Three whole photos side by side, the name and photo count under each. */
+  .realization-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .realization-card { border: 0; border-radius: 12px; }
+  .realization-card-body { gap: 0.1rem; padding: 0.55rem 0.6rem 0.65rem; }
+  .realization-card-body h3 { font-size: 1rem; }
+  .realization-card-body span { font-size: 0.7rem; }
   /* On phones each realization is one swipeable row instead of a tall grid. */
   .realization-grid {
     display: flex;
@@ -4312,4 +4297,38 @@ body.lightbox-open {
 .photo-band .eyebrow,
 .photo-band .eyebrow--highlight {
   color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* Home realization cards show the whole cover photo in its own proportions (client, 10.2026). */
+.realization-card-media {
+  aspect-ratio: var(--ar, 4 / 3);
+}
+
+/* Stores in two columns when the tile is wide enough, so the store tile is no taller than the phone tile. */
+.kt-adres {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  align-content: start;
+  column-gap: 2rem;
+}
+
+.kt-adres > .kt-lab,
+.kt-adres > .store-full-copy-link {
+  grid-column: 1 / -1;
+}
+
+.kt-adres > .kt-lab {
+  margin-bottom: 1rem;
+}
+
+.kt-adres > .store-full-copy-link {
+  justify-self: start;
+  margin-top: 1.25rem;
+}
+
+.kt-adres .kt-store-item,
+.kt-adres .kt-store-item:first-of-type {
+  margin-top: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
 }

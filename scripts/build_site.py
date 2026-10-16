@@ -757,7 +757,8 @@ def store_phone_line(store: dict) -> str:
 
 def store_items_markup() -> str:
     items = []
-    for store in STORES:
+    # Stores with just an address first, the ones with a phone line below (client, 10.2026).
+    for store in sorted(STORES, key=lambda store: bool(store_phone_line(store))):
         phone_line = store_phone_line(store)
         phone_html = f'\n  <div class="kt-store-phone">{esc(phone_line)}</div>' if phone_line else ""
         items.append(f'''<div class="kt-store-item">
@@ -885,8 +886,9 @@ def realizations_home_section(prefix: str = "") -> str:
     cards = []
     for group in REALIZATIONS:
         cover = realization_thumb(group["photos"][0])
+        width, height = image_dimensions(cover) or (4, 3)
         cards.append(f'''<a class="realization-card" href="{url_for(f'/realizacje/#{group["slug"]}', prefix)}">
-  <div class="realization-card-media"><img src="{url_for(cover, prefix)}" alt="{esc(realization_alt(group))}"{realization_img_size(cover)} loading="lazy" decoding="async"></div>
+  <div class="realization-card-media" style="--ar: {width / height:.4f}"><img src="{url_for(cover, prefix)}" alt="{esc(realization_alt(group))}"{realization_img_size(cover)} loading="lazy" decoding="async"></div>
   <div class="realization-card-body">
     <h3>{esc(group["title"])}</h3>
     <span>{photo_count_label(len(group["photos"]))} ↗</span>
