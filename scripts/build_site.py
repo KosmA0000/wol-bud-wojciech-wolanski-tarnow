@@ -956,7 +956,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       {extra_category_markup}
     </div>
     <section class="home-featured-section" aria-labelledby="home-featured-title">
-      <div class="home-featured-heading"><span class="eyebrow eyebrow--gold">Polecane produkty</span><h3 id="home-featured-title">Warto sprawdzić</h3></div>
+      <div class="home-featured-heading"><span class="eyebrow eyebrow--highlight">Polecane produkty</span><h3 id="home-featured-title">Warto sprawdzić</h3></div>
       <div class="home-featured-grid">{''.join(featured_product_markup)}</div>
     </section>
 
@@ -964,7 +964,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     <div class="home-services-box" id="uslugi">
       <div class="home-services-head">
         <div>
-          <span class="eyebrow eyebrow--gold">Kompleksowa obsługa</span>
+          <span class="eyebrow eyebrow--highlight">Kompleksowa obsługa</span>
           <h3>Usługi montażowe i serwisowe</h3>
         </div>
         <a href="{url_for('/uslugi/', prefix)}">Zobacz wszystkie usługi ↗</a>
@@ -1036,12 +1036,12 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
     )
     category_links = []
     for cat_name, cat_href in NAV_CATEGORIES:
-        is_active = ' style="font-weight:700; color:var(--gold);"' if current_route == cat_href else ''
+        is_active = ' style="font-weight:700; color:var(--highlight);"' if current_route == cat_href else ''
         category_links.append(f'<li><a href="{url_for(cat_href, prefix)}"{is_active}>{esc(cat_name)}</a></li>')
 
     return f'''<aside class="subpage-sidebar">
   <div class="sidebar-box sidebar-box--dark">
-    <span class="eyebrow eyebrow--gold">Potrzebujesz wyceny?</span>
+    <span class="eyebrow eyebrow--highlight">Potrzebujesz wyceny?</span>
     <a class="sidebar-tel" href="tel:+48534091021">534 091 021</a>
     <p>Zadzwoń do nas. Pomiar, doradztwo techniczne i bezpłatna wycena na budowie.</p>
     <a class="tc-tel" href="tel:+48534091021">Zadzwoń teraz</a>
@@ -1210,7 +1210,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
         {content_grid}
         {source_markup}
         <div class="cta-banner-dark">
-          <span class="eyebrow eyebrow--gold">Zainteresowała Cię nasza oferta?</span>
+          <span class="eyebrow eyebrow--highlight">Zainteresowała Cię nasza oferta?</span>
           <h3>Zamów bezpłatny pomiar i wycenę</h3>
           <p>Doradzimy odpowiednie rozwiązanie i przygotujemy niezobowiązującą kalkulację cenową.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
@@ -1392,7 +1392,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
         {downloads_html}
         {product_nav_bar}
         <div class="cta-banner-dark">
-          <span class="eyebrow eyebrow--gold">Zainteresował Cię ten produkt?</span>
+          <span class="eyebrow eyebrow--highlight">Zainteresował Cię ten produkt?</span>
           <h3>Zamów wycenę lub bezpłatny pomiar</h3>
           <p>Bezpłatny i niewiążący pomiar, doradztwo i wycena są dostępne na budowie lub w naszych salonach sprzedaży.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
@@ -1436,7 +1436,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
         if "Ciepły" in stitle:
             feature_box = f'''<div class="service-feature-box">
   <div>
-    <span class="eyebrow eyebrow--gold">Fotoreportaż z budowy</span>
+    <span class="eyebrow eyebrow--highlight">Fotoreportaż z budowy</span>
     <p>Zobacz zdjęcia z ciepłego montażu warstwowego.</p>
   </div>
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
@@ -1472,7 +1472,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
             if "Ciepły" in stitle:
                 feature_box = f'''<div class="service-feature-box">
   <div>
-    <span class="eyebrow eyebrow--gold">Fotoreportaż z budowy</span>
+    <span class="eyebrow eyebrow--highlight">Fotoreportaż z budowy</span>
     <p>Zobacz zdjęcia z ciepłego montażu warstwowego.</p>
   </div>
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz fotoreportaż ↗</a>
@@ -1488,7 +1488,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
         service_content = "".join(service_content_cards)
         warm_montage_link = f'''<div class="service-feature-box">
   <div>
-    <span class="eyebrow eyebrow--gold">Prawidłowy – szczelny montaż</span>
+    <span class="eyebrow eyebrow--highlight">Prawidłowy – szczelny montaż</span>
     <p>Zdjęcia i pełny opis ciepłego montażu warstwowego.</p>
   </div>
   <a class="service-feature-btn" href="{url_for('/promocje/cieply-montaz-warstwowy-okien-drzwi/', prefix)}">Zobacz opis montażu ↗</a>
@@ -1516,7 +1516,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
       <div class="subpage-content">
         {service_content}
         <div class="cta-banner-dark">
-          <span class="eyebrow eyebrow--gold">Skorzystaj z naszych usług</span>
+          <span class="eyebrow eyebrow--highlight">Skorzystaj z naszych usług</span>
           <h3>Umów bezpłatny pomiar i wycenę</h3>
           <p>Pomiar, doradztwo i wycena są bezpłatne i niewiążące — na budowie lub w naszych salonach sprzedaży.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
@@ -1578,7 +1578,7 @@ def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> st
           {horizontal_photo_strip(''.join(steps_html), "montage-steps-grid", "Zdjęcia z montażu")}
         </div>
         <div class="cta-banner-dark">
-          <span class="eyebrow eyebrow--gold">Chcesz zamówić ciepły montaż?</span>
+          <span class="eyebrow eyebrow--highlight">Chcesz zamówić ciepły montaż?</span>
           <h3>Zapytaj o ciepły montaż</h3>
           <p>Skontaktuj się z WOL-BUD, aby uzyskać informacje o ciepłym montażu okien i drzwi.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
@@ -1628,7 +1628,7 @@ def catalog_index_page() -> str:
       {''.join(cards)}
     </div>
     <div class="cta-banner-dark">
-      <span class="eyebrow eyebrow--gold">Potrzebujesz wyceny lub doradztwa?</span>
+      <span class="eyebrow eyebrow--highlight">Potrzebujesz wyceny lub doradztwa?</span>
       <h3>Skontaktuj się z WOL-BUD</h3>
       <p>Pomożemy dobrać okna, drzwi i bramy dopasowane do Twojego projektu.</p>
       <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
@@ -1687,7 +1687,7 @@ def about_page(source_page: dict | None = None) -> str:
         {company_story}
         {references}
         <div class="cta-banner-dark">
-          <span class="eyebrow eyebrow--gold">Porozmawiajmy o Twojej inwestycji</span>
+          <span class="eyebrow eyebrow--highlight">Porozmawiajmy o Twojej inwestycji</span>
           <h3>Odwiedź nasz salon lub zadzwoń</h3>
           <p>Informacje o produktach, usługach i salonach znajdziesz na naszej stronie.</p>
           <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
