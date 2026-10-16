@@ -1068,7 +1068,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 <section class="hero" id="start">
   <div class="sticky">
     <div class="hero-frame" id="heroFrame">
-      <img src="{url_for('/img/products/fasada-aluminiowa.webp', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1376" height="768" decoding="async">
+      <img src="{url_for('/img/realizacje/dom-nowoczesna-stodola-04.webp', prefix)}" alt="Okna, drzwi i stolarka otworowa WOL-BUD Tarnów" width="1200" height="1600" decoding="async">
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
@@ -1146,6 +1146,8 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
   </div>
 </section>
 
+<!-- REALIZACJE I PARTNERZY na wspólnym zdjęciu w tle -->
+<div class="photo-band">
 {realizations_home_section(prefix)}
 
 <!-- DOSTAWCY / PARTNERZY -->
@@ -1158,9 +1160,10 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     <div class="partner-row">{partner_entries}</div>
   </div>
 </section>
+</div>
 
 <!-- KONTAKT I SALONY -->
-<section class="contact" id="kontakt">
+<section class="contact contact--photo" id="kontakt">
   <div class="wrap">
     <div class="contact-head">
       <div>
