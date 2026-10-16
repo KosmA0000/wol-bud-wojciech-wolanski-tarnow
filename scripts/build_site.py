@@ -27,8 +27,6 @@ PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.js
 # Navigation links for specific salon locations
 MAP_LINKS = {
     "chyszow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Gie%C5%82dowa+5,+33-100+Tarn%C3%B3w",
-    "gieldowa10": "https://www.google.com/maps/dir/?api=1&destination=ul.+Gie%C5%82dowa+10,+33-100+Tarn%C3%B3w",
-    "radlow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Le%C5%9Bna+17a,+33-130+Rad%C5%82%C3%B3w",
     "kolejowa": "https://www.google.com/maps/dir/?api=1&destination=ul.+Kolejowa+5,+33-130+Rad%C5%82%C3%B3w",
 }
 
@@ -52,8 +50,9 @@ GOOGLE_REVIEWS = [
     "Okna bardzo dobrej jakości. Fachowa obsługa, potrafią doradzić, montaż bez żadnych problemów.",
 ]
 
-# Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed, Giełdowa 10 and Kolejowa 5 added.
-# The client gave no phone numbers, opening hours or photos for the new points, so those stay empty.
+# Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed. Of 16.10: only Giełdowa 5 and
+# Kolejowa 5 remain; the Radłów numbers, formerly at ul. Leśna 17a, now go with Kolejowa 5. The old
+# Radłów picture was a map of ul. Leśna, so that card has none.
 STORES = [
     {
         "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 5",
@@ -63,20 +62,10 @@ STORES = [
         "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["chyszow"],
     },
     {
-        "name": "Tarnów, ul. Giełdowa 10", "city": "Tarnów", "street": "ul. Giełdowa 10",
-        "address": "ul. Giełdowa 10, 33-100 Tarnów", "address_full": "ul. Giełdowa 10, 33-100 Tarnów",
-        "tel": "", "mobile": "", "photo": "", "hours": "", "map": MAP_LINKS["gieldowa10"],
-    },
-    {
-        "name": "Punkt Radłów", "city": "Radłów", "street": "ul. Leśna 17a",
-        "address": "ul. Leśna 17a, 33-130 Radłów", "address_full": "ul. Leśna 17a, 33-130 Radłów",
-        "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "salon-radlow.webp",
-        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["radlow"],
-    },
-    {
-        "name": "Radłów, ul. Kolejowa 5", "city": "Radłów", "street": "ul. Kolejowa 5",
+        "name": "Salon Radłów", "city": "Radłów", "street": "ul. Kolejowa 5",
         "address": "ul. Kolejowa 5, 33-130 Radłów", "address_full": "ul. Kolejowa 5, 33-130 Radłów",
-        "tel": "", "mobile": "", "photo": "", "hours": "", "map": MAP_LINKS["kolejowa"],
+        "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "",
+        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["kolejowa"],
     },
 ]
 
@@ -1129,7 +1118,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
-        <span>Tarnów, ul. Giełdowa 5 / Giełdowa 10 · Radłów</span>
+        <span>Tarnów, ul. Giełdowa 5 · Radłów, ul. Kolejowa 5</span>
         <span>Sprzedaż i montaż</span>
         <span>Od 1995 roku</span>
       </div>
