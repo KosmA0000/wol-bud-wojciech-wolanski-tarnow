@@ -32,6 +32,25 @@ MAP_LINKS = {
     "kolejowa": "https://www.google.com/maps/dir/?api=1&destination=ul.+Kolejowa+5,+33-130+Rad%C5%82%C3%B3w",
 }
 
+# Google Business Profile "WOL-BUD Wojciech Wolański" (Giełdowa 10, Tarnów), read on 16.10.2026.
+# The rating and the count are copied by hand, so they need refreshing when the profile changes.
+GOOGLE_REVIEWS_URL = "https://www.google.com/maps/place/WOL-BUD+Wojciech+Wola%C5%84ski/@50.018426,20.948448,17z/data=!4m8!3m7!1s0x473d849d210e031b:0x4f5e253fc57bd81d!8m2!3d50.018426!4d20.948448!9m1!1b1!16s%2Fg%2F1pv5tkfkh?hl=pl"
+GOOGLE_RATING = "4,4"
+GOOGLE_REVIEW_COUNT = 48
+
+# Seven 5-star reviews from that profile, of similar length so the cards stay evenly filled;
+# the longer ones go first, so the first cards in view are the fullest. Words as written by the
+# authors; only a space before "!" is removed.
+GOOGLE_REVIEWS = [
+    ("Taja Niewiara", "Szczerze polecam. Wymiana okien skrzynkowych i parapetów lastryko w starym domu przebiegła bez problemowo. Estetyczne wykończenie, ekipa montująca profesjonalna i przyjazna:) Dziękujemy!"),
+    ("Marek Kocoł", "To nie pierwszy raz kiedy korzystamy z usług firmy WOLBUD. Zdecydowanie polecamy miło fachowo i czysto w trakcie pracy jak i po jej zakończeniu. Terminy zawsze na czas. Kontakt w czasie trwania zamówienia bezproblemowy. Dzięki Panowie"),
+    ("Andrzej Kozlowski", "Firma i jej pracownicy z profesjonalnym podejściem do klienta i wykonywanych usług! Wszystko zgodnie z zamówieniem i umową. Punktualnie i dokładnie wykonane. Przed podpisaniem umowy fachowe porady. Polecam."),
+    ("Marcin Blenski", "Zamówiłem w Firmie Wol-Bud okna, rolety, parapety i bramę garażową z montażem do Niemiec. Jestem bardzo zadowolony z jakości wykonanych prac, fachowości i obsługi klienta. Polecam"),
+    ("Laxon", "Firma godna polecenia, jakość wykonania super i co najważniejsze nie ma żadnych proplemów przy gwarancji POLECAM"),
+    ("Dawid Kijowski", "Fachowcy z najwyższej półki, rzetelna obsługa i doradztwo a towar zgodny z zamówieniem. Szczerze polecam"),
+    ("Damian Machalski", "Okna bardzo dobrej jakości. Fachowa obsługa, potrafią doradzić, montaż bez żadnych problemów."),
+]
+
 # Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed, Giełdowa 10 and Kolejowa 5 added.
 # The client gave no phone numbers, opening hours or photos for the new points, so those stay empty.
 STORES = [
@@ -882,6 +901,37 @@ def realization_img_size(path: str) -> str:
     return f' width="{dimensions[0]}" height="{dimensions[1]}"' if dimensions else ""
 
 
+def reviews_section() -> str:
+    reviews = "".join(
+        f'''<li class="review"><div class="stars" role="img" aria-label="Ocena 5 na 5">★★★★★</div><blockquote>{esc(text)}</blockquote><div class="review-author">{esc(author)}<span>Opinia Google</span></div></li>'''
+        for author, text in GOOGLE_REVIEWS
+    )
+    arrow = '<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{path}"></path></svg>'
+    return f'''<section class="reviews" id="opinie">
+  <div class="wrap">
+    <div class="reviews-head">
+      <div>
+        <span class="eyebrow">Opinie Google</span>
+        <h2>Co mówią Klienci</h2>
+      </div>
+      <div class="reviews-score">
+        <span class="score-value">{GOOGLE_RATING}</span>
+        <div>
+          <div class="stars" aria-hidden="true">★★★★★</div>
+          <p class="score-meta">Średnia ocen w&nbsp;Google<br>na podstawie {GOOGLE_REVIEW_COUNT} opinii</p>
+          <a class="reviews-link" href="{esc(GOOGLE_REVIEWS_URL)}" target="_blank" rel="noopener noreferrer">Zobacz opinie w Google{arrow.format(size=15, path="M7 17L17 7M17 7H8M17 7v9")}</a>
+        </div>
+      </div>
+    </div>
+    <ul class="reviews-track" id="reviewsTrack">{reviews}</ul>
+    <div class="reviews-nav">
+      <button type="button" class="rev-prev" aria-label="Poprzednie opinie" aria-controls="reviewsTrack" disabled>{arrow.format(size=18, path="M15 5l-7 7 7 7")}</button>
+      <button type="button" class="rev-next" aria-label="Następne opinie" aria-controls="reviewsTrack">{arrow.format(size=18, path="M9 5l7 7-7 7")}</button>
+    </div>
+  </div>
+</section>'''
+
+
 def realizations_home_section(prefix: str = "") -> str:
     cards = []
     for group in REALIZATIONS:
@@ -1147,6 +1197,9 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 
   </div>
 </section>
+
+<!-- OPINIE GOOGLE -->
+{reviews_section()}
 
 <!-- REALIZACJE I PARTNERZY na wspólnym zdjęciu w tle -->
 <div class="photo-band">

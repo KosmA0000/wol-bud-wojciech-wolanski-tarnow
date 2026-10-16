@@ -610,9 +610,8 @@ p, li, blockquote {
   position: relative;
   z-index: 4;
   padding: clamp(5rem, 9vw, 8rem) 0;
-  background: #182a0e;
+  background: var(--dark);
   color: var(--bg);
-  border-top: 1px solid rgba(244, 243, 236, 0.1);
 }
 
 .reviews-head {
@@ -659,8 +658,9 @@ p, li, blockquote {
   line-height: 1.45;
 }
 
+/* Stars keep the site's former gold: the black highlight would vanish on the green. */
 .stars {
-  color: var(--highlight);
+  color: #ffb200;
   letter-spacing: 0.16em;
   font-size: 0.95rem;
   line-height: 1;
@@ -680,8 +680,12 @@ p, li, blockquote {
 }
 
 .reviews-link:hover {
-  border-color: var(--highlight);
-  color: var(--highlight);
+  border-color: #fff;
+  color: #fff;
+}
+
+.reviews-link svg {
+  flex: 0 0 auto;
 }
 
 .reviews-track {
@@ -701,20 +705,20 @@ p, li, blockquote {
 }
 
 .review {
-  flex: 0 0 clamp(280px, 30vw, 380px);
+  flex: 0 0 clamp(265px, 26vw, 355px);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  padding: clamp(1.4rem, 2vw, 2.2rem);
+  padding: clamp(1.4rem, 2vw, 2rem);
   border: 1px solid rgba(244, 243, 236, 0.18);
-  border-radius: var(--radius-md);
-  background: rgba(244, 243, 236, 0.06);
+  border-radius: 24px;
+  background: rgba(244, 243, 236, 0.07);
 }
 
 .review blockquote {
   margin: 1.15rem 0 0;
-  font-size: clamp(1rem, 1.1vw, 1.12rem);
-  line-height: 1.55;
+  font-size: clamp(1rem, 1.1vw, 1.1rem);
+  line-height: 1.52;
   color: rgba(244, 243, 236, 0.9);
 }
 
@@ -752,13 +756,23 @@ p, li, blockquote {
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: background 0.25s, color 0.25s;
+  transition: background 0.25s, color 0.25s, opacity 0.25s;
 }
 
-.reviews-nav button:hover {
+.reviews-nav button:hover:not(:disabled) {
   background: var(--bg);
   color: var(--dark);
+}
+
+.reviews-nav button:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+@media (max-width: 760px) {
+  .reviews { padding: 5rem 0; }
+  .review { flex-basis: 80%; padding: 1.35rem; border-radius: 20px; }
+  .reviews-nav button { width: 46px; height: 46px; }
 }
 
 /* ==========================================================================

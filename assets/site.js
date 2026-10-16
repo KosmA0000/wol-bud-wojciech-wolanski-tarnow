@@ -115,9 +115,16 @@
   const nextBtn = document.querySelector('.rev-next');
 
   if (reviewsTrack && prevBtn && nextBtn) {
+    // One card plus the gap per click; the arrows switch off at either end of the track.
     const getScrollStep = () => {
       const firstCard = reviewsTrack.querySelector('.review');
-      return firstCard ? firstCard.offsetWidth + 18 : 340;
+      const gap = parseFloat(getComputedStyle(reviewsTrack).columnGap) || 16;
+      return firstCard ? firstCard.getBoundingClientRect().width + gap : 320;
+    };
+    const syncArrows = () => {
+      const max = reviewsTrack.scrollWidth - reviewsTrack.clientWidth;
+      prevBtn.disabled = reviewsTrack.scrollLeft <= 2;
+      nextBtn.disabled = reviewsTrack.scrollLeft >= max - 2;
     };
 
     prevBtn.addEventListener('click', () => {
@@ -127,6 +134,10 @@
     nextBtn.addEventListener('click', () => {
       reviewsTrack.scrollBy({ left: getScrollStep(), behavior: 'smooth' });
     });
+
+    reviewsTrack.addEventListener('scroll', syncArrows, { passive: true });
+    window.addEventListener('resize', syncArrows);
+    syncArrows();
   }
 
   // ==========================================================================
