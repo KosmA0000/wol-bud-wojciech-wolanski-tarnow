@@ -722,18 +722,9 @@ p, li, blockquote {
   color: rgba(244, 243, 236, 0.9);
 }
 
-.review-author {
+.review-source {
   margin-top: auto;
   padding-top: 1.7rem;
-  border: 0;
-  color: inherit;
-  font-size: 0.92rem;
-  font-weight: 500;
-}
-
-.review-author span {
-  display: block;
-  margin-top: 0.35rem;
   color: rgba(244, 243, 236, 0.55);
   font-size: 0.68rem;
   letter-spacing: 0.1em;
@@ -744,6 +735,15 @@ p, li, blockquote {
   display: flex;
   gap: 0.6rem;
   margin-top: clamp(1.5rem, 2.5vw, 2.2rem);
+}
+
+/* Which reviews are shown and that they are not checked (consumer-law notice on reviews). */
+.reviews-note {
+  max-width: 62ch;
+  margin: 1.25rem 0 0;
+  color: rgba(244, 243, 236, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .reviews-nav button {
