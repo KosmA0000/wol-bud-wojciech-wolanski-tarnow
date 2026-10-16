@@ -1103,11 +1103,14 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         link = "/promocje/cieply-montaz-warstwowy-okien-drzwi/#pelny-opis-montazu" if "Ciepły" in stitle else f"/uslugi/#{anch}"
         service_href = url_for(link, prefix)
         shown_title = SERVICE_TITLE_RENAMES.get(stitle, stitle)
-        services_markup.append(f'''<article class="home-service-item">
-  <h4><a class="home-service-item-title-link" href="{service_href}">{esc(shown_title)}</a></h4>
-  <p class="home-service-item-teaser">{esc(teaser)}</p>
-  <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(shown_title)}">Dowiedz się więcej ↗</a>
-</article>''')
+        # Open on desktop; site.js closes the rows on phones, where they become tap-to-open tiles.
+        services_markup.append(f'''<details class="home-service-item" open data-responsive-disclosure>
+  <summary><h4>{esc(shown_title)}</h4></summary>
+  <div class="home-service-item-body">
+    <p class="home-service-item-teaser">{esc(teaser)}</p>
+    <a class="arr" href="{service_href}" aria-label="Dowiedz się więcej: {esc(shown_title)}">Dowiedz się więcej ↗</a>
+  </div>
+</details>''')
 
     partner_logos = [
         ("partner-domel.webp", "DOMEL"), ("partner-fill.webp", "FILL"), ("partner-wiked.webp", "WIKĘD"),

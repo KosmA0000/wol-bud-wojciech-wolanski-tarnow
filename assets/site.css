@@ -2566,7 +2566,8 @@ footer {
 }
 
 /* Services as one numbered list: every row shares the same columns, so the rows line up
-   whatever the length of the text and no card is left half empty (client, 10.2026). */
+   whatever the length of the text and no card is left half empty (client, 10.2026).
+   Each row is a <details>: open on desktop, a tap-to-open tile on phones (site.js, 760px). */
 .home-services-grid {
   counter-reset: service;
   overflow: hidden;
@@ -2576,11 +2577,11 @@ footer {
 }
 
 .home-service-item {
-  display: grid;
-  grid-template-columns: 2.4rem minmax(0, 0.75fr) minmax(0, 1.5fr) auto;
-  column-gap: clamp(1rem, 2.4vw, 2.4rem);
-  align-items: baseline;
+  --service-gap: clamp(1rem, 2.4vw, 2.4rem);
+  position: relative;
+  display: flow-root;
   padding: 1.35rem clamp(1.25rem, 2.4vw, 2rem);
+  counter-increment: service;
   color: inherit;
   transition: background-color 0.2s;
 }
@@ -2593,8 +2594,25 @@ footer {
   background: rgba(229, 224, 214, 0.35);
 }
 
-.home-service-item::before {
-  counter-increment: service;
+/* Number and name float left with the description beside them, since a details element is not
+   a dependable grid container in every browser. The width keeps the former 2.4rem / 0.75fr /
+   1.5fr / link columns, taking the link as 7.9rem wide. */
+.home-service-item > summary {
+  float: left;
+  width: calc(2.4rem + 2 * var(--service-gap) + (100% - 2.4rem - 3 * var(--service-gap) - 7.9rem) / 3);
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  column-gap: var(--service-gap);
+  align-items: baseline;
+  padding-right: var(--service-gap);
+  list-style: none;
+}
+
+.home-service-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+.home-service-item > summary::before {
   content: counter(service, decimal-leading-zero);
   color: var(--muted);
   font-size: 0.8rem;
@@ -2608,6 +2626,15 @@ footer {
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.35;
+}
+
+/* The 1px drop puts the description on the name's baseline, as in the former shared grid. */
+.home-service-item-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--service-gap);
+  align-items: baseline;
+  padding-top: 1px;
 }
 
 .home-service-item p {
@@ -2627,46 +2654,34 @@ footer {
   white-space: nowrap;
 }
 
+/* Desktop: the whole row opens the service page. */
+.home-service-item .arr::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
 .home-service-item:hover .arr {
   color: var(--dark);
 }
 
-/* Narrower screens: the link moves under the description. */
-@media (max-width: 1100px) {
-  .home-service-item {
-    grid-template-columns: 2.4rem minmax(0, 0.8fr) minmax(0, 1.6fr);
-    row-gap: 0.5rem;
-  }
-  .home-service-item .arr {
-    grid-column: 3;
-    justify-self: start;
-  }
-}
-
-.home-service-item {
-  position: relative;
-}
-
-.home-service-item .home-service-item-title-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.home-service-item .home-service-item-title-link::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.home-service-item:where(:focus-within) {
+.home-service-item:has(.arr:focus-visible) {
   outline: 3px solid var(--highlight);
   outline-offset: -3px;
 }
 
-.home-service-item :is(a, button, input, select, textarea, summary, [tabindex]):not(.home-service-item-title-link) {
-  position: relative;
-  z-index: 2;
+/* Narrower screens: the link moves under the description. */
+@media (max-width: 1100px) {
+  .home-service-item > summary {
+    width: calc(2.4rem + 2 * var(--service-gap) + (100% - 2.4rem - 2 * var(--service-gap)) / 3);
+  }
+  .home-service-item-body {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+  .home-service-item .arr {
+    justify-self: start;
+  }
 }
 
 
@@ -3380,12 +3395,19 @@ body.lightbox-open {
   .home-services-box { padding: 1rem; border-radius: 18px; margin-bottom: 1.5rem; }
   .home-services-head { display: block; margin-bottom: 1rem; }
   .home-services-head a { display: inline-block; margin-top: 0.75rem; }
-  .home-services-grid { border-radius: 14px; }
-  /* Phones: number beside the name, description and link under the name. */
-  .home-service-item { grid-template-columns: 1.9rem minmax(0, 1fr); row-gap: 0.4rem; min-width: 0; padding: 1rem; }
-  .home-service-item p, .home-service-item .arr { grid-column: 2; }
+  /* Phones: each service is a tile with its number and name; a tap opens the description
+     and the link. */
+  .home-services-grid { display: grid; gap: 0.6rem; overflow: visible; background: none; border: 0; border-radius: 0; }
+  .home-service-item { min-width: 0; padding: 0; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; }
+  .home-service-item:hover { background: #ffffff; }
+  .home-service-item > summary { float: none; width: auto; grid-template-columns: 1.9rem minmax(0, 1fr) 0.7rem; column-gap: 0.6rem; align-items: center; min-height: 3.6rem; padding: 0.8rem 1rem; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .home-service-item > summary::after { content: ""; width: 0.5rem; height: 0.5rem; margin-top: -0.3rem; border-right: 2px solid var(--dark); border-bottom: 2px solid var(--dark); transform: rotate(45deg); transition: transform 0.2s, margin-top 0.2s; }
+  .home-service-item[open] > summary::after { margin-top: 0.3rem; transform: rotate(-135deg); }
+  .home-service-item-body { grid-template-columns: minmax(0, 1fr); row-gap: 0.2rem; padding: 0 1rem 0.6rem 3.5rem; }
   .home-service-item h4 { font-size: 1.02rem; }
   .home-service-item p { font-size: 0.88rem; }
+  .home-service-item .arr { justify-self: start; padding-block: 0.45rem; }
+  .home-service-item .arr::after { content: none; }
   .contact, .partners-section { padding-block: 3rem; }
   .kt-tel, .kt-adres { min-width: 0; padding: 1.25rem; border-radius: 18px; }
   .kt-num { max-width: 100%; font-size: clamp(1.9rem, 8.4vw, 2.7rem); }
