@@ -457,6 +457,8 @@ def source_display_text(value: str) -> str:
     value = value.replace("Wysoka jakość wykonania produktów Firmy „PETECKI” oraz", "Wysoka jakość wykonania oferowanych przez nas fasad oraz")
     # ul. Szkotnik 2B is closed, so the number of sales points changed.
     value = value.replace("Trzy salony sprzedaży w Tarnowie i Radłowie", "Salony sprzedaży w Tarnowie i Radłowie")
+    # Client correction of 17.10: the Tarnów salon is at Giełdowa 10.
+    value = value.replace("na ulicy Giełdowej 5 w Tarnowie", "na ulicy Giełdowej 10 w Tarnowie")
     return value
 
 
