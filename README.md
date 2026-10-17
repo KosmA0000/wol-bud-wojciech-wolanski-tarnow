@@ -6,7 +6,7 @@ Nowoczesna, statyczna strona demonstracyjna dla firmy **WOL-BUD Wojciech Wolańs
 - **GitHub Pages**: https://kosma0000.github.io/wol-bud-wojciech-wolanski-tarnow/
 - **Branża**: Stolarka otworowa, okna, drzwi, bramy, rolety, parapety, ciepły montaż
 - **Lokalizacje salonów**:
-  - Salon Tarnów-Chyszów: ul. Giełdowa 5
+  - Salon Tarnów-Chyszów: ul. Giełdowa 10
   - Salon Tarnów: ul. Szkotnik 2B
   - Punkt Radłów: ul. Leśna 17A
 - **Kontakt**: tel. 534 091 021, biuro@wol-bud.com.pl

@@ -26,9 +26,13 @@ PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.js
 
 # Navigation links for specific salon locations
 MAP_LINKS = {
-    "chyszow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Gie%C5%82dowa+5,+33-100+Tarn%C3%B3w",
+    "chyszow": "https://www.google.com/maps/dir/?api=1&destination=WOL-BUD+ul.+Gie%C5%82dowa+10,+33-100+Tarn%C3%B3w",
     "kolejowa": "https://www.google.com/maps/dir/?api=1&destination=ul.+Kolejowa+5,+33-130+Rad%C5%82%C3%B3w",
 }
+
+FACEBOOK_URL = "https://www.facebook.com/sklep.wol.bud.tarnow"
+FACEBOOK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06c0 5 3.66 9.15 8.44 9.9v-7h-2.54v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>'
+MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>'
 
 # Google Business Profile "WOL-BUD Wojciech Wolański" (Giełdowa 10, Tarnów), read on 16.10.2026.
 # The rating and the count are copied by hand, so they need refreshing when the profile changes.
@@ -52,12 +56,13 @@ GOOGLE_REVIEWS = [
 
 # Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed. Of 16.10: only Giełdowa 5 and
 # Kolejowa 5 remain; the Radłów numbers, formerly at ul. Leśna 17a, now go with Kolejowa 5. The old
-# Radłów picture was a map of ul. Leśna, so that card has none.
+# Radłów picture was a map of ul. Leśna, so that card has none. Of 17.10: the Tarnów salon is at
+# Giełdowa 10, the address the Google profile shows.
 STORES = [
     {
-        "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 5",
-        "address": "ul. Giełdowa 5 (przy placu targowym), 33-100 Tarnów",
-        "address_full": "ul. Giełdowa 5 (przy placu targowym Chyszów), 33-100 Tarnów",
+        "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 10",
+        "address": "ul. Giełdowa 10 (przy placu targowym), 33-100 Tarnów",
+        "address_full": "ul. Giełdowa 10 (przy placu targowym Chyszów), 33-100 Tarnów",
         "tel": "14 626 80 32", "mobile": "534 091 021", "photo": "salon-tarnow-chyszow.webp",
         "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["chyszow"],
     },
@@ -819,7 +824,7 @@ def footer(prefix: str) -> str:
         ("Kontakt", "/kontakt/"),
     ]
     footer_links = "".join(f'<a href="{url_for(href, prefix)}">{label}</a>' for label, href in links)
-    return f'''<footer><div class="wrap"><div class="footer-links">{footer_links}</div><p class="footer-copy">WOL-BUD Wojciech Wolański · Sprzedaż i profesjonalny montaż okien, drzwi i bram od 1995 roku · Tarnów, Radłów · <a href="tel:+48534091021">534 091 021</a></p></div></footer>'''
+    return f'''<footer><div class="wrap"><div class="footer-links">{footer_links}</div><div class="footer-social"><a href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer" aria-label="WOL-BUD na Facebooku (otwiera się w nowej karcie)">{FACEBOOK_ICON}Facebook</a></div><p class="footer-copy">WOL-BUD Wojciech Wolański · Sprzedaż i profesjonalny montaż okien, drzwi i bram od 1995 roku · Tarnów, Radłów · <a href="tel:+48534091021">534 091 021</a></p></div></footer>'''
 
 
 def document(route: str, title: str, description: str, body: str) -> str:
@@ -1118,7 +1123,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     </div>
     <div class="hero-copy" id="heroCopy">
       <div class="hero-meta">
-        <span>Tarnów, ul. Giełdowa 5 · Radłów, ul. Kolejowa 5</span>
+        <span>Tarnów, ul. Giełdowa 10 · Radłów, ul. Kolejowa 5</span>
         <span>Sprzedaż i montaż</span>
         <span>Od 1995 roku</span>
       </div>
@@ -1130,6 +1135,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       <p class="hero-sub">{esc(intro)}</p>
       <div class="hero-cta">
         <a class="hero-btn" href="tel:+48534091021"><i></i>Zadzwoń: 534 091 021</a>
+        <a class="hero-mail" href="mailto:biuro@wol-bud.com.pl">{MAIL_ICON}biuro@wol-bud.com.pl</a>
       </div>
     </div>
   </div>
@@ -1227,6 +1233,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         <a class="kt-num" href="tel:+48534091021"><i><svg viewBox="0 0 24 24"><path d="M7.2 3.5h2.1l1.4 4-1.8 1.5a14 14 0 0 0 6.1 6.1l1.5-1.8 4 1.4v2.1c0 1.1-.9 2-2 2A15.5 15.5 0 0 1 5.2 5.5c0-1.1.9-2 2-2Z"/></svg></i>534 091 021</a>
         <ul class="kt-lista">
           <li><span>E-mail:</span><a href="mailto:biuro@wol-bud.com.pl">biuro@wol-bud.com.pl</a></li>
+          <li><span>Facebook:</span><a href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer">Zobacz nasz profil ↗</a></li>
           <li><span>Czynne:</span><span>Poniedziałek – piątek 09:00–17:00</span></li>
           <li><span>Soboty:</span><span>09:00–13:00 (Tarnów i Radłów)</span></li>
         </ul>
@@ -2027,6 +2034,7 @@ def contact_page() -> str:
         <a class="kt-num" href="tel:+48534091021"><i><svg viewBox="0 0 24 24"><path d="M7.2 3.5h2.1l1.4 4-1.8 1.5a14 14 0 0 0 6.1 6.1l1.5-1.8 4 1.4v2.1c0 1.1-.9 2-2 2A15.5 15.5 0 0 1 5.2 5.5c0-1.1.9-2 2-2Z"/></svg></i>534 091 021</a>
         <ul class="kt-lista">
           <li><span>E-mail:</span><a href="mailto:biuro@wol-bud.com.pl">biuro@wol-bud.com.pl</a></li>
+          <li><span>Facebook:</span><a href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer">Zobacz nasz profil ↗</a></li>
           <li><span>Czynne:</span><span>Poniedziałek – piątek 09:00–17:00</span></li>
           <li><span>Soboty:</span><span>09:00–13:00 (Tarnów i Radłów)</span></li>
         </ul>
