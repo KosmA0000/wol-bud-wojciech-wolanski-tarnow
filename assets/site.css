@@ -4449,6 +4449,31 @@ body.lightbox-open {
   border-bottom: 0;
 }
 
+/* Medos sill parameters: a sub-list under an item and the photo shown with an item. */
+.specs-list li ul {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+
+.specs-list li li {
+  display: list-item;
+  margin: 0;
+  font-size: inherit;
+}
+
+.spec-photo {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  margin-top: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
 /* Sill colour palettes of the manufacturer Medos (client, 10.2026). */
 .palette-box {
   margin: 0 0 2rem;
@@ -4462,16 +4487,6 @@ body.lightbox-open {
 .palette-box h2 {
   margin: 0 0 1.1rem;
   font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.palette-group + .palette-group {
-  margin-top: 1.6rem;
-}
-
-.palette-group h3 {
-  margin: 0 0 0.8rem;
-  font-size: 1rem;
   font-weight: 600;
 }
 
