@@ -4583,3 +4583,96 @@ body.lightbox-open {
     gap: 0.9rem 0.6rem;
   }
 }
+
+/* Contact bubbles in the middle of the right edge: Facebook, e-mail, phone (client, 20.10.2026).
+   Each one is an icon; hovering or tabbing to it opens it leftwards to show the whole address. */
+.contact-bubbles {
+  position: fixed;
+  top: 50%;
+  right: 16px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+.contact-bubble {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: var(--dark);
+  color: #ffffff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  transition: background 0.2s, color 0.2s;
+}
+
+.contact-bubble__text {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: max-width 0.35s ease, padding 0.35s ease, opacity 0.25s ease;
+}
+
+.contact-bubble__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.contact-bubble svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.contact-bubble--mail svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contact-bubble:focus-visible {
+  background: var(--highlight);
+  color: var(--on-highlight);
+}
+
+.contact-bubble:focus-visible .contact-bubble__text {
+  max-width: 24rem;
+  padding-left: 20px;
+  opacity: 1;
+}
+
+/* Touch screens have no hover: a tap goes straight to the call, the mail or the profile. */
+@media (hover: hover) {
+  .contact-bubble:hover {
+    background: var(--highlight);
+    color: var(--on-highlight);
+  }
+
+  .contact-bubble:hover .contact-bubble__text {
+    max-width: 24rem;
+    padding-left: 20px;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .contact-bubbles { right: 10px; gap: 8px; }
+  .contact-bubble__icon { width: 44px; height: 44px; }
+  .contact-bubble svg { width: 19px; height: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-bubble, .contact-bubble__text { transition: none; }
+}

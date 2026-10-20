@@ -40,6 +40,14 @@ MAP_LINKS = {
 FACEBOOK_URL = "https://www.facebook.com/sklep.wol.bud.tarnow"
 FACEBOOK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06c0 5 3.66 9.15 8.44 9.9v-7h-2.54v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>'
 MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>'
+PHONE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.5h2.1l1.4 4-1.8 1.5a14 14 0 0 0 6.1 6.1l1.5-1.8 4 1.4v2.1c0 1.1-.9 2-2 2A15.5 15.5 0 0 1 5.2 5.5c0-1.1.9-2 2-2Z"/></svg>'
+# Client, 20.10.2026: three bubbles in the middle of the right edge, Facebook, e-mail and phone;
+# hovering one shows it whole.
+CONTACT_BUBBLES = f'''<nav class="contact-bubbles" aria-label="Szybki kontakt">
+  <a class="contact-bubble contact-bubble--fb" href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer" aria-label="Facebook: facebook.com/sklep.wol.bud.tarnow (otwiera się w nowej karcie)"><span class="contact-bubble__text">facebook.com/sklep.wol.bud.tarnow</span><span class="contact-bubble__icon">{FACEBOOK_ICON}</span></a>
+  <a class="contact-bubble contact-bubble--mail" href="mailto:biuro@wol-bud.com.pl" aria-label="E-mail: biuro@wol-bud.com.pl"><span class="contact-bubble__text">biuro@wol-bud.com.pl</span><span class="contact-bubble__icon">{MAIL_ICON}</span></a>
+  <a class="contact-bubble contact-bubble--tel" href="tel:+48534091021" aria-label="Zadzwoń: 534 091 021"><span class="contact-bubble__text">534 091 021</span><span class="contact-bubble__icon">{PHONE_ICON}</span></a>
+</nav>'''
 # The calls to talk at the foot of the pages ("Porozmawiajmy o Twojej inwestycji" and the like) carry the
 # e-mail next to the phone (client PDF of 20.10.2026).
 CTA_CONTACT = f'''<div class="cta-actions">
@@ -1355,6 +1363,8 @@ def document(route: str, title: str, description: str, body: str) -> str:
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
   <span>Do góry</span>
 </button>
+
+{CONTACT_BUBBLES}
 
 </body></html>'''
     return re.sub(r"(?m)^[ \t]+$", "", html_doc)
