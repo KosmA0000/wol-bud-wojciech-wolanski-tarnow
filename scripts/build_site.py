@@ -1313,7 +1313,7 @@ def document(route: str, title: str, description: str, body: str) -> str:
     safe_description = esc(description[:220])
     html_doc = f'''<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#2c4d19"><meta name="description" content="{safe_description}">
+<meta name="theme-color" content="#62cd25"><meta name="description" content="{safe_description}">
 <title>{esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
