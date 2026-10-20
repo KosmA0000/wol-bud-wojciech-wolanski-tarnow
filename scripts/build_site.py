@@ -984,6 +984,30 @@ def source_body_blocks(page: dict) -> list:
         for block in body:
             if normalize(block.get("text", "")).startswith("w naszej ofercie posiadamy produkty wylacznie"):
                 block["text"] = "W naszej ofercie posiadamy produkty wyłącznie renomowanych polskich firm:"
+        # Client, 20.10.2026: four window makers added to that list, in their words. A company's second
+        # description hangs under it; Smartline+ is Dobroplast's other system, next to P-Line.
+        heading_index = next(
+            (i for i, block in enumerate(body) if normalize(block.get("text", "")).startswith("w naszej ofercie posiadamy produkty wylacznie")),
+            -1,
+        )
+        if 0 <= heading_index < len(body) - 1 and body[heading_index + 1].get("type") == "list":
+            suppliers = body[heading_index + 1]
+            suppliers["items"] = [
+                *suppliers.get("items", []),
+                "WILLINGEN – okna produkowane w systemach profili Schüco living 82, łączące nowoczesny design, wysoką jakość wykonania oraz doskonałe parametry termoizolacyjne.",
+                "DEBOW – okna PCV produkowane na profilach Salamander 82, zapewniające trwałość, energooszczędność i estetyczny wygląd.",
+                "HENSFORT – okna PCV w systemie Hensperfect, charakteryzujące się klasycznym wzornictwem, solidną konstrukcją oraz wysokimi parametrami izolacji termicznej i akustycznej.",
+            ]
+            body[heading_index + 2:heading_index + 2] = [
+                {"type": "list", "listType": "unordered", "depth": 2, "items": [
+                    "Okna PCV w systemach profili Hensperfect oraz Kömmerling Hensproline 88 MD, łączące nowoczesne rozwiązania technologiczne, wysoką izolacyjność termiczną i akustyczną oraz solidną konstrukcję.",
+                ]},
+                {"type": "list", "listType": "unordered", "depth": 1, "items": ["Dobroplast"]},
+                {"type": "list", "listType": "unordered", "depth": 2, "items": [
+                    "P-Line – Okna w systemie P-Line to połączenie nowoczesnego wyglądu, funkcjonalności i dobrych parametrów użytkowych. Zapewniają odpowiednią izolację termiczną i akustyczną, szczelność oraz komfort użytkowania, sprawdzając się w nowoczesnych i tradycyjnych budynkach.",
+                    "Smartline+ – System okienny Smartline+ łączy estetyczny design z funkcjonalnością i komfortem użytkowania. Przemyślana konstrukcja profili wspiera izolacyjność termiczną oraz szczelność okien, stanowiąc praktyczne rozwiązanie do domów i mieszkań.",
+                ]},
+            ]
     return body
 
 
