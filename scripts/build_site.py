@@ -12,6 +12,7 @@ Features:
 
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import re
@@ -23,6 +24,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRAPED_DATA_FILE = ROOT / "docs" / "full_scraped_data.json"
 SOURCE_DATA_FILE = ROOT / "docs" / "source-content.json"
 PRODUCT_GALLERY_SOURCE_MAP_FILE = ROOT / "docs" / "product-gallery-source-map.json"
+# Version of the stylesheet and script in their addresses, so that a browser holding an older copy
+# fetches the new one together with a new page.
+ASSET_VERSIONS = {
+    name: hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
+    for name in ("site.css", "site.js")
+}
 
 # Navigation links for specific salon locations
 MAP_LINKS = {
@@ -1201,7 +1208,7 @@ def document(route: str, title: str, description: str, body: str) -> str:
 <title>{esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="{prefix}img/favicon.png"><link rel="apple-touch-icon" href="{prefix}img/favicon.png"><link rel="stylesheet" href="{prefix}assets/site.css"><script defer src="{prefix}assets/site.js"></script></head>
+<link rel="icon" type="image/png" href="{prefix}img/favicon.png"><link rel="apple-touch-icon" href="{prefix}img/favicon.png"><link rel="stylesheet" href="{prefix}assets/site.css?v={ASSET_VERSIONS['site.css']}"><script defer src="{prefix}assets/site.js?v={ASSET_VERSIONS['site.js']}"></script></head>
 <body>
 {header(prefix)}
 {body}
