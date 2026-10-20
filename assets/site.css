@@ -2,14 +2,14 @@
 
 /* ==========================================================================
    WOL-BUD — Awwwards Style (DAKO-Kalisz Reference Design)
-   Figtree typography, warm porcelain #f6f4f0, logo green #62cd25, black highlight #1b1b19
+   Figtree typography, warm porcelain #f6f4f0, logo-hue green #2c4d19, black highlight #1b1b19
    ========================================================================== */
 
 :root {
   --bg: #f6f4f0;
-  /* The logo's green exactly, as measured on the lossless favicon (client, 20.10.2026).
-     The client chose it 1:1 knowing white text on it reads at 2.0:1. */
-  --dark: #62cd25;
+  /* Dark surfaces take the logo's hue (#62cd26, 98°) darkened so white text keeps 9.6:1; body text stays charcoal.
+     The client tried the logo green 1:1 and went back to this one (20.10.2026). */
+  --dark: #2c4d19;
   --ink: #1b1b19;
   --muted: #6f6d67;
   --accent: #eeeae2;
@@ -151,7 +151,7 @@ p, li, blockquote {
   padding: 0 22px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: rgba(98, 205, 37, 0.62);
+  background: rgba(44, 77, 25, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #fff;
@@ -164,7 +164,7 @@ p, li, blockquote {
 }
 
 .pill:hover {
-  background: rgba(98, 205, 37, 0.88);
+  background: rgba(44, 77, 25, 0.88);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -226,7 +226,7 @@ p, li, blockquote {
   padding: 0 24px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background: rgba(98, 205, 37, 0.62);
+  background: rgba(44, 77, 25, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #fff;
@@ -2889,7 +2889,7 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(98, 205, 37, 0.85);
+  background: rgba(44, 77, 25, 0.85);
   backdrop-filter: blur(6px);
   color: #ffffff;
   font-size: 0.76rem;
