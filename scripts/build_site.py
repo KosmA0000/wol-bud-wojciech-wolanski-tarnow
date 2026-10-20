@@ -972,6 +972,10 @@ def source_body_blocks(page: dict) -> list:
             block for block in body
             if not normalize(block.get("text", "")).startswith("ponizej przedstawiamy niektore z naszych referencji")
         ]
+        # Client, 20.10.2026: the line above the supplier list, in their words.
+        for block in body:
+            if normalize(block.get("text", "")).startswith("w naszej ofercie posiadamy produkty wylacznie"):
+                block["text"] = "W naszej ofercie posiadamy produkty wyłącznie renomowanych polskich firm:"
     return body
 
 
