@@ -405,6 +405,28 @@ SILL_CATEGORIES = {
     '/kategorie/parapety-wewnetrzne/': "Parapety wewnętrzne",
     '/kategorie/parapety-zewnetrzne/': "Parapety zewnętrzne",
 }
+# The rest of the Medos sill offer, on the "Parapety i blaty" page: names only, linked to
+# medosparapety.pl, grouped and ordered as Medos lists them (client, 20.10.2026).
+# [(Medos group, [(name, address)])]
+SILL_MEDOS_LINKS = [
+    ("Parapety wewnętrzne", [
+        ("Parapet MDF zielona płyta", "https://medosparapety.pl/pl/parapet-mdf-zielona-plyta/"),
+        ("Parapet MDF - MDS", "https://medosparapety.pl/pl/parapet-mdf-mds/"),
+        ("Parapet PVC softline", "https://medosparapety.pl/pl/parapet-pvc-softline/"),
+        ("Parapet Postforming modern", "https://medosparapety.pl/pl/parapet-postforming-modern/"),
+        ("Parapet Postforming", "https://medosparapety.pl/pl/parapet-postforming/"),
+        ("Nakładka renowacyjna komorowa", "https://medosparapety.pl/pl/nakladka-renowacyjna-komorowa/"),
+        ("Nakładka renowacyjna premium", "https://medosparapety.pl/pl/nakladka-renowacyjna-premium/"),
+    ]),
+    ("Parapety zewnętrzne", [
+        ("Parapet stalowy softline", "https://medosparapety.pl/pl/parapet-stalowy-softline/"),
+        ("Parapet stalowy laminowany", "https://medosparapety.pl/pl/parapet-stalowy-laminowany/"),
+        ("Parapet stalowy laminowany softline", "https://medosparapety.pl/pl/parapet-stalowy-laminowany-softline/"),
+        ("Parapet stalowy lakierowany", "https://medosparapety.pl/pl/parapet-stalowy-lakierowany/"),
+        ("Parapet stalowy lakierowany softline", "https://medosparapety.pl/pl/parapet-stalowy-lakierowany-softline/"),
+        ("Parapet aluminiowy - imitacja płytki", "https://medosparapety.pl/pl/parapet-aluminiowy-imitacja-plytki/"),
+    ]),
+]
 # [(category route, product route, title, photos, parameters)]
 SILL_PRODUCTS = [
     ('/kategorie/parapety-wewnetrzne/', '/produkty/parapet-granit/', 'Granit', [
@@ -1681,6 +1703,20 @@ def sill_palette_markup(route: str, title: str, prefix: str) -> str:
 </section>'''
 
 
+def sill_medos_links_markup(route: str) -> str:
+    if route != "/kategorie/parapety-blaty/":
+        return ""
+    groups = "".join(
+        f'''<h3>{esc(group)}</h3>
+  <ul class="brand-chips">{"".join(f'<li><a href="{esc(href)}" target="_blank" rel="noopener noreferrer">{esc(name)} <span aria-hidden="true">↗</span></a></li>' for name, href in links)}</ul>
+  '''
+        for group, links in SILL_MEDOS_LINKS
+    )
+    return f'''<div class="brand-box">
+  <h2>Pozostałe parapety z oferty Medos</h2>
+  {groups}</div>'''
+
+
 def spec_item_markup(item, prefix: str) -> str:
     if isinstance(item, str):
         return f"<span>{esc(item)}</span>"
@@ -1825,7 +1861,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
     <div class="subpage-grid">
       <div class="subpage-content">
         {client_markup}
-        {content_grid}
+        {content_grid}{sill_medos_links_markup(route)}
         {source_markup}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--highlight">Zainteresowała Cię nasza oferta?</span>

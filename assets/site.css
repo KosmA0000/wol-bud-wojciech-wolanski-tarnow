@@ -4066,6 +4066,17 @@ body.lightbox-open {
   border-color: var(--highlight);
 }
 
+/* Groups of links in one box (the rest of the Medos sills). */
+.brand-box h3 {
+  margin: 1.2rem 0 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.brand-box h2 + h3 {
+  margin-top: 0;
+}
+
 .profile-list {
   display: grid;
   gap: 1.25rem;
