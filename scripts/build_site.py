@@ -40,6 +40,12 @@ MAP_LINKS = {
 FACEBOOK_URL = "https://www.facebook.com/sklep.wol.bud.tarnow"
 FACEBOOK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06c0 5 3.66 9.15 8.44 9.9v-7h-2.54v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>'
 MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>'
+# The calls to talk at the foot of the pages ("Porozmawiajmy o Twojej inwestycji" and the like) carry the
+# e-mail next to the phone (client PDF of 20.10.2026).
+CTA_CONTACT = f'''<div class="cta-actions">
+            <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+            <a class="tc-mail" href="mailto:biuro@wol-bud.com.pl">{MAIL_ICON}biuro@wol-bud.com.pl</a>
+          </div>'''
 
 # Google Business Profile "WOL-BUD Wojciech Wolański" (Giełdowa 10, Tarnów), read on 16.10.2026.
 # The rating and the count are copied by hand, so they need refreshing when the profile changes.
@@ -64,13 +70,14 @@ GOOGLE_REVIEWS = [
 # Sales points. Client corrections of 29.09: ul. Szkotnik 2B removed. Of 16.10: only Giełdowa 5 and
 # Kolejowa 5 remain; the Radłów numbers, formerly at ul. Leśna 17a, now go with Kolejowa 5. The old
 # Radłów picture was a map of ul. Leśna, so that card has none. Of 17.10: the Tarnów salon is at
-# Giełdowa 10, the address the Google profile shows.
+# Giełdowa 10, the address the Google profile shows. Of 20.10 (PDF): "salony można dać zdjęcie naszego
+# budynku" – the photo of the building, whose banner gives the Tarnów number, replaces the map snippet.
 STORES = [
     {
         "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 10",
         "address": "ul. Giełdowa 10 (przy placu targowym), 33-100 Tarnów",
         "address_full": "ul. Giełdowa 10 (przy placu targowym Chyszów), 33-100 Tarnów",
-        "tel": "14 626 80 32", "mobile": "534 091 021", "photo": "salon-tarnow-chyszow.webp",
+        "tel": "14 626 80 32", "mobile": "534 091 021", "photo": "salon-tarnow-gieldowa.webp",
         "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["chyszow"],
     },
     {
@@ -93,6 +100,8 @@ REMOVED_ROUTES = {
     "/produkty/synergic/": "/kategorie/okna-pcv/",
     "/produkty/ogrody-zimowe/": "/kategorie/stolarka-aluminiowa/",
     "/produkty/effectline/": "/kategorie/okna-pcv/",
+    # Client PDF of 20.10.2026: "Drzwi zewnętrzne – usuwamy to Wikęd".
+    "/produkty/wiked-drzwi-zewnetrzne-stalowe/": "/kategorie/drzwi-zewnetrzne/",
     # The old sill kinds and their products, replaced by the Medos sills (client, 20.10.2026).
     "/kategorie/aglomarmur/": "/kategorie/parapety-wewnetrzne/",
     "/produkty/venus/": "/produkty/parapet-konglomerat-marmurowy/",
@@ -257,22 +266,53 @@ CATEGORY_CONTENT = {
         "lead": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander.",
         "profiles": PCV_PROFILES,
     },
+    # Client PDF of 20.10.2026: the text as written there ("blocks", shown like copy_blocks_markup) and
+    # the producers with links to their catalogues. A producer without a usable link has "".
     "/kategorie/drzwi-zewnetrzne/": {
-        "lead": "Szukasz ochrony bez kompromisów? Nasze drzwi stalowe łączą pancerną konstrukcję z eleganckim, nowoczesnym wzornictwem.",
-        "paragraphs": [
-            "Szukasz ochrony bez kompromisów? Nasze drzwi stalowe łączą pancerną konstrukcję z eleganckim, nowoczesnym wzornictwem. To idealny wybór dla domów jednorodzinnych, mieszkań oraz obiektów komercyjnych. Zapewniają doskonałą izolację ciepła, odporność na włamania i trwałość, której możesz zaufać.",
+        "lead": "Drzwi zewnętrzne – bezpieczeństwo, ciepło i styl dla Twojego domu",
+        "blocks": [
+            ("p", "Drzwi zewnętrzne to wizytówka każdego budynku oraz pierwsza linia obrony przed zimnem, hałasem i nieproszonymi gośćmi. W naszej ofercie znajdziesz szeroki wybór skrzydeł drzwiowych, które łączą w sobie nowoczesny design, doskonałe parametry termoizolacyjne oraz zaawansowane systemy antywłamaniowe. Niezależnie od tego, czy szukasz drzwi do nowoczesnej willi, energooszczędnego domu pasywnego, czy przytulnego mieszkania w bloku – mamy rozwiązanie idealne dla Ciebie."),
+            ("h", "Dlaczego warto wybrać nasze drzwi wejściowe?"),
+            ("ul", [
+                # The PDF has "(\(U_{d}\))", a formula pasted as code; it stands for Ud.
+                "Doskonała izolacja termiczna (Energooszczędność): Oferujemy modele spełniające najnowsze normy budowlane, o niskim współczynniku przenikania ciepła (Ud). Dzięki solidnemu wypełnieniu (np. pianą PUR) skutecznie zatrzymują ciepło wewnątrz i obniżają rachunki za ogrzewanie.",
+                "Bezpieczeństwo na najwyższym poziomie: Nasze drzwi wyposażone są w wielopunktowe zamki, bolce antywyważeniowe oraz solidne ościeżnice. Znajdziesz u nas skrzydła w klasach odporności na włamanie RC2, RC3 i wyższych.",
+                "Cisza i komfort akustyczny: Skutecznie odcinają hałasy dobiegające z ulicy lub klatki schodowej, zapewniając domownikom upragniony spokój.",
+                "Trwałość na lata: Odporność na promieniowanie UV, opady deszczu, mróz oraz odkształcenia gwarantuje, że drzwi będą działać płynnie i wyglądać jak nowe przez dekady.",
+            ]),
+            ("pb", ("Drzwi stalowe:", "Wyjątkowo odporne na uszkodzenia mechaniczne i trudne warunki pogodowe. Świetny stosunek jakości do ceny.")),
         ],
         "photo": ("/img/products/drzwi-zewnetrzne-stalowe.webp", "Drzwi zewnętrzne stalowe"),
-        "brands_title": "Drzwi zewnętrzne stalowe – producenci",
-        "brands": [("Wikęd", "/produkty/wiked-drzwi-zewnetrzne-stalowe/"), ("Erkado", ""), ("Martom", "")],
+        "brands_title": "Mamy w swojej ofercie drzwi zewnętrzne producentów",
+        "brands": [
+            ("Wikęd", "https://wiked.pl/wp-content/uploads/2026/08/WIKED_Katalog_drzwi_do_domu_2026_RELEASE_-zmiany-na-10.07.26.pdf"),
+            ("Erkado", "https://erkado.pl/wp-content/uploads/2025/11/stalowe-katalog-2026ib-www-082026-1.pdf"),
+            ("Martom", "https://drzwimartom.pl/wp-content/uploads/2026/09/Katalog-Martom-Wrzesien-2026-www.pdf"),
+        ],
     },
     "/kategorie/drzwi-wewnetrzne/": {
-        "paragraphs": [
-            "Drzwi wewnętrzne to znacznie więcej niż tylko ruchoma przegroda dzieląca pokoje. To kluczowy element aranżacji, który łączy w sobie funkcjonalność, intymność oraz estetykę. W naszym sklepie znajdziesz bogatą ofertę skrzydeł drzwiowych, które idealnie wpiszą się w charakter każdego wnętrza – od klasycznej elegancji po surowy minimalizm.",
+        "lead": "Drzwi wewnętrzne – styl, prywatność i trwałość w Twoim domu",
+        "blocks": [
+            ("p", "Dobrze dobrane drzwi wewnętrzne to nie tylko praktyczne zamknięcie pomieszczenia, ale też ważny detal aranżacji wnętrza. W naszej ofercie znajdziesz modele dopasowane do każdego stylu: od klasycznych i minimalistycznych, po nowoczesne skrzydła loftowe i skandynawskie."),
+            ("h", "Co znajdziesz w naszej ofercie?"),
+            ("ul", [
+                "Drzwi przylgowe i bezprzylgowe – klasyczne skrzydła z widocznym wcięciem lub nowoczesne, idealnie zlicowane z ościeżnicą.",
+                "Różne warianty wykończenia – modele malowane, foliowane oraz skrzydła gruntowane do samodzielnego malowania lub tapetowania.",
+                "Przeszklenia i pełne skrzydła – zapewniające intymność w sypialni albo doświetlające ciemne korytarze.",
+                "Rozwiązania specjalne – drzwi z odwrotną przylgą (rewersyjne) oraz modele dedykowane do łazienek.",
+            ]),
         ],
         "photo": ("/img/products/drzwi-wewnetrzne-aranzacja.webp", "Drzwi wewnętrzne w aranżacji wnętrza"),
-        "brands_title": "Producenci drzwi wewnętrznych",
-        "brands": [("Erkado", ""), ("Porta", ""), ("Polskone", ""), ("Intenso", "/produkty/drzwi-wewnetrzne-intenso/")],
+        "brands_title": "Mamy w swojej ofercie drzwi wewnętrzne producentów",
+        "brands": [
+            ("Erkado", "https://erkado.pl/wp-content/uploads/2025/11/katalog-dw-2026ic-www-7092026.pdf"),
+            # The PDF links a file on the client's own computer ("Katalog produktów 20262027.pdf"); this is
+            # the same catalogue on the producer's site, read on 20.10.2026. The producer writes POL-SKONE.
+            ("Pol-Skone", "https://www.pol-skone.pl/pliki/pobierz/GdQUeBUt1AojPX8e5MBEbEzPpKyZHabC/katalog-produktow-20262027.pdf"),
+            ("Porta", "https://www.porta.com.pl/phavi/at/upl/2026/0701/0720-0732-katalog-porta-2_2026-www.pdf"),
+            ("Dre", "https://dre.pl/wp-content/uploads/2026/10/Katalog-DRE-2026_3.pdf"),
+            ("Intenso", "https://intenso-doors.pl/uploads/downloads/Katalog_Intenso_2026_4.pdf"),
+        ],
     },
 }
 
@@ -280,6 +320,28 @@ CATEGORY_CONTENT = {
 PRODUCT_MAIN_PHOTOS = {
     "/produkty/fasady/": "/img/products/fasada-dom-szczytowy.webp",
     "/produkty/okna-drzwi-alu/": "/img/products/okna-alu-przesuwne.webp",
+}
+
+# Client PDF of 20.10.2026: the main photo stays, the old photos go and these follow it, in the
+# order of the PDF. Fasady: the photos of the house with the tall gable glazing (PDF p. 3). Okna i
+# drzwi ALU: "co tamte plus te" – the same photos plus those of PDF pp. 4–5. All are in Realizacje.
+FACADE_PHOTOS = [
+    "/img/realizacje/dom-nowoczesna-stodola-04.webp",
+    "/img/realizacje/dom-nowoczesna-stodola-02.webp",
+    "/img/realizacje/dom-nowoczesna-stodola-08.webp",
+    "/img/realizacje/dom-nowoczesna-stodola-05.webp",
+]
+PRODUCT_GALLERIES = {
+    "/produkty/fasady/": FACADE_PHOTOS,
+    "/produkty/okna-drzwi-alu/": FACADE_PHOTOS + [
+        "/img/realizacje/dom-nowoczesna-stodola-10.webp",
+        "/img/realizacje/dom-pietrowy-duze-przeszklenia-06.webp",
+        "/img/realizacje/dom-pietrowy-duze-przeszklenia-07.webp",
+        "/img/realizacje/dom-pietrowy-duze-przeszklenia-03.webp",
+        "/img/realizacje/dom-z-widokiem-01.webp",
+        "/img/realizacje/dom-z-widokiem-02.webp",
+        "/img/realizacje/okna-nad-brama-garazowa-03.webp",
+    ],
 }
 
 # Profile rows shown on product pages.
@@ -350,7 +412,8 @@ for _name, _href, _, _ in PRIMARY_CATEGORIES:
 # Realizacje in place of the reference letters (client PDF p. 1). The client's photos came unlabelled,
 # so they are split into three kinds of work; within "Okna" photos of the same house stay together.
 # Photos only, no descriptions (client, 10.2026). The first photo is the cover; its grid thumbnail is
-# /img/realizacje/miniatury/<file name of the photo>.
+# /img/realizacje/miniatury/<file name of the photo>. The photos sent with the client PDF of
+# 20.10.2026 are added to the houses they show ("do realizacji można dodać te zdjęcia wszystkie").
 REALIZATIONS = [
     {
         "slug": "okna",
@@ -362,15 +425,25 @@ REALIZATIONS = [
             "/img/realizacje/dom-nowoczesna-stodola-04.webp",
             "/img/realizacje/dom-nowoczesna-stodola-05.webp",
             "/img/realizacje/dom-nowoczesna-stodola-06.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-07.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-08.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-09.webp",
+            "/img/realizacje/dom-nowoczesna-stodola-10.webp",
             "/img/realizacje/dom-pietrowy-duze-przeszklenia-01.webp",
             "/img/realizacje/dom-pietrowy-duze-przeszklenia-02.webp",
             "/img/realizacje/dom-pietrowy-duze-przeszklenia-03.webp",
             "/img/realizacje/dom-pietrowy-duze-przeszklenia-04.webp",
             "/img/realizacje/dom-pietrowy-duze-przeszklenia-05.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-06.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-07.webp",
+            "/img/realizacje/dom-pietrowy-duze-przeszklenia-08.webp",
             "/img/realizacje/dom-z-dachem-czterospadowym-01.webp",
             "/img/realizacje/dom-z-dachem-czterospadowym-02.webp",
             "/img/realizacje/okna-narozne-01.webp",
             "/img/realizacje/okna-narozne-02.webp",
+            "/img/realizacje/dom-z-widokiem-01.webp",
+            "/img/realizacje/dom-z-widokiem-02.webp",
+            "/img/realizacje/okna-nad-brama-garazowa-03.webp",
             "/img/montage/zabezpieczenie-folii.webp",
             "/img/montage/zabezpieczenie-folii-2.webp",
             "/img/montage/zabezpieczenie-folii-od-zewn_trz-1.webp",
@@ -394,6 +467,7 @@ REALIZATIONS = [
         "photos": [
             "/img/realizacje/drzwi-wejsciowe-01.webp",
             "/img/realizacje/drzwi-wejsciowe-02.webp",
+            "/img/realizacje/drzwi-wewnetrzne-01.webp",
         ],
     },
 ]
@@ -893,6 +967,11 @@ def source_body_blocks(page: dict) -> list:
                 if nested and int(nested.get("depth", 1) or 1) == 2:
                     nested["items"] = [match.group(2), *nested.get("items", [])]
                 break
+        # Client PDF of 20.10.2026: no references at all, so the line that led to their scans goes too.
+        body = [
+            block for block in body
+            if not normalize(block.get("text", "")).startswith("ponizej przedstawiamy niektore z naszych referencji")
+        ]
     return body
 
 
@@ -1113,6 +1192,10 @@ def source_gallery_images(route: str, images: list[str]) -> tuple[list[str], lis
 
 def product_gallery_images(route: str, images: list[str]) -> tuple[list[str], list[str]]:
     """Gallery for a product page, led by the client's main photo when one is set."""
+    if route in PRODUCT_GALLERIES:
+        # The client's photos in place of the old gallery, with the thumbnails made for Realizacje.
+        gallery = [PRODUCT_MAIN_PHOTOS[route], *PRODUCT_GALLERIES[route]]
+        return gallery, [realization_thumb(photo) for photo in gallery]
     gallery, thumbnails = source_gallery_images(route, images)
     main_photo = PRODUCT_MAIN_PHOTOS.get(route)
     if main_photo and (ROOT / main_photo.lstrip("/")).is_file():
@@ -1129,6 +1212,10 @@ def copy_blocks_markup(blocks: list) -> str:
             rendered.append(f"<h3>{esc(value)}</h3>")
         elif kind == "p":
             rendered.append(f"<p>{esc(value)}</p>")
+        elif kind == "pb":
+            # A paragraph opening with a bold label: (label, text).
+            label, text = value
+            rendered.append(f"<p><strong>{esc(label)}</strong> {esc(text)}</p>")
         elif kind == "ul":
             rendered.append('<ul class="source-list">' + "".join(f"<li>{esc(item)}</li>" for item in value) + "</ul>")
     return "".join(rendered)
@@ -1408,7 +1495,7 @@ def realizations_page() -> str:
           <span class="eyebrow eyebrow--highlight">Planujesz budowę lub wymianę okien?</span>
           <h3>Umów bezpłatny pomiar i wycenę</h3>
           <p>Pomiar, doradztwo i wycena są bezpłatne i niewiążące — na budowie lub w naszych salonach sprzedaży.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup(route, prefix)}
@@ -1454,7 +1541,6 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     featured_product_markup = []
     featured_products = [
         ("/produkty/okna-drzwi-alu/", "Okna i drzwi aluminiowe"),
-        ("/produkty/wiked-drzwi-zewnetrzne-stalowe/", "Wikęd – drzwi zewnętrzne stalowe"),
     ]
     product_data = scraped_data.get("products", {})
     for route, featured_title in featured_products:
@@ -1545,7 +1631,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         <p>WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 31 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty.</p>
       </div>
       <div class="trust-compact-actions">
-        <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę i referencje ↗</a>
+        <a class="trust-about-link" href="{url_for('/o-firmie/', prefix)}">Poznaj firmę ↗</a>
         <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
       </div>
     </div>
@@ -1807,11 +1893,13 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
     source_markup = source_content_panel(source_page, prefix, "Pełny opis kategorii")
     teaser = source_teaser(source_page)
     client_markup = ""
+    brand_markup = ""
     client_content = CATEGORY_CONTENT.get(route)
     if client_content:
         # The client's own copy replaces the captured text of the old site.
         source_markup = ""
         paragraphs = client_content.get("paragraphs", [])
+        blocks = client_content.get("blocks", [])
         teaser = client_content.get("lead") or (source_first_sentence(paragraphs[0]) if paragraphs else "")
         parts = []
         if client_content.get("photo"):
@@ -1820,22 +1908,27 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
             parts.append(f'''<figure class="category-feature">
   <img src="{photo_url}" alt="{esc(photo_alt)}" data-lightbox-trigger data-lightbox-src="{photo_url}" data-lightbox-group="category" decoding="async">
 </figure>''')
-        if paragraphs:
+        if paragraphs or blocks:
             # Same disclosure as the source description: collapsed on phones, below the product names.
+            copy = copy_blocks_markup(blocks) if blocks else "".join(f"<p>{esc(text)}</p>" for text in paragraphs)
             source_markup = f'''<details class="mobile-details source-content-disclosure" open data-responsive-disclosure>
   <summary>Pełny opis kategorii</summary>
-  <div class="mobile-details-body source-content-body"><div class="article-copy">{"".join(f"<p>{esc(text)}</p>" for text in paragraphs)}</div></div>
+  <div class="mobile-details-body source-content-body"><div class="article-copy">{copy}</div></div>
 </details>'''
         if client_content.get("brands"):
+            # After the description, as in the client PDF. An outside address is the producer's
+            # catalogue; it opens in a new tab, like the other files to download.
             chips = "".join(
-                f'<li><a href="{url_for(href, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a></li>' if href
+                f'<li><a href="{esc(href)}" target="_blank" rel="noopener noreferrer">{esc(name)} – katalog <span aria-hidden="true">↗</span></a></li>'
+                if href.startswith("https://")
+                else f'<li><a href="{url_for(href, prefix)}">{esc(name)} <span aria-hidden="true">↗</span></a></li>' if href
                 else f"<li><span>{esc(name)}</span></li>"
                 for name, href in client_content["brands"]
             )
-            parts.append(f'''<div class="brand-box">
+            brand_markup = f'''<div class="brand-box">
   <h2>{esc(client_content.get("brands_title", "Producenci"))}</h2>
   <ul class="brand-chips">{chips}</ul>
-</div>''')
+</div>'''
         if client_content.get("profiles"):
             parts.append(profile_rows_markup(client_content["profiles"], prefix, f"Profile: {title}"))
         client_markup = "\n".join(parts)
@@ -1862,12 +1955,12 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
       <div class="subpage-content">
         {client_markup}
         {content_grid}{sill_medos_links_markup(route)}
-        {source_markup}
+        {source_markup}{brand_markup}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--highlight">Zainteresowała Cię nasza oferta?</span>
           <h3>Zamów bezpłatny pomiar i wycenę</h3>
           <p>Doradzimy odpowiednie rozwiązanie i przygotujemy niezobowiązującą kalkulację cenową.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup(route, prefix)}
@@ -2049,7 +2142,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
           <span class="eyebrow eyebrow--highlight">Zainteresował Cię ten produkt?</span>
           <h3>Zamów wycenę lub bezpłatny pomiar</h3>
           <p>Bezpłatny i niewiążący pomiar, doradztwo i wycena są dostępne na budowie lub w naszych salonach sprzedaży.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup(parent_cat_href, prefix)}
@@ -2173,7 +2266,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
           <span class="eyebrow eyebrow--highlight">Skorzystaj z naszych usług</span>
           <h3>Umów bezpłatny pomiar i wycenę</h3>
           <p>Pomiar, doradztwo i wycena są bezpłatne i niewiążące — na budowie lub w naszych salonach sprzedaży.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup("/uslugi/", prefix)}
@@ -2235,7 +2328,7 @@ def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> st
           <span class="eyebrow eyebrow--highlight">Chcesz zamówić ciepły montaż?</span>
           <h3>Zapytaj o ciepły montaż</h3>
           <p>Skontaktuj się z WOL-BUD, aby uzyskać informacje o ciepłym montażu okien i drzwi.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup("/uslugi/", prefix)}
@@ -2285,41 +2378,18 @@ def catalog_index_page() -> str:
       <span class="eyebrow eyebrow--highlight">Potrzebujesz wyceny lub doradztwa?</span>
       <h3>Skontaktuj się z WOL-BUD</h3>
       <p>Pomożemy dobrać okna, drzwi i bramy dopasowane do Twojego projektu.</p>
-      <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+      {CTA_CONTACT}
     </div>
   </div>
 </main>'''
     return document(route, "Pełna oferta produktów | WOL-BUD Tarnów", "Okna, drzwi, bramy garażowe, rolety i parapety w ofercie firmy WOL-BUD Tarnów.", main)
 
 
-def references_gallery(prefix: str = "") -> str:
-    source_order = [12, 1, 2, 3, 4, 9, 8, 7, 6, 5, 15, 14, 13, 11, 10]
-    cards = []
-    for number in source_order:
-        filename = f"referencja-{number:02d}.webp"
-        image_url = url_for(f"/img/references/{filename}", prefix)
-        cards.append(f'''<figure class="reference-card">
-  <a href="{image_url}" data-lightbox-trigger data-lightbox-src="{image_url}" data-lightbox-group="references" aria-label="Powiększ skan referencji nr {number}">
-    <img src="{image_url}" alt="Skan referencji nr {number}" loading="lazy" decoding="async" width="212" height="300">
-  </a>
-  <figcaption>Referencja nr {number}</figcaption>
-</figure>''')
-    return f'''<details class="mobile-details reference-gallery-disclosure" open data-responsive-disclosure>
-  <summary>Zobacz skany referencji (15)</summary>
-  <div class="mobile-details-body">
-    <section class="reference-gallery" aria-labelledby="reference-gallery-title">
-      <h2 id="reference-gallery-title">Referencje</h2>
-      {horizontal_photo_strip("".join(cards), "reference-gallery-grid", "Skanowane referencje WOL-BUD")}
-    </section>
-  </div>
-</details>'''
-
-
 def about_page(source_page: dict | None = None) -> str:
     route = "/o-firmie/"
     prefix = asset_prefix(route)
+    # Client PDF of 20.10.2026: the scans of references are gone from this page altogether.
     company_story = source_content_panel(source_page, prefix, "O firmie: doświadczenie, atuty i dostawcy")
-    references = references_gallery(prefix) if source_page else ""
     crumb = f'''<div class="page-nav-bar">
   <button type="button" class="btn-back" data-history-back aria-label="Wróć do poprzedniej strony">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -2339,12 +2409,11 @@ def about_page(source_page: dict | None = None) -> str:
     <div class="subpage-grid">
       <div class="subpage-content article-copy">
         {company_story}
-        {references}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--highlight">Porozmawiajmy o Twojej inwestycji</span>
           <h3>Odwiedź nasz salon lub zadzwoń</h3>
           <p>Informacje o produktach, usługach i salonach znajdziesz na naszej stronie.</p>
-          <a class="tc-tel" href="tel:+48534091021">Zadzwoń: 534 091 021</a>
+          {CTA_CONTACT}
         </div>
       </div>
       {sidebar_markup("/o-firmie/", prefix)}

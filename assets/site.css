@@ -1551,6 +1551,48 @@ p, li, blockquote {
   color: rgba(244, 243, 236, 0.75);
 }
 
+/* Phone and e-mail side by side; the e-mail as the outlined pill of the hero. */
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.cta-banner-dark a.tc-mail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid rgba(244, 243, 236, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.cta-banner-dark a.tc-mail:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #fff;
+  color: #fff;
+}
+
+.tc-mail svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* ==========================================================================
    Directory & Listing Pages
    ========================================================================== */
@@ -3372,8 +3414,7 @@ body.lightbox-open {
 .mobile-details-body { min-width: 0; }
 .mobile-details-body > :last-child { margin-bottom: 0; }
 
-.source-content-disclosure,
-.reference-gallery-disclosure {
+.source-content-disclosure {
   margin: 0 0 2rem;
   padding: 1.1rem 1.25rem;
   border: 1px solid var(--line);
@@ -3381,8 +3422,7 @@ body.lightbox-open {
   background: rgba(255, 255, 255, 0.56);
 }
 
-.source-content-disclosure > summary,
-.reference-gallery-disclosure > summary {
+.source-content-disclosure > summary {
   font-size: 1rem;
 }
 
@@ -3397,15 +3437,6 @@ body.lightbox-open {
 .source-table-scroll th { background: rgba(27, 27, 25, 0.06); }
 .source-image img { display: block; max-width: 100%; height: auto; }
 
-.reference-gallery-disclosure { margin-top: 2rem; }
-.reference-gallery { margin-top: 1.4rem; }
-.reference-gallery h2 { margin-top: 0; }
-.reference-gallery-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
-.reference-card { margin: 0; min-width: 0; }
-.reference-card a { display: block; padding: 0.5rem; background: #f2f0e9; border: 1px solid var(--line); border-radius: var(--radius-md); }
-.reference-card img { display: block; width: 100%; height: auto; aspect-ratio: 212 / 300; object-fit: contain; }
-.reference-card figcaption { margin-top: 0.5rem; font-size: 0.8rem; line-height: 1.35; text-align: center; }
-
 .menu-close { display: none; }
 
 @media (max-width: 760px) {
@@ -3413,20 +3444,7 @@ body.lightbox-open {
   .wrap { width: min(100% - 32px, 1280px); }
   .bar { padding-inline: 16px; }
   .menu.open .menu-panel { overflow-y: auto; overscroll-behavior: contain; }
-  .reference-gallery-grid {
-    display: flex;
-    gap: 0.8rem;
-    max-width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .reference-gallery-grid::-webkit-scrollbar { display: none; height: 0; }
-  .reference-card { flex: 0 0 min(72vw, 220px); scroll-snap-align: start; }
-  .source-content-disclosure,
-  .reference-gallery-disclosure { padding: 0.95rem 1rem; }
+  .source-content-disclosure { padding: 0.95rem 1rem; }
   .menu-close {
     display: grid;
     place-items: center;
@@ -3874,32 +3892,6 @@ body.lightbox-open {
   .home-featured-copy p {
     overflow-wrap: anywhere;
   }
-}
-
-/* Keep reference-gallery controls visible at rest and distinct on interaction. */
-.reference-gallery .photo-strip-arrow {
-  border-color: var(--highlight);
-  background: var(--highlight);
-  color: var(--on-highlight);
-  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
-}
-
-.reference-gallery .photo-strip-arrow:disabled {
-  border-color: var(--highlight);
-  background: var(--highlight);
-  color: var(--on-highlight);
-  opacity: 0.78;
-}
-
-.reference-gallery .photo-strip-arrow:not(:disabled):hover {
-  border-color: var(--dark);
-  background: var(--dark);
-  color: #ffffff;
-}
-
-.reference-gallery .photo-strip-arrow:focus-visible {
-  outline: 3px solid var(--dark);
-  outline-offset: 3px;
 }
 
 /* Small, targeted visual fixes that sit after the main site stylesheet. */
