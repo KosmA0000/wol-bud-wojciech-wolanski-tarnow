@@ -4509,6 +4509,23 @@ body.lightbox-open {
   text-align: center;
 }
 
+/* The sill in the picked colour, above the swatches (as on medosparapety.pl). */
+.palette-preview {
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+}
+
+.palette-preview img {
+  display: block;
+  width: 100%;
+  max-width: 650px;
+  height: auto;
+  margin: 0 auto;
+  scroll-margin-top: 96px;
+}
+
 .palette-swatch {
   display: block;
   width: 100%;
@@ -4518,7 +4535,12 @@ body.lightbox-open {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: #ffffff;
-  cursor: zoom-in;
+  cursor: pointer;
+}
+
+.palette-swatch[aria-pressed="true"] {
+  border-color: var(--highlight);
+  box-shadow: 0 0 0 2px var(--highlight);
 }
 
 .palette-swatch img {

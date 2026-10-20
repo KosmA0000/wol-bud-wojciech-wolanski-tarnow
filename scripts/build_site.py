@@ -510,7 +510,8 @@ SILL_PRODUCTS = [
     ]),
 ]
 
-# Their colours. Swatches: /img/parapety/kolory/<file>.webp, grid thumbnails in .../miniatury/.
+# Their colours. Swatches: /img/parapety/kolory/miniatury/<file>.webp; the sill in that colour, shown
+# when the swatch is picked (as on medosparapety.pl): /img/parapety/kolory/parapet/<file>.webp.
 # {product route: [(colour, file)]}
 SILL_PALETTES = {
     '/produkty/parapet-granit/': [
@@ -636,6 +637,76 @@ SILL_PALETTES = {
         ('Antracyt RAL 7016', 'parapet-aluminiowy-antracytral7016'),
         ('RAL 7021 mat', 'parapet-aluminiowy-ral7021mat'),
         ('Czarny RAL 9005', 'parapet-aluminiowy-czarnyral9005'),
+    ],
+}
+# Their descriptions and files to download, as on medosparapety.pl (client: copy the descriptions).
+# {product route: [paragraph]}
+SILL_DESCRIPTIONS = {
+    '/produkty/parapet-granit/': [
+        'Granit jest twardą skałą o budowie jawnokrystalicznej, zbudowaną z kwarcu, skalenia potasowego i plagioklazu oraz biotytu. Materiał w 100% naturalny, wysoko ceniony przez miłośników surowej prostoty połączonej z wyjątkową jakością i elegancją. Ze względu na dostępność dużych bloków, łatwość cięcia i polerowania oraz nieocenione walory estetyczne znalazł szerokie zastosowanie zarówno jako kamień budowlany, jak i dekoracyjny.',
+        'Dzięki odporności na działanie kwasów i niezwykłej wytrzymałości na skrajne czynniki atmosferyczne, jako jedyny ma zastosowanie w warunkach zewnętrznych. Wyjątkowość tego materiału dopełnia różnorodność możliwych do uzyskania stylizacji powierzchni (połysk, mat, lapatura), dzięki czemu perfekcyjnie kreuje klimat i podkreśla zmysłowość wnętrz.',
+    ],
+    '/produkty/parapet-konglomerat-marmurowy/': [
+        'Konglomerat marmurowy jest cenionym w budownictwie produktem, będącym mieszanką wyselekcjonowanych odłamków naturalnego marmuru (95%) i żywicy polimerowej pełniącej rolę spoiwa.',
+        'Mnogość możliwych barw, struktur oraz stopnia rozdrobnienia zastosowanych kamieni pozwala na otrzymanie płyt o największym zróżnicowaniu wizualnym wśród materiałów kamiennych.”',
+        'Aglomarmur jest stosunkowo łatwy w kształtowaniu dzięki czemu, po odpowiedniej obróbce, powstają odporne na ścieranie, gładkie, błyszczące powierzchnie, przywodzące na myśl szlachetne wnętrza starożytnej Grecji i Rzymu, pełne ponadczasowego prestiżu i elegancji.',
+    ],
+    '/produkty/parapet-konglomerat-kwarcowy/': [
+        'Najszlachetniejszy rodzaj konglomeratu, zawierający powyżej 90% naturalnego kwarcu w postaci zmielonych kamieni lub piasku oraz spoiwa – zwykle żywicy epoksydowej. Do jego produkcji stosuje się rozmaite dodatki np. fragmenty szkła, ceramiki, pigmenty koloryzujące, drobiny granitu lub marmuru, wpływające na ostateczny wygląd i trwałość. Nowoczesne technologie produkcji umożliwiają uzyskanie płyt o bardzo dobrej powtarzalności, przy zachowaniu bogatej kolorystyki i różnorodności tekstur.',
+        'Produkt końcowy zachowuje właściwości wykorzystanego kamienia, a w niektórych aspektach nawet je przewyższa. Tworzy efektowną, estetyczną powierzchnię, odporną na wysoką temperaturę, zabrudzenia i uszkodzenia mechaniczne.',
+        'Konglomerat kwarcowy to piękno i solidność, cieszące się niesłabnącą popularnością wśród projektantów wnętrz.',
+    ],
+    '/produkty/parapet-mdf-laminowany/': [
+        'Parapet MDF jest produktem drewnopodobnym, powstałym w wyniku sprasowania włókien drzewnych z dodatkiem związków organicznych, łączonych i utwardzonych w warunkach wysokiego ciśnienia i temperatury. Płyta MDF jest wilgocioodporna. Jest bardzo dobrym substytutem dla drewna naturalnego. Nie zawiera żadnych strukturalnych niedoskonałości typu sęki, złe ułożenie włókien, wiek rdzeni, pęknięcia, czy też przeżywiczenia. Parapet MDF w połączeniu z okleiną PVC powstaje pod wysokim ciśnieniem oraz w wysokiej temperaturze, przez co produkt staje się wytrzymały na otarcia oraz zarysowania. Wszystkie parapety są dwustronnie laminowane (spód - laminat w kolorze białym). Szeroka gama kolorystyczna parapetów dostępna w ofercie pozwala dobrać parapet do niemalże każdego okna.',
+    ],
+    '/produkty/parapet-pvc/': [
+        'Parapety wykonane z PVC od wielu lat pokrywają zapotrzebowanie rynków budowlanych na całym świecie. Są przykładem zachowania idealnego balansu między ceną a jakością produktu. Właściwości materiału gwarantują odporność na wilgoć i temperaturę, a przekrój komorowy nadaje sztywność konstrukcji oraz gwarantuje stabilność parapetu. Parapety powlekane są folią wysokiej jakości, co zwiększa ich odporność na zarysowania oraz na działanie promieni słonecznych. Gładka powierzchnia okleiny ułatwia pielęgnację i zapobiega ich trwałym zabrudzeniom. Standardową linię parapetów PVC charakteryzuje klasyczna prostota dzięki czemu produkt idealnie sprawdzi się zarówno w nowoczesnych, surowych wnętrzach, jak i w pomieszczeniach o dużej ilości dominujących szczegółów.',
+    ],
+    '/produkty/parapet-stalowy/': [
+        'Parapety wykonane z wysokiej klasy blachy ocynkowanej ogniowo powlekanej lakierem poliestrowym. Połączenie powłok ochronnych: ogniowo ocynkowanych i powłok organicznych w jednym wyrobie, ma za zadanie zapewnienie wysokich walorów użytkowych i estetycznych oraz długotrwałej żywotności elementów z nich wykonanych. Prosta linia i wysoka estetyka wykonania sprawiają, że parapet idealnie komponuje się z każdym oknem.',
+    ],
+    '/produkty/parapet-aluminiowy/': [
+        'Aluminium łączy w sobie unikalną kombinację pożądanych własności takich jak: niewielka masa, wysoka wytrzymałość, plastyczność, podatność na obróbkę czy wysoka odporność na korozję. W odróżnieniu od większości gatunków stali, glin nie kruszeje w niskich temperaturach, lecz zwiększa swą wytrzymałość. Wysokiej jakości proszkowa powłoka malarska oraz klasyczny kształt gwarantują estetyczny wygląd i kompatybilność z mnogością typów elewacji.',
+    ],
+}
+# {product route: [(title, address)]}
+SILL_DOWNLOADS = {
+    '/produkty/parapet-granit/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/granit/files/granit--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/granit/files/granit--deklaracja.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/granit/files/granit--deklaracja2.pdf'),
+        ('instrukcja montażu parapetu wewnętrznego (.pdf)', 'https://medosparapety.pl/mstatic/images/products/granit/files/granit--instrukcja_parapet_wew.pdf'),
+        ('instrukcja montażu parapetu zewnętrznego (.pdf)', 'https://medosparapety.pl/mstatic/images/products/granit/files/granit--instrukcja_parapet_zew.pdf'),
+    ],
+    '/produkty/parapet-konglomerat-marmurowy/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-marmurowy/files/konglomerat--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-marmurowy/files/konglomerat--deklaracja.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-marmurowy/files/konglomerat--deklaracja2.pdf'),
+        ('instrukcja montażu parapetu wewnętrznego (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-marmurowy/files/konglomerat--instrukcja_parapet_wew.pdf'),
+    ],
+    '/produkty/parapet-konglomerat-kwarcowy/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-kwarcowy/files/konglomerat-kwarcowy--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-kwarcowy/files/konglomerat-kwarcowy--deklaracja.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-kwarcowy/files/konglomerat-kwarcowy--deklaracja2.pdf'),
+        ('instrukcja montażu parapetu wewnętrznego (.pdf)', 'https://medosparapety.pl/mstatic/images/products/konglomerat-kwarcowy/files/konglomerat-kwarcowy--instrukcja_parapet_wew.pdf'),
+    ],
+    '/produkty/parapet-mdf-laminowany/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-mdf-laminowany/files/parapet-mdf-laminowany--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-mdf-laminowany/files/parapet-mdf-laminowany--deklaracja.pdf'),
+    ],
+    '/produkty/parapet-pvc/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-pvc/files/parapet-pvc--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-pvc/files/parapet-pvc--deklaracja.pdf'),
+        ('aprobata techniczna (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-pvc/files/parapet-pvc--aprobata.pdf'),
+        ('atest higieniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-pvc/files/parapet-pvc--atest.pdf'),
+    ],
+    '/produkty/parapet-stalowy/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-stalowy/files/parapet-stalowy--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-stalowy/files/parapet-stalowy--deklaracja.pdf'),
+    ],
+    '/produkty/parapet-aluminiowy/': [
+        ('rysunek techniczny (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-aluminiowy/files/parapet-aluminiowy--rystech.pdf'),
+        ('deklaracja właściwości użytkowych (.pdf)', 'https://medosparapety.pl/mstatic/images/products/parapet-aluminiowy/files/parapet-aluminiowy--deklaracja.pdf'),
     ],
 }
 
@@ -1592,11 +1663,13 @@ def sill_palette_markup(route: str, title: str, prefix: str) -> str:
     if not swatches:
         return ""
     items = "".join(
-        f'''<li><button type="button" class="palette-swatch" aria-label="Powiększ: {esc(name)}" data-lightbox-trigger data-lightbox-src="{url_for(f"/img/parapety/kolory/{file}.webp", prefix)}" data-lightbox-group="palette"><img src="{url_for(f"/img/parapety/kolory/miniatury/{file}.webp", prefix)}" alt="{esc(title)} – {esc(name)}" width="220" height="220" loading="lazy" decoding="async"></button><span>{esc(name)}</span></li>'''
-        for name, file in swatches
+        f'''<li><button type="button" class="palette-swatch" aria-pressed="{"true" if index == 0 else "false"}" data-palette-src="{url_for(f"/img/parapety/kolory/parapet/{file}.webp", prefix)}"><img src="{url_for(f"/img/parapety/kolory/miniatury/{file}.webp", prefix)}" alt="{esc(title)} – {esc(name)}" width="220" height="220" loading="lazy" decoding="async"></button><span>{esc(name)}</span></li>'''
+        for index, (name, file) in enumerate(swatches)
     )
-    return f'''<section class="palette-box" id="kolorystyka" aria-labelledby="kolorystyka-title">
+    name, file = swatches[0]
+    return f'''<section class="palette-box" id="kolorystyka" aria-labelledby="kolorystyka-title" data-palette>
   <h2 id="kolorystyka-title">Kolorystyka</h2>
+  <div class="palette-preview"><img src="{url_for(f"/img/parapety/kolory/parapet/{file}.webp", prefix)}" alt="{esc(title)} – {esc(name)}" width="650" height="367" loading="lazy" decoding="async" data-palette-image></div>
   <ul class="palette-grid">{items}</ul>
 </section>'''
 
@@ -2429,7 +2502,13 @@ def apply_client_corrections(scraped_data: dict, source_pages: dict) -> None:
         categories[cat_route] = {"title": title, "description": "", "paragraphs": [], "products": []}
     for cat_route, prod_route, title, photos, specs in SILL_PRODUCTS:
         categories[cat_route]["products"].append({"title": title, "href": prod_route.rstrip("/"), "image": photos[0]})
-        products[prod_route] = {"title": title, "paragraphs": [], "specs": specs, "images": photos, "pdfs": []}
+        products[prod_route] = {
+            "title": title,
+            "paragraphs": SILL_DESCRIPTIONS[prod_route],
+            "specs": specs,
+            "images": photos,
+            "pdfs": [{"title": name, "href": href} for name, href in SILL_DOWNLOADS[prod_route]],
+        }
 
 
 def main() -> None:

@@ -624,6 +624,26 @@
     refreshControls();
   });
 
+  // Sill colour palettes: a picked swatch shows the sill in that colour, as on medosparapety.pl.
+  document.querySelectorAll('[data-palette]').forEach((palette) => {
+    const preview = palette.querySelector('[data-palette-image]');
+    const swatches = Array.from(palette.querySelectorAll('[data-palette-src]'));
+    if (!preview) return;
+    swatches.forEach((swatch) => {
+      swatch.addEventListener('click', () => {
+        preview.src = swatch.getAttribute('data-palette-src');
+        preview.alt = swatch.querySelector('img')?.alt || '';
+        swatches.forEach((other) => other.setAttribute('aria-pressed', String(other === swatch)));
+        // Far down the grid the picture is out of sight; bring it back so the change is seen.
+        const box = preview.getBoundingClientRect();
+        const headerBottom = document.querySelector('header.bar')?.getBoundingClientRect().bottom || 0;
+        if (box.top < headerBottom || box.bottom > window.innerHeight) {
+          preview.scrollIntoView({ block: 'start', behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' });
+        }
+      });
+    });
+  });
+
   // ============================================================================
   // 5. Floating "Do góry" (Back to Top) Button
   // ============================================================================
