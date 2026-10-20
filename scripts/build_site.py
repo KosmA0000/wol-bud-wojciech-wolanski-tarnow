@@ -221,6 +221,12 @@ CATEGORY_CONTENT = {
         "brands_title": "Producenci drzwi wewnętrznych",
         "brands": [("Erkado", ""), ("Porta", ""), ("Polskone", ""), ("Intenso", "/produkty/drzwi-wewnetrzne-intenso/")],
     },
+    "/kategorie/konglomerat-kwarcowy/": {
+        "lead": "Parapety wewnętrzne z konglomeratu kwarcowego, wykonywane na wymiar: szerokość 10–60 cm, długość do 320 cm w jednym elemencie, grubość 2 cm.",
+    },
+    "/kategorie/parapety-mdf/": {
+        "lead": "Parapety wewnętrzne z laminowanej płyty MDF, wykonywane na wymiar: szerokość do 90 cm, długość do 250 cm w jednym elemencie, grubość 2, 2,5, 3 lub 4 cm.",
+    },
 }
 
 # Main photo placed first in a product gallery.
@@ -345,14 +351,205 @@ REALIZATIONS = [
     },
 ]
 
+# Sill colours of the manufacturer Medos (medosparapety.pl, 20.10.2026), asked for by the client: the interior
+# kinds granite, marble and quartz conglomerate, MDF ("one MDF": the laminated line) and PVC, and the exterior
+# steel and aluminium sills. Swatches: /img/parapety/kolory/<file>.webp, grid thumbnails in .../miniatury/.
+# {category route: [(line, [(colour, file)])]}
+SILL_PALETTES = {
+    "/kategorie/aglomarmur/": [
+        ("Konglomerat marmurowy (aglomarmur)", [
+            ("Baltic Grey", "parapet-konglomerat-marmurowy-balticgrey"),
+            ("Beige Marfil", "parapet-konglomerat-marmurowy-beigemarfil"),
+            ("Bianco Ambra", "parapet-konglomerat-marmurowy-biancoambra"),
+            ("Bianco Carrara", "parapet-konglomerat-marmurowy-biancocarrara"),
+            ("Bianco Mandorla", "parapet-konglomerat-marmurowy-biancomandorla"),
+            ("Bianco Micro", "parapet-konglomerat-marmurowy-biancomicro"),
+            ("Botticino", "parapet-konglomerat-marmurowy-botticino"),
+            ("Calacatta", "parapet-konglomerat-marmurowy-calacatta"),
+            ("Crystal White", "parapet-konglomerat-marmurowy-crystalwhite"),
+            ("Finnish Black", "parapet-konglomerat-marmurowy-finnishblack"),
+            ("Grigio Perla", "parapet-konglomerat-marmurowy-grigioperla"),
+            ("Grigio Torun", "parapet-konglomerat-marmurowy-grigiotorun"),
+            ("Kala White", "parapet-konglomerat-marmurowy-kalawhite"),
+            ("Lino", "parapet-konglomerat-marmurowy-lino"),
+            ("Madreperla", "parapet-konglomerat-marmurowy-madreperla"),
+            ("Misty Carrara", "parapet-konglomerat-marmurowy-mistycarrara"),
+            ("Perlato", "parapet-konglomerat-marmurowy-perlato"),
+            ("Polare", "parapet-konglomerat-marmurowy-polare"),
+            ("Silver Grey", "parapet-konglomerat-marmurowy-silvergrey"),
+            ("Super White", "parapet-konglomerat-marmurowy-superwhite"),
+            ("Venus", "parapet-konglomerat-marmurowy-venus"),
+            ("White Perl", "parapet-konglomerat-marmurowy-whiteperl"),
+        ]),
+    ],
+    "/kategorie/granit/": [
+        ("Granit", [
+            ("Absolute Black", "parapet-granit-absoluteblack"),
+            ("Absolute Black Lapatura", "parapet-granit-absoluteblacklapatura"),
+            ("Black Antracite", "parapet-granit-blackantracite"),
+            ("Black Antracite Lapatura", "parapet-granit-blackantracitelapatura"),
+            ("Brąz Królewski", "parapet-granit-brazkrolewski"),
+            ("Cambodia", "parapet-granit-cambodia"),
+            ("Cambodia Lapatura", "parapet-granit-cambodialapatura"),
+            ("Coffee Brown", "parapet-granit-coffeebrown"),
+            ("Coffee Brown Lapatura", "parapet-granit-coffeebrownlapatura"),
+            ("Galaxy Star", "parapet-granit-galaxystar"),
+            ("Galaxy Star Lapatura", "parapet-granit-galaxystarlapatura"),
+            ("Golden Dream", "parapet-granit-goldendream"),
+            ("Grey", "parapet-granit-grey"),
+            ("Nero Impala", "parapet-granit-neroimpala"),
+            ("Steel Grey", "parapet-granit-steelgrey"),
+            ("Steel Grey Mat", "parapet-granit-steelgreymat"),
+        ]),
+    ],
+    "/kategorie/konglomerat-kwarcowy/": [
+        ("Konglomerat kwarcowy", [
+            ("Agnolo", "parapet-konglomerat-kwarcowy-agnolo"),
+            ("Ancient Beige", "parapet-konglomerat-kwarcowy-ancientbeige"),
+            ("Ashen White", "parapet-konglomerat-kwarcowy-ashenwhite"),
+            ("Black Forest", "parapet-konglomerat-kwarcowy-blackforest"),
+            ("Black Oro", "parapet-konglomerat-kwarcowy-blackoro"),
+            ("Casablanca", "parapet-konglomerat-kwarcowy-casablanca"),
+            ("Concrete Tan", "parapet-konglomerat-kwarcowy-concretetan"),
+            ("Corfu", "parapet-konglomerat-kwarcowy-corfu"),
+            ("Grant Grey", "parapet-konglomerat-kwarcowy-grantgrey"),
+            ("Lagoon White", "parapet-konglomerat-kwarcowy-lagoonwhite"),
+            ("Marcus Pearl", "parapet-konglomerat-kwarcowy-marcuspearl"),
+            ("Naxos", "parapet-konglomerat-kwarcowy-naxos"),
+            ("New Carrara", "parapet-konglomerat-kwarcowy-newcarrara"),
+            ("Pietre Grey", "parapet-konglomerat-kwarcowy-pietregrey"),
+            ("Santorini", "parapet-konglomerat-kwarcowy-santorini"),
+            ("Semolina", "parapet-konglomerat-kwarcowy-semolina"),
+            ("Tin Foil", "parapet-konglomerat-kwarcowy-tinfoil"),
+            ("Winter Haze", "parapet-konglomerat-kwarcowy-winterhaze"),
+        ]),
+    ],
+    "/kategorie/parapety-mdf/": [
+        ("Parapet MDF laminowany", [
+            ("Biały mat", "parapet-mdf-laminowany-bialymat"),
+            ("Biały połysk", "parapet-mdf-laminowany-bialypolysk"),
+            ("Calacatta", "parapet-mdf-laminowany-calacatta"),
+            ("Marmur", "parapet-mdf-laminowany-marmur"),
+            ("Białe drewno", "parapet-mdf-laminowany-bialedrewno"),
+            ("Popiel", "parapet-mdf-laminowany-popiel"),
+            ("Dąb bielony", "parapet-mdf-laminowany-dabbielony"),
+            ("Dąb halifax biały", "parapet-mdf-laminowany-dabhalifaxbialy"),
+            ("Beton", "parapet-mdf-laminowany-beton"),
+            ("Aluminium 58", "parapet-mdf-laminowany-aluminium58"),
+            ("Grenada", "parapet-mdf-laminowany-grenada"),
+            ("Antracyt mat", "parapet-mdf-laminowany-antracytmat"),
+            ("Czarny", "parapet-mdf-laminowany-czarny"),
+            ("Wenge deska", "parapet-mdf-laminowany-wengedeska"),
+            ("Ciemny orzech", "parapet-mdf-laminowany-ciemnyorzech"),
+            ("Orzech", "parapet-mdf-laminowany-orzech"),
+            ("Orzech lanzado", "parapet-mdf-laminowany-orzechlanzado"),
+            ("Złoty dąb", "parapet-mdf-laminowany-zlotydab"),
+            ("Dąb antyczny", "parapet-mdf-laminowany-dabantyczny"),
+            ("Dąb halifax tabac", "parapet-mdf-laminowany-dabhalifaxtabac"),
+            ("Dąb ribbeck", "parapet-mdf-laminowany-dabribbeck"),
+            ("Dąb riviera", "parapet-mdf-laminowany-dabriviera"),
+            ("Dąb rustico", "parapet-mdf-laminowany-dabrustico"),
+            ("Woodec", "parapet-mdf-laminowany-woodec"),
+            ("Winchester", "parapet-mdf-laminowany-winchester"),
+            ("Dąb artisan", "parapet-mdf-laminowany-dabartisan"),
+            ("Dąb naturalny", "parapet-mdf-laminowany-dabnaturalny"),
+            ("Dąb halifax naturalny", "parapet-mdf-laminowany-dabhalifaxnaturalny"),
+        ]),
+    ],
+    "/kategorie/pcv-wewnetrzne/": [
+        ("Parapet PVC", [
+            ("Biały", "parapet-pvc-bialy"),
+            ("Marmur", "parapet-pvc-marmur"),
+            ("Srebrny", "parapet-pvc-srebrny"),
+            ("Dąb wiejski", "parapet-pvc-dabwiejski"),
+            ("Dąb naturalny", "parapet-pvc-dabnaturalny"),
+            ("Winchester", "parapet-pvc-winchester"),
+            ("Złoty dąb", "parapet-pvc-zlotydab"),
+            ("Orzech", "parapet-pvc-orzech"),
+            ("Antracyt", "parapet-pvc-antracyt"),
+            ("Czarny mat", "parapet-pvc-czarnymat"),
+        ]),
+        ("Parapet PVC softline", [
+            ("Biały mat", "parapet-pvc-softline-bialymat"),
+            ("Marmur (Chełmno)", "parapet-pvc-softline-marmur"),
+        ]),
+    ],
+    "/kategorie/stalowe-aluminiowe-zewnetrzne/": [
+        ("Parapet stalowy", [
+            ("Brąz RAL 8019", "parapet-stalowy-brazral8019"),
+            ("Brąz RAL 8017", "parapet-stalowy-brazral8017"),
+            ("Biały RAL 9016", "parapet-stalowy-bialyral9016"),
+            ("Srebrny RAL 9006", "parapet-stalowy-srebrnyral9006"),
+            ("Antracyt RAL 7024", "parapet-stalowy-antracytral7024"),
+            ("RAL 7021", "parapet-stalowy-ral7021"),
+            ("Antracyt RAL 7016", "parapet-stalowy-antracytral7016"),
+            ("Czarny RAL 9005", "parapet-stalowy-czarnyral9005"),
+            ("Srebrny RAL 9007", "parapet-stalowy-srebrnyral9007"),
+            ("Srebrny RAL 7037 Piasek", "parapet-stalowy-srebrnyral7037piasek"),
+            ("Antracyt RAL 7016 Piasek", "parapet-stalowy-antracytral7016piasek"),
+        ]),
+        ("Parapet stalowy softline", [
+            ("Brąz RAL 8017", "parapet-stalowy-softline-brazral8017"),
+            ("Antyk Miedź", "parapet-stalowy-softline-antykmiedz"),
+            ("Antyk Stal", "parapet-stalowy-softline-antykstal"),
+            ("Antracyt Struktura", "parapet-stalowy-softline-antracytstruktura"),
+            ("Antracyt RAL 7016", "parapet-stalowy-softline-antracytral7016"),
+        ]),
+        ("Parapet stalowy laminowany (także softline)", [
+            ("Dąb bielony", "parapet-stalowy-laminowany-dabbielony"),
+            ("Grafit", "parapet-stalowy-laminowany-grafit"),
+            ("Złoty Dąb", "parapet-stalowy-laminowany-zlotydab"),
+            ("Orzech", "parapet-stalowy-laminowany-orzech"),
+            ("Winchester", "parapet-stalowy-laminowany-winchester"),
+            ("Dąb bagienny", "parapet-stalowy-laminowany-dabbagienny"),
+            ("Dąb naturalny", "parapet-stalowy-laminowany-dabnaturalny"),
+        ]),
+        ("Parapet stalowy lakierowany", [
+            ("Dąb naturalny", "parapet-stalowy-lakierowany-dabnaturalny"),
+            ("Winchester", "parapet-stalowy-lakierowany-winchester"),
+            ("Złoty Dąb", "parapet-stalowy-lakierowany-zlotydab"),
+            ("Orzech", "parapet-stalowy-lakierowany-orzech"),
+        ]),
+        ("Parapet aluminiowy", [
+            ("Biały RAL 9016", "parapet-aluminiowy-bialyral9016"),
+            ("Brąz RAL 8019", "parapet-aluminiowy-brazral8019"),
+            ("Antracyt RAL 7016", "parapet-aluminiowy-antracytral7016"),
+            ("RAL 7021 mat", "parapet-aluminiowy-ral7021mat"),
+            ("Czarny RAL 9005", "parapet-aluminiowy-czarnyral9005"),
+        ]),
+        ("Parapet aluminiowy – imitacja płytki", [
+            ("Antyk Miedź", "parapet-aluminiowy-imitacja-plytki-antykmiedz"),
+            ("Brąz RAL 8017", "parapet-aluminiowy-imitacja-plytki-brazral8017"),
+            ("Antracyt RAL 7016", "parapet-aluminiowy-imitacja-plytki-antracytral7016"),
+            ("Antyk Stal", "parapet-aluminiowy-imitacja-plytki-antykstal"),
+            ("Cegła RAL 8004", "parapet-aluminiowy-imitacja-plytki-ceglaral8004"),
+        ]),
+    ],
+}
+
+
+def colours_label(count: int) -> str:
+    if count == 1:
+        return "1 kolor"
+    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
+        return f"{count} kolory"
+    return f"{count} kolorów"
+
+
+def palette_count(route: str) -> str:
+    return colours_label(sum(len(swatches) for _, swatches in SILL_PALETTES.get(route, [])))
+
+
 # Subcategories definition for parent categories
 SUBCATEGORIES = {
     "/kategorie/parapety-blaty/": [
-        ("Aglomarmur", "/kategorie/aglomarmur/", "/img/thumbs/Botticino-130x86.webp", "", ""),
-        ("Granit", "/kategorie/granit/", "/img/thumbs/Baltic-Brown-130x86.webp", "", ""),
+        ("Aglomarmur", "/kategorie/aglomarmur/", "/img/thumbs/Botticino-130x86.webp", "Konglomerat marmurowy", palette_count("/kategorie/aglomarmur/")),
+        ("Konglomerat kwarcowy", "/kategorie/konglomerat-kwarcowy/", "/img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-ancientbeige.webp", "", palette_count("/kategorie/konglomerat-kwarcowy/")),
+        ("Granit", "/kategorie/granit/", "/img/thumbs/Baltic-Brown-130x86.webp", "", palette_count("/kategorie/granit/")),
         ("Marmur", "/kategorie/marmur/", "/img/thumbs/Crema-Marphil-130x86.webp", "", ""),
-        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/img/thumbs/PCV-Bia_y-130x86.webp", "", ""),
-        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/img/thumbs/RAL-8019-12-mm1-130x86.webp", "", ""),
+        ("Parapety MDF", "/kategorie/parapety-mdf/", "/img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabnaturalny.webp", "", palette_count("/kategorie/parapety-mdf/")),
+        ("Parapety PCV wewnętrzne", "/kategorie/pcv-wewnetrzne/", "/img/thumbs/PCV-Bia_y-130x86.webp", "", palette_count("/kategorie/pcv-wewnetrzne/")),
+        ("Parapety stalowe i aluminiowe", "/kategorie/stalowe-aluminiowe-zewnetrzne/", "/img/thumbs/RAL-8019-12-mm1-130x86.webp", "", palette_count("/kategorie/stalowe-aluminiowe-zewnetrzne/")),
     ],
     "/kategorie/rolety/": [
         ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/img/thumbs/dzien-noc-2-130x86.webp", "", ""),
@@ -1295,6 +1492,27 @@ def sidebar_markup(current_route: str, prefix: str = "") -> str:
 </aside>'''
 
 
+def sill_palette_markup(route: str, prefix: str) -> str:
+    groups = SILL_PALETTES.get(route)
+    if not groups:
+        return ""
+    blocks = []
+    for index, (line, swatches) in enumerate(groups):
+        items = "".join(
+            f'''<li><button type="button" class="palette-swatch" aria-label="Powiększ: {esc(name)}" data-lightbox-trigger data-lightbox-src="{url_for(f"/img/parapety/kolory/{file}.webp", prefix)}" data-lightbox-group="palette-{index}"><img src="{url_for(f"/img/parapety/kolory/miniatury/{file}.webp", prefix)}" alt="{esc(line)} – {esc(name)}" width="220" height="220" loading="lazy" decoding="async"></button><span>{esc(name)}</span></li>'''
+            for name, file in swatches
+        )
+        blocks.append(f'''<div class="palette-group">
+  <h3>{esc(line)} <span>{colours_label(len(swatches))}</span></h3>
+  <ul class="palette-grid">{items}</ul>
+</div>''')
+    return f'''<section class="palette-box" id="kolorystyka" aria-labelledby="kolorystyka-title">
+  <h2 id="kolorystyka-title">Kolorystyka</h2>
+  <p class="palette-note">Wzornik kolorów producenta Medos. Zdjęcia mogą nieznacznie różnić się od rzeczywistego wyglądu parapetu – przed zamówieniem warto potwierdzić kolor na próbce.</p>
+  {"".join(blocks)}
+</section>'''
+
+
 def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: dict | None = None) -> str:
     prefix = asset_prefix(route)
     title = cat_data.get("title") or route.strip("/").split("/")[-1].replace("-", " ").title()
@@ -1440,6 +1658,7 @@ def category_page(route: str, cat_data: dict, scraped_data: dict, source_page: d
       <div class="subpage-content">
         {client_markup}
         {content_grid}
+        {sill_palette_markup(route, prefix)}
         {source_markup}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--highlight">Zainteresowała Cię nasza oferta?</span>
@@ -2074,6 +2293,17 @@ def apply_client_corrections(scraped_data: dict, source_pages: dict) -> None:
         "title": "Okna PCV",
         "description": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander – sprzedaż i montaż WOL-BUD Tarnów.",
         "paragraphs": [],
+        "products": [],
+    }
+    # Sill kinds the client asked for (10.2026) that the old site had no page for; SILL_PALETTES holds their colours.
+    categories["/kategorie/konglomerat-kwarcowy/"] = {
+        "title": "Konglomerat kwarcowy",
+        "description": "Parapety z konglomeratu kwarcowego – kolorystyka i wykonanie na wymiar, WOL-BUD Tarnów.",
+        "products": [],
+    }
+    categories["/kategorie/parapety-mdf/"] = {
+        "title": "Parapety MDF",
+        "description": "Parapety MDF laminowane – kolorystyka i wykonanie na wymiar, WOL-BUD Tarnów.",
         "products": [],
     }
     # The client calls this tab "Drzwi wejściowe" (PDF p. 5); the address /kategorie/drzwi-zewnetrzne/ stays.

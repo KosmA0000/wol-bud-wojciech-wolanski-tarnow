@@ -4448,3 +4448,101 @@ body.lightbox-open {
   border-top: 1px solid var(--line);
   border-bottom: 0;
 }
+
+/* Sill colour palettes of the manufacturer Medos (client, 10.2026). */
+.palette-box {
+  margin: 0 0 2rem;
+  padding: 1.25rem 1.4rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.56);
+  scroll-margin-top: 110px;
+}
+
+.palette-box h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.palette-note {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.palette-group + .palette-group {
+  margin-top: 1.6rem;
+}
+
+.palette-group h3 {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.palette-group h3 span {
+  margin-left: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.palette-box .palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 1rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.palette-box .palette-grid li {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.palette-swatch {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  cursor: zoom-in;
+}
+
+.palette-swatch img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.palette-swatch:hover,
+.palette-swatch:focus-visible {
+  border-color: var(--highlight);
+}
+
+/* A colour swatch is a plain texture, so on a category tile it fills the frame. */
+.subcat-card-media img[src*="parapety/kolory/"] {
+  object-fit: cover;
+}
+
+@media (max-width: 600px) {
+  .palette-box {
+    padding: 1rem 1rem 1.25rem;
+  }
+
+  .palette-box .palette-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem 0.6rem;
+  }
+}
