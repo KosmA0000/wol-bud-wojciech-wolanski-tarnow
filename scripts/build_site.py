@@ -1926,8 +1926,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
         {visual_html}
         {desc_details}
         {profiles_html}
-        {specs_html}
-        {sill_palette_markup(route, title, prefix)}
+        {specs_html}{sill_palette_markup(route, title, prefix)}
         {downloads_html}
         {product_nav_bar}
         <div class="cta-banner-dark">
