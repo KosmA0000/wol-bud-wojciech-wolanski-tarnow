@@ -4460,15 +4460,9 @@ body.lightbox-open {
 }
 
 .palette-box h2 {
-  margin: 0 0 0.4rem;
+  margin: 0 0 1.1rem;
   font-size: 1.2rem;
   font-weight: 600;
-}
-
-.palette-note {
-  margin: 0 0 1.25rem;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .palette-group + .palette-group {
@@ -4479,13 +4473,6 @@ body.lightbox-open {
   margin: 0 0 0.8rem;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.palette-group h3 span {
-  margin-left: 0.35rem;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 500;
 }
 
 .palette-box .palette-grid {
@@ -4529,11 +4516,6 @@ body.lightbox-open {
 .palette-swatch:hover,
 .palette-swatch:focus-visible {
   border-color: var(--highlight);
-}
-
-/* A colour swatch is a plain texture, so on a category tile it fills the frame. */
-.subcat-card-media img[src*="parapety/kolory/"] {
-  object-fit: cover;
 }
 
 @media (max-width: 600px) {
