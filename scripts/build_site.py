@@ -1594,6 +1594,13 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     ]
     partner_entries = "".join(f'<div class="partner-logo"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in partner_logos)
 
+    # Client, 20.10.2026: the photo of the salon building in the stores tile, not cropped by the
+    # layout; the file itself has the camera watermark cut off the bottom.
+    salon_photos = "".join(
+        f'<figure class="kt-salon-photo"><img src="{url_for("/img/stores/" + store["photo"], prefix)}" alt="{esc(store["name"])}, {esc(store["street"])}" width="1200" height="834" loading="lazy" decoding="async"></figure>'
+        for store in STORES if store["photo"]
+    )
+
     body = f'''<main id="main">
 <!-- HERO -->
 <section class="hero" id="start">
@@ -1728,6 +1735,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         {store_items_markup()}
 
         <a class="store-full-copy-link" href="{url_for('/nasze-sklepy/', prefix)}">Pełny opis salonów i ekspozycji ↗</a>
+        {salon_photos}
       </div>
     </div>
   </div>

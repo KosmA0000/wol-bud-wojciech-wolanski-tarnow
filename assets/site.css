@@ -4452,6 +4452,20 @@ body.lightbox-open {
   border-bottom: 0;
 }
 
+/* The salon building below the stores, in its own proportions (client, 20.10.2026). */
+.kt-adres > .kt-salon-photo {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 1.5rem 0 0;
+}
+
+.kt-salon-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
 /* Medos sill parameters: a sub-list under an item and the photo shown with an item. */
 .specs-list li ul {
   display: grid;
