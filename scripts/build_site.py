@@ -156,6 +156,8 @@ REMOVED_ROUTES = {
     "/produkty/aluminiowe-linia-standard/": "/produkty/parapet-aluminiowy/",
     "/produkty/stalowe-linia-zaokraglona/": "/produkty/parapet-stalowy/",
     "/produkty/stalowe-linia-standard/": "/produkty/parapet-stalowy/",
+    # Client, 21.10.2026: "to intenso usuwamy" – the card, the catalogue link and the logo go too.
+    "/produkty/drzwi-wewnetrzne-intenso/": "/kategorie/drzwi-wewnetrzne/",
 }
 
 # Service names shown on the site (client: "Prawidłowy – szczelny montaż" instead of "Ciepły montaż").
@@ -251,6 +253,25 @@ PCV_PROFILES = [
             ("p", "Trzy uszczelki i głęboki profil (82 mm) skutecznie zatrzymują ciepło w domu, obniżając rachunki za ogrzewanie."),
         ],
     },
+    # Client WhatsApp of 21.10.2026: "dodajemy do okna jeden profil w takim samym stylu jak tam".
+    {
+        "name": "Kömmerling 88 MD", "kicker": "Okna na profilach Kömmerling", "image": "/img/profiles/pcv-koemmerling-88md.webp",
+        "blocks": [
+            ("p", "Kömmerling 88 MD to nowoczesny system okienny klasy premium, przeznaczony szczególnie do budownictwa energooszczędnego i pasywnego. Siedmiokomorowa konstrukcja oraz zastosowanie uszczelki środkowej zapewniają bardzo dobrą izolacyjność cieplną, szczelność i ochronę przed hałasem. System umożliwia zastosowanie nowoczesnych pakietów szybowych, zapewniając komfort użytkowania oraz szerokie możliwości projektowe."),
+            ("h", "Profil"),
+            ("ul", [
+                "7-komorowy system profili z uszczelką środkową",
+                "głębokość zabudowy 88 mm",
+                "trzy poziomy uszczelnienia zwiększające szczelność okna",
+                "możliwość zastosowania pakietów szybowych o grubości do 60 mm, zależnie od konfiguracji",
+                "możliwość wykonania okien o wysokich parametrach izolacyjności cieplnej",
+                "solidne wzmocnienia stalowe zapewniające stabilność konstrukcji",
+                "możliwość zastosowania szyb trzyszybowych",
+                "wysoka izolacyjność akustyczna oraz możliwość zastosowania zabezpieczeń antywłamaniowych",
+                "łatwa pielęgnacja i szeroki wybór kolorów oraz oklein dekoracyjnych",
+            ]),
+        ],
+    },
 ]
 
 ALU_PROFILES = [
@@ -271,7 +292,7 @@ ALU_PROFILES = [
 # New category copy from the client corrections. Routes listed here replace the captured source text.
 CATEGORY_CONTENT = {
     "/kategorie/okna-pcv/": {
-        "lead": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander.",
+        "lead": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco, Salamander i Kömmerling.",
         "profiles": PCV_PROFILES,
     },
     # Client PDF of 20.10.2026: the text as written there ("blocks", shown like copy_blocks_markup) and
@@ -319,7 +340,6 @@ CATEGORY_CONTENT = {
             ("Pol-Skone", "https://www.pol-skone.pl/pliki/pobierz/GdQUeBUt1AojPX8e5MBEbEzPpKyZHabC/katalog-produktow-20262027.pdf"),
             ("Porta", "https://www.porta.com.pl/phavi/at/upl/2026/0701/0720-0732-katalog-porta-2_2026-www.pdf"),
             ("Dre", "https://dre.pl/wp-content/uploads/2026/10/Katalog-DRE-2026_3.pdf"),
-            ("Intenso", "https://intenso-doors.pl/uploads/downloads/Katalog_Intenso_2026_4.pdf"),
         ],
     },
 }
@@ -992,8 +1012,9 @@ def source_body_blocks(page: dict) -> list:
         )
         if 0 <= heading_index < len(body) - 1 and body[heading_index + 1].get("type") == "list":
             suppliers = body[heading_index + 1]
+            # Client, 21.10.2026: Intenso removed from the whole site, this list included.
             suppliers["items"] = [
-                *suppliers.get("items", []),
+                *(item for item in suppliers.get("items", []) if not normalize(item).startswith("intenso")),
                 "WILLINGEN – okna produkowane w systemach profili Schüco living 82, łączące nowoczesny design, wysoką jakość wykonania oraz doskonałe parametry termoizolacyjne.",
                 "DEBOW – okna PCV produkowane na profilach Salamander 82, zapewniające trwałość, energooszczędność i estetyczny wygląd.",
                 "HENSFORT – okna PCV w systemie Hensperfect, charakteryzujące się klasycznym wzornictwem, solidną konstrukcją oraz wysokimi parametrami izolacji termicznej i akustycznej.",
@@ -1211,18 +1232,11 @@ def source_gallery_images(route: str, images: list[str]) -> tuple[list[str], lis
             return gallery_images, gallery_thumbnails
 
     # Legacy fallback for routes absent from the source gallery audit.
-    hero_overrides = {
-        "/produkty/drzwi-wewnetrzne-intenso/": "/img/products/drzwi-wewnetrzne-malaga-w5.webp",
-    }
     displayed = []
     for image in images:
         dimensions = image_dimensions(image)
         if not (dimensions and min(dimensions) < 80):
             displayed.append(image)
-    hero = hero_overrides.get(route)
-    if hero and (ROOT / hero.lstrip("/")).exists():
-        original_hero = images[0] if images else ""
-        displayed = [hero] + [image for image in displayed if image != original_hero and image != hero]
     return displayed, []
 
 
@@ -1286,16 +1300,23 @@ def store_phone_line(store: dict) -> str:
     return " · ".join(parts)
 
 
-def store_items_markup() -> str:
+def store_items_markup(photo_prefix: str | None = None) -> str:
+    """Store entries; with photo_prefix (the home page) a store's photo is shown in its own entry."""
     items = []
     # Stores with just an address first, the ones with a phone line below (client, 10.2026).
     for store in sorted(STORES, key=lambda store: bool(store_phone_line(store))):
         phone_line = store_phone_line(store)
         phone_html = f'\n  <div class="kt-store-phone">{esc(phone_line)}</div>' if phone_line else ""
+        # Client, 20.10.2026: the photo of the salon building, not cropped by the layout; the file
+        # itself has the camera watermark cut off the bottom. Of 21.10: "te zdjecie ma byc przy
+        # gieldowej", so it sits in the Giełdowa entry instead of below both stores.
+        photo_html = ""
+        if photo_prefix is not None and store["photo"]:
+            photo_html = f'\n  <figure class="kt-salon-photo"><img src="{url_for("/img/stores/" + store["photo"], photo_prefix)}" alt="{esc(store["name"])}, {esc(store["street"])}" width="1200" height="834" loading="lazy" decoding="async"></figure>'
         items.append(f'''<div class="kt-store-item">
   <div class="kt-store-title">{esc(store["name"])}</div>
   <div class="kt-store-addr">{esc(store["address"])}</div>{phone_html}
-  <a class="store-nav-btn" href="{store["map"]}" target="_blank" rel="noopener noreferrer"><i>{MAP_PIN_SVG}</i>Nawiguj w Google Maps ↗</a>
+  <a class="store-nav-btn" href="{store["map"]}" target="_blank" rel="noopener noreferrer"><i>{MAP_PIN_SVG}</i>Nawiguj w Google Maps ↗</a>{photo_html}
 </div>''')
     return "\n".join(items)
 
@@ -1626,17 +1647,18 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
   </div>
 </details>''')
 
+    # Client, 21.10.2026: Intenso and Lagrus out, the eight logos sent that day in, in the order sent.
+    # Medos and Decco are light lettering, so they sit on a dark tile.
     partner_logos = [
-        ("partner-domel.webp", "DOMEL"), ("partner-fill.webp", "FILL"), ("partner-wiked.webp", "WIKĘD"),
-        ("partner-erkado.webp", "ERKADO"), ("partner-intenso.webp", "INTENSO"), ("partner-lagrus.webp", "LAGRUS"),
+        ("partner-domel.webp", "DOMEL", False), ("partner-fill.webp", "FILL", False), ("partner-wiked.webp", "WIKĘD", False),
+        ("partner-erkado.webp", "ERKADO", False), ("partner-medos.webp", "MEDOS", True), ("partner-hensfort.webp", "HENSFORT", False),
+        ("partner-dobroplast.webp", "DOBROPLAST", False), ("partner-willingen.webp", "WILLINGEN", False),
+        ("partner-debow.webp", "OKNA DEBOW", False), ("partner-mirola.webp", "MIROLA", False),
+        ("partner-decco.webp", "DECCO", True), ("partner-hanarol.webp", "HANAROL", False),
     ]
-    partner_entries = "".join(f'<div class="partner-logo"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>' for file, name in partner_logos)
-
-    # Client, 20.10.2026: the photo of the salon building in the stores tile, not cropped by the
-    # layout; the file itself has the camera watermark cut off the bottom.
-    salon_photos = "".join(
-        f'<figure class="kt-salon-photo"><img src="{url_for("/img/stores/" + store["photo"], prefix)}" alt="{esc(store["name"])}, {esc(store["street"])}" width="1200" height="834" loading="lazy" decoding="async"></figure>'
-        for store in STORES if store["photo"]
+    partner_entries = "".join(
+        f'<div class="partner-logo{" partner-logo--dark" if dark else ""}"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>'
+        for file, name, dark in partner_logos
     )
 
     body = f'''<main id="main">
@@ -1770,10 +1792,9 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
       <div class="kt-adres" id="nasze-sklepy">
         <span class="kt-lab">Salony sprzedaży</span>
 
-        {store_items_markup()}
+        {store_items_markup(prefix)}
 
         <a class="store-full-copy-link" href="{url_for('/nasze-sklepy/', prefix)}">Pełny opis salonów i ekspozycji ↗</a>
-        {salon_photos}
       </div>
     </div>
   </div>
@@ -1847,6 +1868,14 @@ def sill_medos_links_markup(route: str) -> str:
     return f'''<div class="brand-box">
   <h2>Pozostałe parapety z oferty Medos</h2>
   {groups}</div>'''
+
+
+def sill_medos_logo_markup(route: str, prefix: str) -> str:
+    # Client, 21.10.2026: "medosa proszę dać pod każdym parapecie na dole" – the producer's logo
+    # below the files of every sill; its lettering is light, so it sits on a dark tile.
+    if route not in {prod_route for _, prod_route, *_ in SILL_PRODUCTS}:
+        return ""
+    return f'<div class="sill-producer-logo"><img src="{url_for("/img/partners/partner-medos.webp", prefix)}" alt="Medos" width="144" height="46" loading="lazy" decoding="async"></div>'
 
 
 def spec_item_markup(item, prefix: str) -> str:
@@ -2182,7 +2211,7 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
         {desc_details}
         {profiles_html}
         {specs_html}{sill_palette_markup(route, title, prefix)}
-        {downloads_html}
+        {downloads_html}{sill_medos_logo_markup(route, prefix)}
         {product_nav_bar}
         <div class="cta-banner-dark">
           <span class="eyebrow eyebrow--highlight">Zainteresował Cię ten produkt?</span>

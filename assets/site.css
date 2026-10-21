@@ -1070,6 +1070,28 @@ p, li, blockquote {
   object-fit: contain;
 }
 
+/* Light lettering (Medos, Decco) on a dark tile (client, 21.10.2026). */
+.partner-logo--dark {
+  background: var(--highlight);
+  border-color: var(--highlight);
+}
+
+/* The Medos logo below the files of every sill (client, 21.10.2026); light lettering, dark tile. */
+.sill-producer-logo {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 2rem;
+  padding: 1rem 1.6rem;
+  background: var(--highlight);
+  border-radius: var(--radius-sm);
+}
+
+.sill-producer-logo img {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
 /* ==========================================================================
    Section: Chętnie doradzimy (Contact - Split)
    ========================================================================== */
@@ -4453,11 +4475,10 @@ body.lightbox-open {
   border-bottom: 0;
 }
 
-/* The salon building below the stores, in its own proportions (client, 20.10.2026). */
-.kt-adres > .kt-salon-photo {
-  grid-column: 1 / -1;
+/* The salon building in the Giełdowa entry, in its own proportions (client, 20 and 21.10.2026). */
+.kt-store-item .kt-salon-photo {
   width: 100%;
-  margin: 1.5rem 0 0;
+  margin: 1rem 0 0;
 }
 
 .kt-salon-photo img {
