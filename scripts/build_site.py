@@ -1648,10 +1648,11 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
 </details>''')
 
     # Client, 21.10.2026: Intenso and Lagrus out, the eight logos sent that day in, in the order sent.
-    # Medos and Decco are light lettering, so they sit on a dark tile.
+    # Decco is light lettering, so it sits on a dark tile. Medos: the producer's own colour logo
+    # (medosparapety.pl, SVG) in place of the white one on black, as the client asked the same day.
     partner_logos = [
         ("partner-domel.webp", "DOMEL", False), ("partner-fill.webp", "FILL", False), ("partner-wiked.webp", "WIKĘD", False),
-        ("partner-erkado.webp", "ERKADO", False), ("partner-medos.webp", "MEDOS", True), ("partner-hensfort.webp", "HENSFORT", False),
+        ("partner-erkado.webp", "ERKADO", False), ("partner-medos.svg", "MEDOS", False), ("partner-hensfort.webp", "HENSFORT", False),
         ("partner-dobroplast.webp", "DOBROPLAST", False), ("partner-willingen.webp", "WILLINGEN", False),
         ("partner-debow.webp", "OKNA DEBOW", False), ("partner-mirola.webp", "MIROLA", False),
         ("partner-decco.webp", "DECCO", True), ("partner-hanarol.webp", "HANAROL", False),
@@ -1871,11 +1872,11 @@ def sill_medos_links_markup(route: str) -> str:
 
 
 def sill_medos_logo_markup(route: str, prefix: str) -> str:
-    # Client, 21.10.2026: "medosa proszę dać pod każdym parapecie na dole" – the producer's logo
-    # below the files of every sill; its lettering is light, so it sits on a dark tile.
+    # Client, 21.10.2026: "medosa proszę dać pod każdym parapecie na dole" – the producer's colour
+    # logo below the files of every sill.
     if route not in {prod_route for _, prod_route, *_ in SILL_PRODUCTS}:
         return ""
-    return f'<div class="sill-producer-logo"><img src="{url_for("/img/partners/partner-medos.webp", prefix)}" alt="Medos" width="144" height="46" loading="lazy" decoding="async"></div>'
+    return f'<div class="sill-producer-logo"><img src="{url_for("/img/partners/partner-medos.svg", prefix)}" alt="Medos" width="144" height="46" loading="lazy" decoding="async"></div>'
 
 
 def spec_item_markup(item, prefix: str) -> str:

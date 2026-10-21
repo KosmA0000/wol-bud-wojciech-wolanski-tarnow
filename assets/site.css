@@ -1070,19 +1070,20 @@ p, li, blockquote {
   object-fit: contain;
 }
 
-/* Light lettering (Medos, Decco) on a dark tile (client, 21.10.2026). */
+/* Light lettering (Decco) on a dark tile (client, 21.10.2026). */
 .partner-logo--dark {
   background: var(--highlight);
   border-color: var(--highlight);
 }
 
-/* The Medos logo below the files of every sill (client, 21.10.2026); light lettering, dark tile. */
+/* The Medos logo below the files of every sill (client, 21.10.2026), on a tile like the partners'. */
 .sill-producer-logo {
   display: inline-flex;
   align-items: center;
   margin: 0 0 2rem;
   padding: 1rem 1.6rem;
-  background: var(--highlight);
+  background: #fff;
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
 
