@@ -4707,3 +4707,41 @@ body.lightbox-open {
 @media (prefers-reduced-motion: reduce) {
   .contact-bubble, .contact-bubble__text { transition: none; }
 }
+
+/* "Skopiowano adres" after a click on an e-mail link (client, 21.10.2026), dark like a hovered bubble. */
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 95;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 0.8rem 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: var(--highlight);
+  color: #ffffff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.copy-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* On phones it sits above the "Do góry" button. */
+@media (max-width: 760px) {
+  .copy-toast { bottom: 76px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy-toast { transition: none; }
+}

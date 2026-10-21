@@ -683,18 +683,53 @@
   });
 
   // ==========================================================================
-  // 7. E-mail links open Gmail on a computer
+  // 7. E-mail links: Gmail on a computer, and the address copied
   // ==========================================================================
   // Client, 21.10.2026: on a computer with no mail program set up a mailto link does nothing, so
   // there the address opens as a new message in Gmail, in a new tab. Phones keep mailto and so
-  // their mail app.
-  const desktopPointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
-  document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
-    link.addEventListener('click', (e) => {
-      if (!desktopPointerQuery.matches) return;
-      const address = link.getAttribute('href').slice('mailto:'.length).split('?')[0];
-      e.preventDefault();
-      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(address)}`, '_blank', 'noopener');
+  // their mail app. A page cannot tell whether the mail opened, so every click also copies the
+  // address ("jeśli nie otwiera się email, to wtedy niech się również adres kopiuje") and says so.
+  const mailLinks = document.querySelectorAll('a[href^="mailto:"]');
+  if (mailLinks.length) {
+    const desktopPointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const copyToast = document.createElement('div');
+    copyToast.className = 'copy-toast';
+    copyToast.setAttribute('role', 'status');
+    document.body.appendChild(copyToast);
+    let copyToastTimer = 0;
+
+    // Copied at once, inside the click, before Gmail's tab takes the focus the clipboard needs.
+    const copyText = (text) => {
+      const active = document.activeElement;
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px;';
+      document.body.appendChild(field);
+      field.focus({ preventScroll: true });
+      field.select();
+      field.setSelectionRange(0, text.length);
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+      field.remove();
+      if (active && active.focus) active.focus({ preventScroll: true });
+      if (copied) return Promise.resolve();
+      return navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject();
+    };
+
+    mailLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const address = link.getAttribute('href').slice('mailto:'.length).split('?')[0];
+        copyText(address).then(() => {
+          copyToast.textContent = `Skopiowano adres: ${address}`;
+          copyToast.classList.add('is-visible');
+          clearTimeout(copyToastTimer);
+          copyToastTimer = setTimeout(() => copyToast.classList.remove('is-visible'), 3000);
+        }).catch(() => {});
+        if (!desktopPointerQuery.matches) return;
+        e.preventDefault();
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(address)}`, '_blank', 'noopener');
+      });
     });
-  });
+  }
 })();
