@@ -681,4 +681,20 @@
       }
     });
   });
+
+  // ==========================================================================
+  // 7. E-mail links open Gmail on a computer
+  // ==========================================================================
+  // Client, 21.10.2026: on a computer with no mail program set up a mailto link does nothing, so
+  // there the address opens as a new message in Gmail, in a new tab. Phones keep mailto and so
+  // their mail app.
+  const desktopPointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+  document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (!desktopPointerQuery.matches) return;
+      const address = link.getAttribute('href').slice('mailto:'.length).split('?')[0];
+      e.preventDefault();
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(address)}`, '_blank', 'noopener');
+    });
+  });
 })();
