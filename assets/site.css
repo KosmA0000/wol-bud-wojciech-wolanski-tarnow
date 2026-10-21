@@ -1076,6 +1076,15 @@ p, li, blockquote {
   border-color: var(--highlight);
 }
 
+/* A mark above the name (Wiśniowski, client 21.10.2026): taller logo, less padding, same tile height. */
+.partner-logo--stacked {
+  padding-block: 0.6rem;
+}
+
+.partner-logo--stacked img {
+  max-height: 64px;
+}
+
 /* The Medos logo below the files of every sill (client, 21.10.2026), on a tile like the partners'. */
 .sill-producer-logo {
   display: inline-flex;

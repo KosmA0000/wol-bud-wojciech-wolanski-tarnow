@@ -426,7 +426,8 @@ PRIMARY_CATEGORIES = [
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
     ("Rolety", "/kategorie/rolety/", "/img/products/gallery/do-okien-dachowych-dekolux/01-source.webp", ""),
-    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/Botticino-306x204.webp", ""),
+    # Client, 21.10.2026: the black sill photo they sent as the main sill picture.
+    ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/parapety-blaty.webp", ""),
     ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", ""),
 ]
 
@@ -1650,15 +1651,19 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
     # Client, 21.10.2026: Intenso and Lagrus out, the eight logos sent that day in, in the order sent.
     # Decco is light lettering, so it sits on a dark tile. Medos: the producer's own colour logo
     # (medosparapety.pl, SVG) in place of the white one on black, as the client asked the same day.
+    # Wiśniowski sent later that day ("logo jeszcze dodać"), so it comes last; its mark stands above
+    # the name, so its tile gives it more height.
+    stacked_logos = {"partner-wisniowski.webp"}
     partner_logos = [
         ("partner-domel.webp", "DOMEL", False), ("partner-fill.webp", "FILL", False), ("partner-wiked.webp", "WIKĘD", False),
         ("partner-erkado.webp", "ERKADO", False), ("partner-medos.svg", "MEDOS", False), ("partner-hensfort.webp", "HENSFORT", False),
         ("partner-dobroplast.webp", "DOBROPLAST", False), ("partner-willingen.webp", "WILLINGEN", False),
         ("partner-debow.webp", "OKNA DEBOW", False), ("partner-mirola.webp", "MIROLA", False),
         ("partner-decco.webp", "DECCO", True), ("partner-hanarol.webp", "HANAROL", False),
+        ("partner-wisniowski.webp", "WIŚNIOWSKI", False),
     ]
     partner_entries = "".join(
-        f'<div class="partner-logo{" partner-logo--dark" if dark else ""}"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>'
+        f'<div class="partner-logo{" partner-logo--dark" if dark else ""}{" partner-logo--stacked" if file in stacked_logos else ""}"><img src="{url_for(f"/img/partners/{file}", prefix)}" alt="{name}" loading="lazy" decoding="async"></div>'
         for file, name, dark in partner_logos
     )
 
