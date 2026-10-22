@@ -1033,6 +1033,14 @@ def source_body_blocks(page: dict) -> list:
                     "P-Line – Okna w systemie P-Line to połączenie nowoczesnego wyglądu, funkcjonalności i dobrych parametrów użytkowych. Zapewniają odpowiednią izolację termiczną i akustyczną, szczelność oraz komfort użytkowania, sprawdzając się w nowoczesnych i tradycyjnych budynkach.",
                     "Smartline+ – System okienny Smartline+ łączy estetyczny design z funkcjonalnością i komfortem użytkowania. Przemyślana konstrukcja profili wspiera izolacyjność termiczną oraz szczelność okien, stanowiąc praktyczne rozwiązanie do domów i mieszkań.",
                 ]},
+                # Client, 22.10.2026: these too, in their words and order; their WIŚNIOWSKI line is already
+                # on the list word for word, so it is not repeated.
+                {"type": "list", "listType": "unordered", "depth": 1, "items": [
+                    "MIROLA – żaluzje fasadowe produkowane na wymiar, dostępne z szerokim wyborem automatyki i napędów",
+                    "MEDOS – parapety wewnętrzne i zewnętrzne",
+                    "DECCO – rolety zewnętrzne w systemach adaptacyjnych, podtynkowych i nadstawnych oraz żaluzje fasadowe, zapewniające doskonałą izolację termiczną i nowoczesny design.",
+                    "HANAROL – rolety wewnętrzne materiałowe, dzień-noc, rzymskie, plisy żaluzję drewniane oraz aluminiowe",
+                ]},
             ]
     return body
 
