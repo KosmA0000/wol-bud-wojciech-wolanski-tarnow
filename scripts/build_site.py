@@ -166,6 +166,9 @@ SERVICE_TITLE_RENAMES = {
     "Ciepły montaż": "Prawidłowy – szczelny montaż",
 }
 
+# Services left off the site. Client, 22.10.2026: "całkowicie usuń sekcję układanie kostki brukowej".
+REMOVED_SERVICES = {"Układanie kostki brukowej"}
+
 # Window profiles presented with a photo on the left and the description beside it.
 PCV_PROFILES = [
     {
@@ -1623,7 +1626,7 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
   </div>
 </a>''')
 
-    # Services Cards (7 services)
+    # Services Cards (6 services)
     services_markup = []
     service_anchors = {
         "Pomiar, doradztwo i wycena": "pomiar-doradztwo-i-wycena",
@@ -1631,11 +1634,12 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         "Serwis": "serwis",
         "Kompleksowa obsługa inwestycji": "kompleksowa-obsluga-inwestycji",
         "Prace wykończeniowe i murarskie": "prace-wykonczeniowe-i-murarskie",
-        "Układanie kostki brukowej": "ukladanie-kostki-brukowej",
         "Daszki poliwęglanowe": "daszki-poliweglanowe",
     }
     for idx, s in enumerate(scraped_data.get("services", []), 1):
         stitle = s.get("title", "")
+        if stitle in REMOVED_SERVICES:
+            continue
         anch = service_anchors.get(stitle, slugify(stitle))
         para = "\n".join(s.get("paragraphs", []))
         teaser = service_teasers.get(normalize(stitle)) or source_first_sentence(para)
@@ -2240,14 +2244,13 @@ def product_detail_page(route: str, prod: dict, scraped_data: dict, source_page:
 def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
     route = "/uslugi/"
     prefix = asset_prefix(route)
-    services = scraped_data.get("services", [])
+    services = [s for s in scraped_data.get("services", []) if s.get("title", "") not in REMOVED_SERVICES]
     service_anchors = {
         "Pomiar, doradztwo i wycena": "pomiar-doradztwo-i-wycena",
         "Ciepły montaż": "cieply-montaz",
         "Serwis": "serwis",
         "Kompleksowa obsługa inwestycji": "kompleksowa-obsluga-inwestycji",
         "Prace wykończeniowe i murarskie": "prace-wykonczeniowe-i-murarskie",
-        "Układanie kostki brukowej": "ukladanie-kostki-brukowej",
         "Daszki poliwęglanowe": "daszki-poliweglanowe",
     }
 
@@ -2290,6 +2293,8 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
         source_sections = source_service_sections(source_page)
         for section in source_sections:
             stitle = source_display_text(section["title"])
+            if stitle in REMOVED_SERVICES:
+                continue
             anch = service_anchors.get(stitle, slugify(stitle))
             shown_title = SERVICE_TITLE_RENAMES.get(stitle, stitle)
             blocks = section["blocks"]
@@ -2357,7 +2362,7 @@ def services_page(scraped_data: dict, source_page: dict | None = None) -> str:
     </div>
   </div>
 </main>'''
-    return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, prawidłowy – szczelny montaż, serwis, prace wykończeniowe i murarskie, brukowanie, daszki poliwęglanowe.", main)
+    return document(route, "Usługi WOL-BUD", "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, prawidłowy – szczelny montaż, serwis, prace wykończeniowe i murarskie, daszki poliwęglanowe.", main)
 
 
 def warm_montage_page(scraped_data: dict, source_page: dict | None = None) -> str:
