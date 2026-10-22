@@ -446,7 +446,8 @@ PRIMARY_CATEGORIES = [
     ("Rolety", "/kategorie/rolety/", "/img/products/gallery/do-okien-dachowych-dekolux/01-source.webp", ""),
     # Client, 21.10.2026: the black sill photo they sent as the main sill picture.
     ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/parapety-blaty.webp", ""),
-    ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", ""),
+    # Client, 22.10.2026: "główne zdjecie moskitier", cut out of its white frame.
+    ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-siatka.webp", ""),
 ]
 
 # Category links in the "Kategorie:" bar and the sidebar: the main categories plus Żaluzje i plisy after Rolety.
@@ -871,7 +872,7 @@ SUBCATEGORIES = {
         ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/img/thumbs/dzien-noc-2-130x86.webp", "", ""),
         ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/img/products/roleta-dzien-noc.webp", "", ""),
         ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/img/products/zaluzje-drewniane.webp", "", ""),
-        ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-okienna.webp", "", ""),
+        ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-siatka.webp", "", ""),
     ],
 }
 
