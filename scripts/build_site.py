@@ -349,10 +349,12 @@ CATEGORY_CONTENT = {
     },
 }
 
-# Main photo placed first in a product gallery.
+# Main photo placed first in a product gallery. INTEGRO: client, 22.10.2026, "Aluprof – system
+# podtynkowy INTEGRO proszę dodać to zdjęcie"; the product had no photo at all.
 PRODUCT_MAIN_PHOTOS = {
     "/produkty/fasady/": "/img/products/fasada-dom-szczytowy.webp",
     "/produkty/okna-drzwi-alu/": "/img/products/okna-alu-przesuwne.webp",
+    "/produkty/podtynkowe-integro/": "/img/products/rolety-podtynkowe-integro.webp",
 }
 
 # Client PDF of 20.10.2026: the main photo stays, the old photos go and these follow it, in the
