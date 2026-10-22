@@ -683,12 +683,12 @@
   });
 
   // ==========================================================================
-  // 7. E-mail links: Gmail on a computer, and the address copied
+  // 7. E-mail links: the address copied
   // ==========================================================================
-  // Client, 21.10.2026: on a computer with no mail program set up a mailto link does nothing, so
-  // there the address opens as a new message in Gmail, in a new tab. Phones keep mailto and so
-  // their mail app. A page cannot tell whether the mail opened, so every click also copies the
-  // address ("jeśli nie otwiera się email, to wtedy niech się również adres kopiuje") and says so.
+  // Client, 21.10.2026: every click copies the address and says so ("jeśli nie otwiera się email, to
+  // wtedy niech się również adres kopiuje"). Of 22.10: on a computer the mail did not open ("niech
+  // po prostu kopiuje adres na komputerze"), so there the click only copies. Phones keep mailto and
+  // so their mail app.
   const mailLinks = document.querySelectorAll('a[href^="mailto:"]');
   if (mailLinks.length) {
     const desktopPointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -698,7 +698,7 @@
     document.body.appendChild(copyToast);
     let copyToastTimer = 0;
 
-    // Copied at once, inside the click, before Gmail's tab takes the focus the clipboard needs.
+    // Copied at once, inside the click, before the mail app takes the focus the clipboard needs.
     const copyText = (text) => {
       const active = document.activeElement;
       const field = document.createElement('textarea');
@@ -726,9 +726,7 @@
           clearTimeout(copyToastTimer);
           copyToastTimer = setTimeout(() => copyToast.classList.remove('is-visible'), 3000);
         }).catch(() => {});
-        if (!desktopPointerQuery.matches) return;
-        e.preventDefault();
-        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(address)}`, '_blank', 'noopener');
+        if (desktopPointerQuery.matches) e.preventDefault();
       });
     });
   }
