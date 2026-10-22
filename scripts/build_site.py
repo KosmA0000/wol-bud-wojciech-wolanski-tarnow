@@ -80,20 +80,21 @@ GOOGLE_REVIEWS = [
 # Radłów picture was a map of ul. Leśna, so that card has none. Of 17.10: the Tarnów salon is at
 # Giełdowa 10, the address the Google profile shows. Of 20.10 (PDF): "salony można dać zdjęcie naszego
 # budynku" – the photo of the building, whose banner gives the Tarnów number, replaces the map snippet.
-# Of 22.10: "a to jest radłów dodaj to zdjecie do radłowa" – the photo of the Radłów building.
+# Of 22.10: "a to jest radłów dodaj to zdjecie do radłowa" – the photo of the Radłów building. Also of
+# 22.10, the hours of both: "Poniedziałek – piątek 08:00–16:00  Sobota: 09:00–12:00 (Tarnów i Radłów)".
 STORES = [
     {
         "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 10",
         "address": "ul. Giełdowa 10 (przy placu targowym), 33-100 Tarnów",
         "address_full": "ul. Giełdowa 10 (przy placu targowym Chyszów), 33-100 Tarnów",
         "tel": "14 626 80 32", "mobile": "534 091 021", "photo": "salon-tarnow-gieldowa.webp",
-        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["chyszow"],
+        "hours": "Pn–Pt 8–16 · Sb 9–12", "map": MAP_LINKS["chyszow"],
     },
     {
         "name": "Salon Radłów", "city": "Radłów", "street": "ul. Kolejowa 5",
         "address": "ul. Kolejowa 5, 33-130 Radłów", "address_full": "ul. Kolejowa 5, 33-130 Radłów",
         "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "salon-radlow-kolejowa.webp",
-        "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["kolejowa"],
+        "hours": "Pn–Pt 8–16 · Sb 9–12", "map": MAP_LINKS["kolejowa"],
     },
 ]
 
@@ -1802,8 +1803,8 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
         <ul class="kt-lista">
           <li><span>E-mail:</span><a href="mailto:biuro@wol-bud.com.pl">biuro@wol-bud.com.pl</a></li>
           <li><span>Facebook:</span><a href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer">Zobacz nasz profil ↗</a></li>
-          <li><span>Czynne:</span><span>Poniedziałek – piątek 09:00–17:00</span></li>
-          <li><span>Soboty:</span><span>09:00–13:00 (Tarnów i Radłów)</span></li>
+          <li><span>Czynne:</span><span>Poniedziałek – piątek 08:00–16:00</span></li>
+          <li><span>Sobota:</span><span>09:00–12:00 (Tarnów i Radłów)</span></li>
         </ul>
         <div class="kt-oferta">
           <b>WOL-BUD Wojciech Wolański</b>
@@ -2625,8 +2626,8 @@ def contact_page() -> str:
         <ul class="kt-lista">
           <li><span>E-mail:</span><a href="mailto:biuro@wol-bud.com.pl">biuro@wol-bud.com.pl</a></li>
           <li><span>Facebook:</span><a href="{FACEBOOK_URL}" target="_blank" rel="noopener noreferrer">Zobacz nasz profil ↗</a></li>
-          <li><span>Czynne:</span><span>Poniedziałek – piątek 09:00–17:00</span></li>
-          <li><span>Soboty:</span><span>09:00–13:00 (Tarnów i Radłów)</span></li>
+          <li><span>Czynne:</span><span>Poniedziałek – piątek 08:00–16:00</span></li>
+          <li><span>Sobota:</span><span>09:00–12:00 (Tarnów i Radłów)</span></li>
         </ul>
         <div class="kt-oferta">
           <b>WOL-BUD Wojciech Wolański</b>
