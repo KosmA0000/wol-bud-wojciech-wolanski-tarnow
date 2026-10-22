@@ -80,6 +80,7 @@ GOOGLE_REVIEWS = [
 # Radłów picture was a map of ul. Leśna, so that card has none. Of 17.10: the Tarnów salon is at
 # Giełdowa 10, the address the Google profile shows. Of 20.10 (PDF): "salony można dać zdjęcie naszego
 # budynku" – the photo of the building, whose banner gives the Tarnów number, replaces the map snippet.
+# Of 22.10: "a to jest radłów dodaj to zdjecie do radłowa" – the photo of the Radłów building.
 STORES = [
     {
         "name": "Salon Tarnów-Chyszów", "city": "Tarnów", "street": "ul. Giełdowa 10",
@@ -91,7 +92,7 @@ STORES = [
     {
         "name": "Salon Radłów", "city": "Radłów", "street": "ul. Kolejowa 5",
         "address": "ul. Kolejowa 5, 33-130 Radłów", "address_full": "ul. Kolejowa 5, 33-130 Radłów",
-        "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "",
+        "tel": "14 678 23 65", "mobile": "609 734 290", "photo": "salon-radlow-kolejowa.webp",
         "hours": "Pn–Pt 9–17 · Sb 9–13", "map": MAP_LINKS["kolejowa"],
     },
 ]
@@ -1313,7 +1314,9 @@ def store_items_markup(photo_prefix: str | None = None) -> str:
         # gieldowej", so it sits in the Giełdowa entry instead of below both stores.
         photo_html = ""
         if photo_prefix is not None and store["photo"]:
-            photo_html = f'\n  <figure class="kt-salon-photo"><img src="{url_for("/img/stores/" + store["photo"], photo_prefix)}" alt="{esc(store["name"])}, {esc(store["street"])}" width="1200" height="834" loading="lazy" decoding="async"></figure>'
+            photo_path = "/img/stores/" + store["photo"]
+            width, height = image_dimensions(photo_path) or (1200, 834)
+            photo_html = f'\n  <figure class="kt-salon-photo"><img src="{url_for(photo_path, photo_prefix)}" alt="{esc(store["name"])}, {esc(store["street"])}" width="{width}" height="{height}" loading="lazy" decoding="async"></figure>'
         items.append(f'''<div class="kt-store-item">
   <div class="kt-store-title">{esc(store["name"])}</div>
   <div class="kt-store-addr">{esc(store["address"])}</div>{phone_html}
