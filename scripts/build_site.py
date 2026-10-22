@@ -425,6 +425,15 @@ NEW_PRODUCTS = [
             "Estetyczny design: minimalistyczny wygląd idealnie wpisuje się w nowoczesną architekturę i nie zaburza wyglądu Twoich okien.",
         ],
     ),
+    # Client, 22.10.2026: "do rolet zewnętrznych dodajemy nowe Rolety nadstawne", their text and main photo.
+    (
+        "/kategorie/zewnetrzne/", "/produkty/rolety-nadstawne/", "Rolety nadstawne", "/img/products/rolety-nadstawne.webp",
+        [
+            "Rolety nadstawne to niezwykle uniwersalne rozwiązanie, które umożliwia różnorodne metody montażu: bez zabudowy, z zabudową częściową lub całkowitą. Czoło skrzynki rolety służy jako podkład pod dowolny materiał wykończeniowy, takie jak styropian, tynk czy klinkier, co sprawia, że rolety te są niezauważalnym elementem fasady. Dzięki tej elastyczności można je łatwo dopasować do każdego rodzaju architektury budynku.",
+            "Skrzynie rolet nadstawnych wykonane są z wysokiej jakości elementów PVC, co gwarantuje ich trwałość i odporność na warunki atmosferyczne. Dodatkowo, wnętrze skrzynek zostało dodatkowo docieplone, co znacząco poprawia parametry termiczne produktu. To rozwiązanie nie tylko zwiększa komfort cieplny wnętrza, ale również wspiera oszczędność energii.",
+        ],
+        [],
+    ),
 ]
 
 # Primary categories displayed in menus and catalog
