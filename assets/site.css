@@ -3791,6 +3791,11 @@ body.lightbox-open {
     min-width: 0;
   }
 
+  /* One photo has no arrows, so it takes the whole row instead of the first 40px column. */
+  .product-gallery--door .product-detail-visual:only-child {
+    grid-column: 1 / -1;
+  }
+
   .product-nav-bar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
