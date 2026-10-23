@@ -504,6 +504,11 @@ REALIZATIONS = [
             "/img/montage/termoparapet-balkonowy.webp",
             "/img/products/okna-alu-przesuwne.webp",
             "/img/montage/klinaryt-drzwi-HST.webp",
+            # Client, 23.10.2026: "dodaj je do sekcji realizacji" – four photos of one house.
+            "/img/realizacje/dom-okna-zloty-dab-01.webp",
+            "/img/realizacje/dom-okna-zloty-dab-02.webp",
+            "/img/realizacje/dom-okna-zloty-dab-03.webp",
+            "/img/realizacje/dom-okna-zloty-dab-04.webp",
         ],
     },
     {
