@@ -441,7 +441,8 @@ NEW_PRODUCTS = [
 PRIMARY_CATEGORIES = [
     ("Okna PCV", "/kategorie/okna-pcv/", "/img/products/okno-infinity-passive-83md.webp", ""),
     ("Drzwi wejściowe", "/kategorie/drzwi-zewnetrzne/", "/img/products/drzwi-zewnetrzne-stalowe.webp", ""),
-    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
+    # Client, 23.10.2026: "zmienić jedno zdjęcie główne drzwi wewnętrznych" – their photo replaces the Malaga W-5.
+    ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-dab-szyba.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
     # Client, 23.10.2026: "głowne zdjęcie rolet".
