@@ -358,6 +358,8 @@ PRODUCT_MAIN_PHOTOS = {
     "/produkty/okna-drzwi-alu/": "/img/products/okna-alu-przesuwne.webp",
     "/produkty/podtynkowe-integro/": "/img/products/rolety-podtynkowe-integro.webp",
     "/produkty/adaptacyjne/": "/img/products/rolety-adaptacyjne.webp",
+    # Client, 22.10.2026: "I główne zdjęcie moskitiery drzwiowe", resent 23.10.2026.
+    "/produkty/drzwiowe/": "/img/products/moskitiera-drzwiowa.webp",
 }
 
 # Client PDF of 20.10.2026: the main photo stays, the old photos go and these follow it, in the
