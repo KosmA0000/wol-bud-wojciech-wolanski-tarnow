@@ -447,15 +447,17 @@ PRIMARY_CATEGORIES = [
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-dab-szyba.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
-    # Client, 23.10.2026: "głowne zdjęcie rolet".
-    ("Rolety", "/kategorie/rolety/", "/img/products/rolety-dzien-noc-okno.webp", ""),
+    # Client, 23.10.2026: "głowne zdjęcie rolet", then "zmienimy nazwę zakładki rolety na Osłony okienne";
+    # the address /kategorie/rolety/ stays.
+    ("Osłony okienne", "/kategorie/rolety/", "/img/products/rolety-dzien-noc-okno.webp", ""),
     # Client, 21.10.2026: the black sill photo they sent as the main sill picture.
     ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/parapety-blaty.webp", ""),
     # Client, 22.10.2026: "główne zdjecie moskitier", cut out of its white frame.
     ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-siatka.webp", ""),
 ]
 
-# Category links in the "Kategorie:" bar and the sidebar: the main categories plus Żaluzje i plisy after Rolety.
+# Category links in the "Kategorie:" bar and the sidebar: the main categories plus Żaluzje i plisy after
+# Osłony okienne.
 NAV_CATEGORIES = []
 for _name, _href, _, _ in PRIMARY_CATEGORIES:
     NAV_CATEGORIES.append((_name, _href))
@@ -879,12 +881,12 @@ SUBCATEGORIES = {
         ("Parapety zewnętrzne", "/kategorie/parapety-zewnetrzne/", "/img/parapety/parapet-stalowy/parapet-stalowy--wiz-1.webp", "", ""),
     ],
     # Client, 23.10.2026: "w zakładce rolety żeby 1 były zewnętrzne a nie wewnętrzne", then their photo
-    # for the tile: "a to ma być zdjęcie rolety zewnętrznej".
+    # for the tile: "a to ma być zdjęcie rolety zewnętrznej". Without Moskitiery: "z zakładki osłony
+    # okienne wyrzucamy moskitiery bo one są osobno jeszcze".
     "/kategorie/rolety/": [
         ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/img/products/rolety-zewnetrzne.webp", "", ""),
         ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/img/thumbs/dzien-noc-2-130x86.webp", "", ""),
         ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/img/products/zaluzje-drewniane.webp", "", ""),
-        ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-siatka.webp", "", ""),
     ],
 }
 
@@ -2694,6 +2696,8 @@ def apply_client_corrections(scraped_data: dict, source_pages: dict) -> None:
     }
     # The client calls this tab "Drzwi wejściowe" (PDF p. 5); the address /kategorie/drzwi-zewnetrzne/ stays.
     categories["/kategorie/drzwi-zewnetrzne/"]["title"] = "Drzwi wejściowe"
+    # The client renamed the Rolety tab "Osłony okienne" (23.10.2026); the address /kategorie/rolety/ stays.
+    categories["/kategorie/rolety/"]["title"] = "Osłony okienne"
     for route in REMOVED_ROUTES:
         categories.pop(route, None)
         products.pop(route, None)
@@ -2772,7 +2776,7 @@ def main() -> None:
     # Ensure parent categories have dedicated pages
     for parent_cat in ["/kategorie/parapety-blaty/", "/kategorie/rolety/"]:
         if parent_cat not in categories:
-            cat_data = {"title": "Parapety i blaty" if "parapety" in parent_cat else "Rolety", "products": []}
+            cat_data = {"title": "Parapety i blaty" if "parapety" in parent_cat else "Osłony okienne", "products": []}
             html_content = category_page(parent_cat, cat_data, scraped_data, source_pages.get(parent_cat))
             dest = output_path(parent_cat)
             dest.parent.mkdir(parents=True, exist_ok=True)
