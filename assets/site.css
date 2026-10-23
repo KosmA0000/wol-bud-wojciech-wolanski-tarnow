@@ -3354,6 +3354,13 @@ body.lightbox-open {
   border-color: var(--dark);
 }
 
+/* The ten pills need ~1460px, more than the widest page, and a mouse cannot swipe the hidden-scrollbar
+   row, so "Usługi montażowe" was cut (client, 23.10.2026). Above phone width they wrap; phones keep the swipe. */
+@media (min-width: 761px) {
+  .cat-quick-nav { align-items: baseline; }
+  .cat-quick-nav-pills { flex-wrap: wrap; padding-right: 0; }
+}
+
 /* Store Navigation Buttons (for every single address) */
 .store-nav-btn {
   display: inline-flex;
