@@ -1628,9 +1628,10 @@ def home_page(scraped_data: dict, services_source_page: dict | None = None) -> s
   </div>
 </a>''')
 
+    # Zewnętrzne first, as on the Rolety page (client, 23.10.2026).
     additional_categories = [
-        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/"),
         ("Rolety zewnętrzne", "/kategorie/zewnetrzne/"),
+        ("Rolety wewnętrzne", "/kategorie/wewnetrzne/"),
         ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/"),
     ]
     extra_category_markup = "".join(
