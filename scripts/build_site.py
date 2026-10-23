@@ -444,7 +444,8 @@ PRIMARY_CATEGORIES = [
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-malaga-w5.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
-    ("Rolety", "/kategorie/rolety/", "/img/products/gallery/do-okien-dachowych-dekolux/01-source.webp", ""),
+    # Client, 23.10.2026: "głowne zdjęcie rolet".
+    ("Rolety", "/kategorie/rolety/", "/img/products/rolety-dzien-noc-okno.webp", ""),
     # Client, 21.10.2026: the black sill photo they sent as the main sill picture.
     ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/parapety-blaty.webp", ""),
     # Client, 22.10.2026: "główne zdjecie moskitier", cut out of its white frame.
