@@ -447,9 +447,9 @@ PRIMARY_CATEGORIES = [
     ("Drzwi wewnętrzne", "/kategorie/drzwi-wewnetrzne/", "/img/products/drzwi-wewnetrzne-dab-szyba.webp", ""),
     ("Bramy garażowe", "/kategorie/bramy-garazowe/", "/img/products/brama-segmentowa.webp", ""),
     ("Stolarka aluminiowa", "/kategorie/stolarka-aluminiowa/", "/img/products/fasada-dom-szczytowy.webp", ""),
-    # Client, 23.10.2026: "głowne zdjęcie rolet", then "zmienimy nazwę zakładki rolety na Osłony okienne";
-    # the address /kategorie/rolety/ stays.
-    ("Osłony okienne", "/kategorie/rolety/", "/img/products/rolety-dzien-noc-okno.webp", ""),
+    # Client, 23.10.2026: "zmienimy nazwę zakładki rolety na Osłony okienne" (the address /kategorie/rolety/
+    # stays), then their showroom wall for the tile: "zdjęcie główne osłon okiennych będzie takie".
+    ("Osłony okienne", "/kategorie/rolety/", "/img/products/oslony-okienne-ekspozycja.webp", ""),
     # Client, 21.10.2026: the black sill photo they sent as the main sill picture.
     ("Parapety i blaty", "/kategorie/parapety-blaty/", "/img/products/parapety-blaty.webp", ""),
     # Client, 22.10.2026: "główne zdjecie moskitier", cut out of its white frame.
