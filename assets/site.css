@@ -36,6 +36,8 @@ html {
   scroll-padding-top: 90px;
   background-color: var(--bg);
   color: var(--ink);
+  /* No blue box over a tapped link or button on phones (client, 23.10.2026); inherited by all. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
