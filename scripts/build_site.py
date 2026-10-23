@@ -878,9 +878,10 @@ SUBCATEGORIES = {
         ("Parapety wewnętrzne", "/kategorie/parapety-wewnetrzne/", "/img/parapety/parapet-granit/granit--wiz-6.webp", "", ""),
         ("Parapety zewnętrzne", "/kategorie/parapety-zewnetrzne/", "/img/parapety/parapet-stalowy/parapet-stalowy--wiz-1.webp", "", ""),
     ],
-    # Client, 23.10.2026: "w zakładce rolety żeby 1 były zewnętrzne a nie wewnętrzne".
+    # Client, 23.10.2026: "w zakładce rolety żeby 1 były zewnętrzne a nie wewnętrzne", then their photo
+    # for the tile: "a to ma być zdjęcie rolety zewnętrznej".
     "/kategorie/rolety/": [
-        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/img/products/roleta-dzien-noc.webp", "", ""),
+        ("Rolety zewnętrzne", "/kategorie/zewnetrzne/", "/img/products/rolety-zewnetrzne.webp", "", ""),
         ("Rolety wewnętrzne", "/kategorie/wewnetrzne/", "/img/thumbs/dzien-noc-2-130x86.webp", "", ""),
         ("Żaluzje i plisy", "/kategorie/zaluzje-plisy/", "/img/products/zaluzje-drewniane.webp", "", ""),
         ("Moskitiery", "/kategorie/moskitiery/", "/img/products/moskitiera-siatka.webp", "", ""),
