@@ -3,12 +3,34 @@ const { test, expect } = require('@playwright/test');
 const pagePath = '/index.html';
 const editorPath = '/panel/';
 const api = 'https://api.github.com/repos/**/contents/assets/home-content.json*';
+const repoAPI = 'https://api.github.com/repos/KosmA0000/wol-bud-wojciech-wolanski-tarnow';
 const originalOrder = ['ofirmie', 'oferta', 'opinie'];
 const originalTitle = 'Czego szukasz?';
 const newTitle = 'Okna, drzwi i bramy do Twojego domu';
 const readOrder = (scope) => scope.locator('main > :is(#ofirmie,#oferta,#opinie)')
   .evaluateAll((items) => items.map((item) => item.id));
 const heading = (page) => page.frameLocator('iframe').getByRole('textbox', { name: 'Nagłówek · Oferta' });
+
+test.beforeEach(async ({ context }) => {
+  await context.route(repoAPI, (route) => {
+    const accepted = route.request().headers().authorization === 'Bearer test-key';
+    return route.fulfill({
+      status: accepted ? 200 : 401,
+      headers: { 'access-control-allow-origin': '*' },
+      json: accepted ? { permissions: { push: true } } : {},
+    });
+  });
+});
+
+async function signIn(page, key = 'test-key') {
+  await page.getByLabel('Klucz dostępu do GitHub').fill(key);
+  await page.getByRole('button', { name: 'Zaloguj się' }).click();
+}
+
+async function openEditor(page) {
+  await page.goto(editorPath);
+  await signIn(page);
+}
 
 function mockPages(context) {
   let live = { version: 1, revision: 'original' };
@@ -56,25 +78,36 @@ async function editOffer(page, text = newTitle) {
 
 async function publish(page) {
   await page.getByRole('button', { name: 'Opublikuj', exact: true }).click();
-  const dialog = page.getByRole('dialog');
-  if (await dialog.isVisible()) {
-    await dialog.getByLabel('Klucz publikacji').fill('test-key');
-    await dialog.getByRole('button', { name: 'Połącz i opublikuj' }).click();
-  }
 }
+
+test('admin loguje się po weryfikacji klucza i może się wylogować', async ({ page }) => {
+  await page.goto(editorPath);
+  await expect(page.getByRole('heading', { name: 'Logowanie administratora' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Opublikuj' })).toBeHidden();
+  await expect(page.locator('iframe')).not.toHaveAttribute('src', /index/);
+  await signIn(page, 'wrong-key');
+  await expect(page.getByRole('alert')).toContainText('Brak dostępu');
+  await expect(page.getByRole('button', { name: 'Opublikuj' })).toBeHidden();
+  await signIn(page);
+  await expect(heading(page)).toBeAttached();
+  await page.getByRole('button', { name: 'Wyloguj' }).click();
+  await expect(page.getByRole('heading', { name: 'Logowanie administratora' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Opublikuj' })).toBeHidden();
+});
 
 test('szkic przeżywa odświeżenie, a publikacja zmienia publiczny tekst i kolejność', async ({ page, context }) => {
   const pages = mockPages(context);
   await pages.configure();
   const publicPage = await context.newPage();
   await publicPage.goto(pagePath);
-  await page.goto(editorPath);
+  await openEditor(page);
   await editOffer(page);
   await page.getByRole('button', { name: 'Przenieś wyżej' }).press('Enter');
   await expect(page.locator('#movement')).toHaveText('Oferta · pozycja 1 z 3.');
   await page.getByRole('button', { name: 'Zapisz szkic' }).click();
   await expect(page.locator('#draft-status')).toContainText('Szkic zapisany');
   await page.reload();
+  await signIn(page);
   await expect(heading(page)).toHaveText(newTitle);
   await expect.poll(() => readOrder(page.frameLocator('iframe'))).toEqual(['oferta', 'ofirmie', 'opinie']);
   await expect(publicPage.locator('#oferta h2')).toHaveText(originalTitle);
@@ -105,7 +138,7 @@ test('błąd zapisu zachowuje edycję i pozwala ponowić zapis', async ({ page }
       return original.call(this, key, value);
     };
   });
-  await page.goto(editorPath);
+  await openEditor(page);
   await editOffer(page);
   const save = page.getByRole('button', { name: 'Zapisz szkic' });
   await save.click();
@@ -113,6 +146,7 @@ test('błąd zapisu zachowuje edycję i pozwala ponowić zapis', async ({ page }
   await expect(heading(page)).toHaveText(newTitle);
   await save.click();
   await page.reload();
+  await signIn(page);
   await expect(heading(page)).toHaveText(newTitle);
 });
 
@@ -120,7 +154,7 @@ test('błąd publikacji zachowuje podgląd i wersję publiczną oraz pozwala pon
   const pages = mockPages(context);
   await pages.configure();
   pages.fail(true);
-  await page.goto(editorPath);
+  await openEditor(page);
   await editOffer(page);
   await publish(page);
   await expect(page.locator('#live-status')).toContainText('GitHub nie zapisał');
@@ -139,7 +173,7 @@ test('błąd publikacji zachowuje podgląd i wersję publiczną oraz pozwala pon
 });
 
 test('klawiatura przesuwa sekcję w obie strony i zachowuje fokus', async ({ page }) => {
-  await page.goto(editorPath);
+  await openEditor(page);
   await page.getByRole('button', { name: 'Oferta', exact: true }).press('Enter');
   await page.getByRole('button', { name: 'Przenieś niżej' }).press('Space');
   await expect.poll(() => readOrder(page.frameLocator('iframe'))).toEqual(['ofirmie', 'opinie', 'oferta']);
@@ -152,7 +186,7 @@ test('klawiatura przesuwa sekcję w obie strony i zachowuje fokus', async ({ pag
 });
 
 test('przeciągnięcie pokazuje dostępne miejsca i przenosi sekcję', async ({ page }) => {
-  await page.goto(editorPath);
+  await openEditor(page);
   const grip = page.locator('#sections li').nth(1).locator('.grip');
   await grip.hover();
   await page.mouse.down();
@@ -172,7 +206,7 @@ test('przeciągnięcie pokazuje dostępne miejsca i przenosi sekcję', async ({ 
 });
 
 test('sekcję można chwycić i upuścić bezpośrednio na stronie w podglądzie', async ({ page }) => {
-  await page.goto(editorPath);
+  await openEditor(page);
   const preview = page.frameLocator('iframe');
   const grip = preview.locator('#ofirmie .editor-handle');
   const slot = preview.locator('#opinie > .editor-slot[data-before=opinie]');
@@ -195,7 +229,7 @@ test('sekcję można chwycić i upuścić bezpośrednio na stronie w podglądzie
 });
 
 test('dłuższy nagłówek mieści się w podglądzie telefonicznym i w publicznym układzie telefonu', async ({ page }) => {
-  await page.goto(editorPath);
+  await openEditor(page);
   const long = 'Okna, drzwi i bramy garażowe dopasowane do Twojego domu, montowane przez ekipę Wol‑Bud z Tarnowa';
   await editOffer(page, long);
   await page.getByRole('button', { name: 'Telefon', exact: true }).click();

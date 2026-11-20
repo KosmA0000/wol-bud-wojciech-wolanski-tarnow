@@ -10,7 +10,25 @@
   <script type="module" src="editor.js"></script>
 </head>
 <body>
-  <header class="top">
+  <main id="sign-in" class="sign-in">
+    <section class="sign-in-card" aria-labelledby="sign-in-title">
+      <div class="sign-in-content">
+        <img src="../img/wolbud-logo.webp" class="sign-in-logo" alt="WOL-BUD" width="156" height="41">
+        <h1 id="sign-in-title">Logowanie administratora</h1>
+        <p id="access-help">Użyj klucza dostępu otrzymanego od administratora GitHub.</p>
+        <form id="access">
+          <label for="credential" id="credential-label">Klucz dostępu do GitHub</label>
+          <input id="credential" type="password" required autocomplete="off" spellcheck="false" aria-describedby="access-help">
+          <button type="submit" class="primary" id="login">Zaloguj się</button>
+          <p id="login-status" role="alert" data-error></p>
+        </form>
+        <a href="../index.html">Wróć na stronę Wol-Bud</a>
+      </div>
+      <div class="sign-in-photo" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <header class="top" id="editor-header" hidden>
     <div class="identity">
       <img src="../img/wolbud-logo.webp" alt="WOL-BUD" width="109" height="29">
       <h1>Strona główna</h1>
@@ -19,10 +37,11 @@
       <a href="../index.html" target="_blank" rel="noopener">Otwórz stronę publiczną</a>
       <button type="button" id="save" disabled>Zapisz szkic</button>
       <button type="button" id="publish" class="primary" disabled>Opublikuj</button>
+      <button type="button" id="logout">Wyloguj</button>
     </div>
   </header>
 
-  <main class="workspace">
+  <main class="workspace" id="editor-workspace" hidden>
     <aside class="sidebar" aria-labelledby="sections-title">
       <h2 id="sections-title">Sekcje strony</h2>
       <p class="help">Przeciągnij za uchwyt albo wybierz sekcję i użyj przycisków przenoszenia.</p>
@@ -53,22 +72,9 @@
         </div>
       </header>
       <div class="stage">
-        <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" src="../index.html" referrerpolicy="same-origin"></iframe>
+        <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" data-src="../index.html" referrerpolicy="same-origin"></iframe>
       </div>
     </section>
   </main>
-
-  <dialog id="access" aria-labelledby="access-title">
-    <form method="dialog">
-      <h2 id="access-title">Dostęp do publikacji</h2>
-      <p id="access-help">Użyj klucza publikacji otrzymanego od administratora strony.</p>
-      <label for="credential" id="credential-label">Klucz publikacji</label>
-      <input id="credential" type="password" required autocomplete="off" spellcheck="false">
-      <div class="actions">
-        <button type="submit" value="cancel" formnovalidate>Anuluj</button>
-        <button type="submit" value="publish" class="primary">Połącz i opublikuj</button>
-      </div>
-    </form>
-  </dialog>
 </body>
 </html>

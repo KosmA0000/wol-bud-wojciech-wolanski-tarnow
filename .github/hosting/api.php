@@ -49,8 +49,9 @@ function validContent(mixed $value): bool {
     return true;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
-    header('Allow: PUT');
+$method = $_SERVER['REQUEST_METHOD'];
+if (!in_array($method, ['GET', 'PUT'], true)) {
+    header('Allow: GET, PUT');
     reply(405);
 }
 
@@ -70,6 +71,9 @@ if ($user === '' && str_starts_with($header, 'Basic ')) {
 }
 if ($user !== 'editor' || !is_string($passwordHash) || !password_verify($password, $passwordHash)) {
     reply(401);
+}
+if ($method === 'GET') {
+    reply(200);
 }
 
 $request = json_decode(file_get_contents('php://input', false, null, 0, 16001), true);

@@ -15,8 +15,9 @@ Administrator w [ustawieniach GitHuba](https://github.com/settings/personal-acce
 tworzy klucz typu fine-grained dla właściciela `KosmA0000`, wybiera wyłącznie
 repozytorium `wol-bud-wojciech-wolanski-tarnow` i nadaje uprawnienie
 **Repository permissions → Contents → Read and write**. Klucz musi być ważny i należeć
-do konta z prawem zapisu do repozytorium. Przy pierwszej publikacji w otwartym panelu
-klient wkleja klucz otrzymany od administratora. Panel trzyma go w pamięci bieżącej karty.
+do konta z prawem zapisu do repozytorium. Na ekranie „Logowanie administratora”
+klient wkleja klucz otrzymany od administratora. Panel trzyma go w pamięci bieżącej
+karty do wylogowania lub odświeżenia. Po ponownym zalogowaniu wczytuje zapisany szkic.
 
 Publikacja aktualizuje `assets/home-content.json` na gałęzi `main` i uruchamia
 istniejące wdrożenie GitHub Pages. Panel potwierdza sukces po odczytaniu identyfikatora nowej
@@ -48,7 +49,7 @@ zdjęcia oraz zasoby.
    `Authorization` do PHP i działa przez HTTPS. Ustaw konfigurację PHP jako plik
    `wolbud-editor-config.php` poziom wyżej niż katalog publiczny. Skopiuj szablon i
    zastąp wartość hashem wygenerowanym przez `password_hash` z długiego losowego
-   hasła ASCII. Przekaż klientowi hasło edytora przez bezpieczny kanał.
+   hasła ASCII. Przekaż klientowi hasło administratora przez bezpieczny kanał.
 4. Nadaj procesowi PHP możliwość zapisu do katalogu `assets/` dla atomowej podmiany
    `assets/home-content.json` oraz możliwość utworzenia pliku `wolbud-editor.lock`
    obok prywatnej konfiguracji. Skonfiguruj cache hostingu tak, by przy odczycie
@@ -57,8 +58,8 @@ zdjęcia oraz zasoby.
    i odświeżenia w osobnej sesji przeglądarki.
 
 W trybie hostingu PHP zapisuje tylko plik treści. Przycisk „Opublikuj” sprawdza
-ten sam publiczny JSON, który ładuje strona. Widoczność panelu nie daje uprawnienia
-do publikacji. Zapis na serwerze wymaga poprawnego hasła.
+ten sam publiczny JSON, który ładuje strona. Logowanie i zapis na serwerze
+wymagają poprawnego hasła.
 
 ## Test z pięcioma klientami
 
