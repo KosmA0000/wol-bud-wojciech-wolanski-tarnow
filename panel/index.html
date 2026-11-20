@@ -6,17 +6,17 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Edycja strony głównej · WOL-BUD</title>
   <link rel="icon" href="../img/favicon.png">
-  <link rel="stylesheet" href="panel.css?v=20261120-2">
-  <script type="module" src="editor.js?v=20261120-2"></script>
+  <link rel="stylesheet" href="panel.css?v=3">
+  <script type="module" src="editor.js?v=3"></script>
 </head>
 <body>
   <header class="top">
     <div class="identity">
       <img src="../img/wolbud-logo.webp" alt="WOL-BUD" width="109" height="29">
-      <h1>Strona główna</h1>
+      <h1 id="current-page">Strona główna</h1>
     </div>
     <div class="actions">
-      <a href="../index.html" target="_blank" rel="noopener">Otwórz stronę publiczną</a>
+      <a href="../index.html" id="public-page" target="_blank" rel="noopener">Otwórz stronę publiczną</a>
       <button type="button" id="save" disabled>Zapisz szkic</button>
       <button type="button" id="publish" class="primary" disabled>Opublikuj</button>
     </div>
@@ -24,10 +24,22 @@
 
   <main class="workspace">
     <aside class="sidebar" aria-labelledby="sections-title">
+      <form id="choose-page" class="choose-page">
+        <label for="page-filter">Znajdź stronę</label>
+        <input type="search" id="page-filter" placeholder="Np. kontakt lub okna">
+        <label for="page-list" class="visually-hidden">Strona do edycji</label>
+        <select id="page-list"></select>
+        <button type="submit">Otwórz w panelu</button>
+      </form>
       <h2 id="sections-title">Sekcje strony</h2>
       <p class="help">Przeciągnij za uchwyt albo wybierz sekcję i użyj przycisków przenoszenia.</p>
+      <button type="button" id="add-section" class="add-button" disabled>Dodaj sekcję</button>
       <ol id="sections"></ol>
-      <div id="last-slot"></div>
+      <details class="fixed-regions">
+        <summary>Menu, stopka i skróty</summary>
+        <div id="fixed-regions"></div>
+      </details>
+      <section id="inspector" class="inspector" aria-label="Zawartość zaznaczonego bloku"></section>
       <p id="movement" class="visually-hidden" role="status"></p>
       <div class="status-card">
         <div>
@@ -53,7 +65,7 @@
         </div>
       </header>
       <div class="stage">
-        <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" src="../index.html" referrerpolicy="same-origin"></iframe>
+        <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" referrerpolicy="same-origin"></iframe>
       </div>
     </section>
   </main>
@@ -67,6 +79,45 @@
       <div class="actions">
         <button type="submit" value="cancel" formnovalidate>Anuluj</button>
         <button type="submit" value="publish" class="primary">Połącz i opublikuj</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-block" aria-labelledby="add-title">
+    <form id="block-form">
+      <h2 id="add-title">Dodaj element</h2>
+      <div id="type-field" class="entry-field">
+        <label for="block-type">Rodzaj elementu</label>
+        <select id="block-type"></select>
+      </div>
+      <div class="entry-field">
+        <label for="block-title" id="block-title-label">Nazwa</label>
+        <input id="block-title" maxlength="160" required>
+      </div>
+      <div class="entry-field">
+        <label for="block-body" id="block-body-label">Opis</label>
+        <textarea id="block-body" maxlength="2000" rows="3"></textarea>
+      </div>
+      <div id="rating-field" class="entry-field">
+        <label for="block-rating">Ocena</label>
+        <select id="block-rating"><option value="5">5 na 5</option><option value="4">4 na 5</option><option value="3">3 na 5</option><option value="2">2 na 5</option><option value="1">1 na 5</option></select>
+      </div>
+      <div id="media-fields">
+        <div class="entry-field">
+          <label for="block-link">Link docelowy (opcjonalnie)</label>
+          <input id="block-link" maxlength="1000" autocomplete="off" placeholder="https://…">
+        </div>
+        <div class="entry-field">
+          <label for="block-image">Zdjęcie z komputera (opcjonalnie)</label>
+          <input id="block-image" type="file" accept="image/jpeg,image/png,image/webp">
+          <p class="help" id="image-summary"></p>
+          <label class="remove-photo" id="remove-photo-label" hidden><input type="checkbox" id="remove-photo"> Usuń zdjęcie</label>
+        </div>
+      </div>
+      <p role="alert" id="add-error"></p>
+      <div class="actions">
+        <button type="button" id="cancel-add">Anuluj</button>
+        <button type="submit" class="primary" id="confirm-add">Dodaj</button>
       </div>
     </form>
   </dialog>

@@ -7,6 +7,11 @@
   outline: 3px solid #f1b752;
   outline-offset: 4px;
 }
+.wolbud-preview [contenteditable][role=textbox]:empty {
+  display: inline-block;
+  min-width: 1.5rem;
+  min-height: 1em;
+}
 .wolbud-preview .home-copy-field[aria-invalid=true] {
   outline: 3px solid #e36156;
 }
@@ -44,3 +49,12 @@
 .wolbud-preview .editor-slot:not([hidden]) { display: grid; }
 .wolbud-preview .editor-slot.is-over { background: #2c4d19; color: #fff; }
 .wolbud-preview .editor-slot.editor-slot-end { inset: auto .5rem 0; }
+.wolbud-preview .editor-tile > .editor-handle {
+  top: .25rem;
+  right: .25rem;
+  min-height: 32px;
+  min-width: 32px;
+  justify-content: center;
+  padding: 0;
+}
+.wolbud-preview .editor-tile > .editor-slot { inset-inline: 0; font-size: .75rem; text-align: center; }

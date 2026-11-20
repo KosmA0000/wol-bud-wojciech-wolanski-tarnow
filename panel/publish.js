@@ -1,4 +1,4 @@
-import { readPublished } from '../assets/home-content.js';
+import { readPublished } from '../assets/home-content.js?v=3';
 import { config } from './config.js';
 
 export class AccessError extends Error {}
@@ -11,13 +11,13 @@ function checkAccess(response) {
   }
 }
 
-export async function sendPublication(candidate, expected, pending, credential) {
+export async function sendPublication(home, candidate, expected, pending, credential) {
   const allowed = [expected, pending].filter(Boolean);
   if (config.mode === 'hosting') {
     const response = await fetch('./api.php', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + btoa('editor:' + credential) },
-      body: JSON.stringify({ candidate, allowed }),
+      body: JSON.stringify({ candidate, allowed, path: home.repositoryPath }),
       signal: timeout(),
     });
     checkAccess(response);
@@ -26,7 +26,7 @@ export async function sendPublication(candidate, expected, pending, credential) 
     return;
   }
 
-  const url = new URL('https://api.github.com/repos/' + config.repository + '/contents/assets/home-content.json');
+  const url = new URL('https://api.github.com/repos/' + config.repository + '/contents/' + home.repositoryPath);
   const headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + credential };
   const current = await fetch(url.href + '?ref=' + encodeURIComponent(config.branch), {
     headers, cache: 'no-store', signal: timeout(),
@@ -38,7 +38,12 @@ export async function sendPublication(candidate, expected, pending, credential) 
   if (!allowed.includes(JSON.parse(new TextDecoder().decode(raw)).revision)) throw new Error(mismatch);
 
   const json = JSON.stringify(candidate, null, 2) + '\n';
-  const content = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+  const bytes = new TextEncoder().encode(json);
+  const parts = [];
+  for (let offset = 0; offset < bytes.length; offset += 16384) {
+    parts.push(String.fromCharCode(...bytes.subarray(offset, offset + 16384)));
+  }
+  const content = btoa(parts.join(''));
   const response = await fetch(url, {
     method: 'PUT',
     headers: { ...headers, 'Content-Type': 'application/json' },
@@ -50,11 +55,11 @@ export async function sendPublication(candidate, expected, pending, credential) 
   if (!response.ok) throw new Error('GitHub nie zapisał publikacji. Spróbuj ponownie.');
 }
 
-export async function waitForPublication(original, revision) {
+export async function waitForPublication(home, revision) {
   const limit = Date.now() + (config.mode === 'hosting' ? 18000 : 125000);
   do {
     try {
-      const visible = await readPublished(original, { fresh: true, signal: AbortSignal.timeout(5000) });
+      const visible = await readPublished(home, { fresh: true, signal: AbortSignal.timeout(5000) });
       if (visible.revision === revision) return visible;
     } catch {
       // A temporarily unreachable public page cannot confirm publication.

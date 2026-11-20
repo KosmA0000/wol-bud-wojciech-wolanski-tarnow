@@ -1,0 +1,272 @@
+[
+  {
+    "path": "index.html",
+    "title": "Strona główna",
+    "content": "assets/home-content.json"
+  },
+  {
+    "path": "kategorie/bramy-garazowe/index.html",
+    "title": "Bramy garażowe",
+    "content": "assets/page-data/1c7d54a6593b2847.json"
+  },
+  {
+    "path": "kategorie/drewniane/index.html",
+    "title": "Parapety drewniane",
+    "content": "assets/page-data/49387e85ea554274.json"
+  },
+  {
+    "path": "kategorie/drzwi-wewnetrzne/index.html",
+    "title": "Drzwi wewnętrzne",
+    "content": "assets/page-data/98d9fa904001c406.json"
+  },
+  {
+    "path": "kategorie/drzwi-zewnetrzne/index.html",
+    "title": "Drzwi wejściowe",
+    "content": "assets/page-data/2e021ab0d37d5c98.json"
+  },
+  {
+    "path": "kategorie/moskitiery/index.html",
+    "title": "Moskitiery",
+    "content": "assets/page-data/e6f795fcc6b31442.json"
+  },
+  {
+    "path": "kategorie/okna-pcv/index.html",
+    "title": "Okna PCV",
+    "content": "assets/page-data/3a0a21a35620d65d.json"
+  },
+  {
+    "path": "kategorie/parapety-blaty/index.html",
+    "title": "Parapety i blaty",
+    "content": "assets/page-data/fdd419a2ad8f2b5c.json"
+  },
+  {
+    "path": "kategorie/parapety-wewnetrzne/index.html",
+    "title": "Parapety wewnętrzne",
+    "content": "assets/page-data/aeefa81e646088fd.json"
+  },
+  {
+    "path": "kategorie/parapety-zewnetrzne/index.html",
+    "title": "Parapety zewnętrzne",
+    "content": "assets/page-data/02749dbe6aa6fb5e.json"
+  },
+  {
+    "path": "kategorie/rolety/index.html",
+    "title": "Osłony okienne",
+    "content": "assets/page-data/6c05179785dd2a21.json"
+  },
+  {
+    "path": "kategorie/stolarka-aluminiowa/index.html",
+    "title": "Stolarka aluminiowa",
+    "content": "assets/page-data/bd09a1617f37d9fb.json"
+  },
+  {
+    "path": "kategorie/wewnetrzne/index.html",
+    "title": "Rolety wewnętrzne",
+    "content": "assets/page-data/f8c4d53ad7407a6d.json"
+  },
+  {
+    "path": "kategorie/zaluzje-plisy/index.html",
+    "title": "Żaluzje i plisy",
+    "content": "assets/page-data/8e7bfd64f03e418d.json"
+  },
+  {
+    "path": "kategorie/zewnetrzne/index.html",
+    "title": "Rolety zewnętrzne",
+    "content": "assets/page-data/faa2e6240be9f8df.json"
+  },
+  {
+    "path": "kontakt/index.html",
+    "title": "Chętnie doradzimy",
+    "content": "assets/page-data/d1af6a5b0c439d3d.json"
+  },
+  {
+    "path": "nasze-sklepy/index.html",
+    "title": "Nasze sklepy i ekspozycje",
+    "content": "assets/page-data/61aa7d33bd9fe70a.json"
+  },
+  {
+    "path": "o-firmie/index.html",
+    "title": "O firmie WOL-BUD",
+    "content": "assets/page-data/4b04e4e58d6e9f7f.json"
+  },
+  {
+    "path": "oferta/index.html",
+    "title": "Oferta produktów",
+    "content": "assets/page-data/de5b39c2fe331178.json"
+  },
+  {
+    "path": "produkty/adaptacyjne/index.html",
+    "title": "Aluprof – system adaptacyjny",
+    "content": "assets/page-data/ce70f53c980c2f3f.json"
+  },
+  {
+    "path": "produkty/do-okien-dachowych-dekolux/index.html",
+    "title": "DO OKIEN DACHOWYCH DEKOLUX",
+    "content": "assets/page-data/a503402a12e5135e.json"
+  },
+  {
+    "path": "produkty/drzwiowe/index.html",
+    "title": "Moskitiery drzwiowe",
+    "content": "assets/page-data/eeec39c85235d32a.json"
+  },
+  {
+    "path": "produkty/dzien-noc-2/index.html",
+    "title": "DZIEŃ / NOC",
+    "content": "assets/page-data/d67920f79a6fcc98.json"
+  },
+  {
+    "path": "produkty/fasady/index.html",
+    "title": "Fasady Aluminiowe",
+    "content": "assets/page-data/91bee5c59bfc7b48.json"
+  },
+  {
+    "path": "produkty/index.html",
+    "title": "Nasze produkty",
+    "content": "assets/page-data/95224ac1d2c1f84a.json"
+  },
+  {
+    "path": "produkty/mini-slim/index.html",
+    "title": "MINI SLIM",
+    "content": "assets/page-data/4c3c0c442f6ceec9.json"
+  },
+  {
+    "path": "produkty/mini-vegas/index.html",
+    "title": "MINI VEGAS",
+    "content": "assets/page-data/f2831d9cdf5659df.json"
+  },
+  {
+    "path": "produkty/moskitiery-okienne/index.html",
+    "title": "Moskitiery okienne",
+    "content": "assets/page-data/0c23917bb6ac8b50.json"
+  },
+  {
+    "path": "produkty/moskitiery-plisowane/index.html",
+    "title": "Moskitiery plisowane",
+    "content": "assets/page-data/272bdd616dcf168d.json"
+  },
+  {
+    "path": "produkty/okna-drzwi-alu/index.html",
+    "title": "Okna i drzwi ALU",
+    "content": "assets/page-data/42eb7d666930171d.json"
+  },
+  {
+    "path": "produkty/parapet-aluminiowy/index.html",
+    "title": "Parapet aluminiowy",
+    "content": "assets/page-data/5e1ac8721db8b29c.json"
+  },
+  {
+    "path": "produkty/parapet-granit/index.html",
+    "title": "Granit",
+    "content": "assets/page-data/8a49d19ccc68e982.json"
+  },
+  {
+    "path": "produkty/parapet-konglomerat-kwarcowy/index.html",
+    "title": "Konglomerat kwarcowy",
+    "content": "assets/page-data/0a24d271db07418e.json"
+  },
+  {
+    "path": "produkty/parapet-konglomerat-marmurowy/index.html",
+    "title": "Konglomerat marmurowy",
+    "content": "assets/page-data/dff9b5a96b547a6b.json"
+  },
+  {
+    "path": "produkty/parapet-mdf-laminowany/index.html",
+    "title": "Parapet MDF laminowany",
+    "content": "assets/page-data/859605639b348593.json"
+  },
+  {
+    "path": "produkty/parapet-pvc/index.html",
+    "title": "Parapet PVC",
+    "content": "assets/page-data/fbca4d2b00aba3fa.json"
+  },
+  {
+    "path": "produkty/parapet-stalowy/index.html",
+    "title": "Parapet stalowy",
+    "content": "assets/page-data/52ddc8d80510fabb.json"
+  },
+  {
+    "path": "produkty/plisy/index.html",
+    "title": "PLISY",
+    "content": "assets/page-data/0bd137642a85b0cc.json"
+  },
+  {
+    "path": "produkty/podtynkowe-integro/index.html",
+    "title": "Aluprof – system podtynkowy INTEGRO",
+    "content": "assets/page-data/eb5e1c2364394954.json"
+  },
+  {
+    "path": "produkty/rolety-nadstawne/index.html",
+    "title": "Rolety nadstawne",
+    "content": "assets/page-data/387def641574ee51.json"
+  },
+  {
+    "path": "produkty/rolowane/index.html",
+    "title": "Bramy rolowane",
+    "content": "assets/page-data/ec1c077512267090.json"
+  },
+  {
+    "path": "produkty/segmentowe/index.html",
+    "title": "Bramy segmentowe",
+    "content": "assets/page-data/443fc53241c9f6a3.json"
+  },
+  {
+    "path": "produkty/uchylne/index.html",
+    "title": "Bramy uchylne",
+    "content": "assets/page-data/1202caade8105a93.json"
+  },
+  {
+    "path": "produkty/w-kasecie-alu-klaudia/index.html",
+    "title": "W KASECIE ALU KLAUDIA",
+    "content": "assets/page-data/d21be513a714a633.json"
+  },
+  {
+    "path": "produkty/w-kasecie-alu-vegas-classic/index.html",
+    "title": "W KASECIE ALU VEGAS CLASSIC",
+    "content": "assets/page-data/1ce833bb2656f13f.json"
+  },
+  {
+    "path": "produkty/w-kasecie-alu-vegas-profil/index.html",
+    "title": "W KASECIE ALU VEGAS PROFIL",
+    "content": "assets/page-data/e2f086b5f3813191.json"
+  },
+  {
+    "path": "produkty/w-kasecie-pcv-vegas-classic/index.html",
+    "title": "W KASECIE PCV VEGAS CLASSIC",
+    "content": "assets/page-data/4ae67885debce5d6.json"
+  },
+  {
+    "path": "produkty/zaluzje-drewniane/index.html",
+    "title": "ŻALUZJE DREWNIANE",
+    "content": "assets/page-data/0e3141383d59edbd.json"
+  },
+  {
+    "path": "produkty/zaluzje-fasadowe/index.html",
+    "title": "Żaluzje fasadowe",
+    "content": "assets/page-data/0af1ae0e922f301d.json"
+  },
+  {
+    "path": "produkty/zaluzje-poziome-aluminiowe/index.html",
+    "title": "ŻALUZJE POZIOME ALUMINIOWE",
+    "content": "assets/page-data/da8257ff11316d7a.json"
+  },
+  {
+    "path": "promocje/cieply-montaz-warstwowy-okien-drzwi/index.html",
+    "title": "Ciepły montaż warstwowy okien i drzwi",
+    "content": "assets/page-data/0f77e64a6fb6c53c.json"
+  },
+  {
+    "path": "promocje/index.html",
+    "title": "Promocje",
+    "content": "assets/page-data/d8aab81d099e7264.json"
+  },
+  {
+    "path": "realizacje/index.html",
+    "title": "Realizacje",
+    "content": "assets/page-data/47d31fd9f880d41b.json"
+  },
+  {
+    "path": "uslugi/index.html",
+    "title": "Usługi montażowe i serwisowe",
+    "content": "assets/page-data/09a6bf25fef31b7b.json"
+  }
+]

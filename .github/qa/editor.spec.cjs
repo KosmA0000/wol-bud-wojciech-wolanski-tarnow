@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test');
+const { resolve } = require('node:path');
+const catalog = require('../../assets/page-catalog.json');
 
 const pagePath = '/index.html';
 const editorPath = '/panel/';
@@ -86,7 +88,7 @@ test('szkic przeżywa odświeżenie, a publikacja zmienia publiczny tekst i kole
   await page.goto(editorPath);
   await editOffer(page);
   await page.getByRole('button', { name: 'Przenieś wyżej' }).press('Enter');
-  await expect(page.locator('#movement')).toHaveText('Oferta · pozycja 1 z 3.');
+  await expect(page.locator('#movement')).toContainText('Oferta · pozycja 2 z 6');
   await page.getByRole('button', { name: 'Zapisz szkic' }).click();
   await expect(page.locator('#draft-status')).toContainText('Szkic zapisany');
   await page.reload();
@@ -100,7 +102,7 @@ test('szkic przeżywa odświeżenie, a publikacja zmienia publiczny tekst i kole
   await publicPage.reload();
   await expect(publicPage.locator('#oferta h2')).toHaveText(originalTitle);
   expect(await readOrder(publicPage)).toEqual(originalOrder);
-  expect(pages.branch().order).toEqual(['oferta', 'ofirmie', 'opinie']);
+  expect(pages.branch().order.filter((id) => originalOrder.includes(id))).toEqual(['oferta', 'ofirmie', 'opinie']);
   pages.deploy();
   await expect(page.locator('#live-status')).toContainText('Opublikowano');
   await publicPage.reload();
@@ -158,9 +160,8 @@ test('klawiatura przesuwa sekcję w obie strony i zachowuje fokus', async ({ pag
   await page.getByRole('button', { name: 'Oferta', exact: true }).press('Enter');
   await page.getByRole('button', { name: 'Przenieś niżej' }).press('Space');
   await expect.poll(() => readOrder(page.frameLocator('iframe'))).toEqual(['ofirmie', 'opinie', 'oferta']);
-  await expect(page.getByRole('button', { name: 'Oferta', exact: true })).toBeFocused();
-  await expect(page.getByRole('button', { name: 'Przenieś niżej' })).toBeDisabled();
-  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Przenieś niżej' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
   await expect(page.getByRole('button', { name: 'Przenieś wyżej' })).toBeFocused();
   await page.keyboard.press('Enter');
   expect(await readOrder(page.frameLocator('iframe'))).toEqual(originalOrder);
@@ -168,13 +169,13 @@ test('klawiatura przesuwa sekcję w obie strony i zachowuje fokus', async ({ pag
 
 test('przeciągnięcie pokazuje dostępne miejsca i przenosi sekcję', async ({ page }) => {
   await page.goto(editorPath);
-  const grip = page.locator('#sections li').nth(1).locator('.grip');
+  const grip = page.locator('#sections li').filter({ has: page.getByRole('button', { name: 'Oferta', exact: true }) }).locator('.grip');
   await grip.hover();
   await page.mouse.down();
   const point = await grip.boundingBox();
   await page.mouse.move(point.x + point.width / 2 + 12, point.y + point.height / 2, { steps: 5 });
   const slot = page.locator('#sections .slot[data-before=ofirmie]');
-  await expect(slot).toHaveText('Upuść przed sekcją „O firmie”');
+  await expect(slot).toHaveText('Upuść przed „O firmie”');
   await expect(page.locator('#sections .slot[data-before=oferta]')).not.toHaveClass(/is-valid/);
   const target = await slot.boundingBox();
   const x = target.x + target.width / 2;
@@ -189,13 +190,13 @@ test('przeciągnięcie pokazuje dostępne miejsca i przenosi sekcję', async ({ 
 test('sekcję można chwycić i upuścić bezpośrednio na stronie w podglądzie', async ({ page }) => {
   await page.goto(editorPath);
   const preview = page.frameLocator('iframe');
-  const grip = preview.locator('#ofirmie .editor-handle');
+  const grip = preview.locator('#ofirmie > .editor-handle');
   const slot = preview.locator('#opinie > .editor-slot[data-before=opinie]');
   await grip.hover();
   const point = await grip.boundingBox();
   await page.mouse.down();
   await page.mouse.move(point.x + point.width / 2 + 12, point.y + point.height / 2, { steps: 5 });
-  await expect(slot).toHaveText('Upuść przed sekcją „Opinie”');
+  await expect(slot).toHaveText('Upuść przed „Opinie”');
   await slot.evaluate((element) => {
     const view = element.ownerDocument.defaultView;
     view.scrollBy({ top: element.getBoundingClientRect().top - 160, behavior: 'instant' });
@@ -226,13 +227,81 @@ test('dłuższy nagłówek mieści się w podglądzie telefonicznym i w publiczn
       rects.every((rect) => rect.left >= 0 && rect.right <= doc.clientWidth);
   };
   await expect.poll(() => heading(page).evaluate(fits)).toBe(true);
-  const fields = await page.locator('iframe').evaluate((frame) => structuredClone(frame.contentWindow.wolbudHome.home.original.fields));
-  fields.oferta.heading = long;
+  const mobileDraft = await page.locator('iframe').evaluate((frame) => {
+    const { original, legacyKeys } = frame.contentWindow.wolbudHome.home;
+    return { ...original, texts: { [legacyKeys.oferta.heading]: '' } };
+  });
+  mobileDraft.texts['oferta:heading'] = long;
+  mobileDraft.revision = '0a0a0000-0000-0000-0000-000000000000';
   await page.route('**/assets/home-content.json*', (route) => route.fulfill({
-    json: { version: 1, revision: '0a0a0000-0000-0000-0000-000000000000', order: originalOrder, fields },
+    json: mobileDraft,
   }));
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto(pagePath + '#oferta');
   await expect(page.locator('#oferta h2')).toHaveText(long);
   expect(await page.locator('#oferta h2').evaluate(fits)).toBe(true);
+});
+
+test('kafelek z własnym zdjęciem może zawierać kolejny klocek i zostać opublikowany', async ({ page, context }) => {
+  test.setTimeout(60000);
+  const pages = mockPages(context);
+  await pages.configure();
+  await page.goto(editorPath + '?sekcja=oferta');
+  const preview = page.frameLocator('iframe');
+  const root = preview.locator('#oferta .home-cat-card').first();
+  await root.locator('.home-cat-thumb').click();
+  await page.getByRole('button', { name: 'Dodaj w środku', exact: true }).click();
+  const form = page.getByRole('dialog');
+  await form.getByLabel('Rodzaj elementu').selectOption('product');
+  await form.getByLabel('Nazwa', { exact: true }).fill('Okno testowe z dębu');
+  await form.getByLabel('Opis', { exact: true }).fill('Opis produktu dodany przez klienta.');
+  await form.getByLabel('Zdjęcie z komputera').setInputFiles(resolve(__dirname, '../../img/wolbud-logo.webp'));
+  await form.getByRole('button', { name: 'Dodaj', exact: true }).click();
+  const added = preview.locator('.home-nested-grid .home-featured-product').filter({ hasText: 'Okno testowe z dębu' });
+  await expect(added).toBeVisible();
+  await expect(added.locator('img')).toHaveAttribute('src', /^data:image\//);
+  await page.getByRole('button', { name: 'Dodaj w środku', exact: true }).click();
+  await form.getByLabel('Rodzaj elementu').selectOption('review');
+  await form.getByLabel('Podpis lub źródło opinii').fill('Opinia testowa');
+  await form.getByLabel('Treść opinii').fill('Własna treść opinii klienta.');
+  await form.getByLabel('Ocena').selectOption('4');
+  await form.getByRole('button', { name: 'Dodaj', exact: true }).click();
+  await expect(preview.locator('.home-nested-grid blockquote').filter({ hasText: 'Własna treść opinii klienta.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Zapisz szkic' }).click();
+  await page.reload();
+  await expect(added).toBeVisible();
+  await publish(page);
+  await expect(page.locator('#live-status')).toContainText('Czekam');
+  pages.deploy();
+  await expect(page.locator('#live-status')).toContainText('Opublikowano');
+  const publicPage = await context.newPage();
+  await publicPage.goto(pagePath);
+  const publicProduct = publicPage.locator('.home-nested-grid .home-featured-product').filter({ hasText: 'Okno testowe z dębu' });
+  await expect(publicProduct).toBeAttached();
+  await publicPage.locator('.home-nested-drawer').first().locator(':scope > summary').click();
+  await expect(publicProduct).toBeVisible();
+  await publicPage.locator('.home-nested-drawer').nth(1).locator(':scope > summary').click();
+  await expect(publicPage.getByText('Własna treść opinii klienta.', { exact: true })).toBeVisible();
+});
+
+test('panel otwiera podstrony, edytuje ich treść i utrzymuje niezależne szkice', async ({ page }) => {
+  await page.goto(editorPath);
+  await expect(page.locator('#page-list option')).toHaveCount(catalog.length);
+  await page.getByLabel('Znajdź stronę').fill('kontakt');
+  await page.getByLabel('Strona do edycji').selectOption('kontakt/index.html');
+  await page.getByRole('button', { name: 'Otwórz w panelu' }).click();
+  const title = page.frameLocator('iframe').locator('.subpage-head h1 .home-copy-field');
+  await title.fill('Zapraszamy do salonów Wol-Bud');
+  await page.getByRole('button', { name: 'Dodaj sekcję', exact: true }).click();
+  const form = page.getByRole('dialog');
+  await form.getByLabel('Rodzaj elementu').selectOption('section-text');
+  await form.getByLabel('Nazwa', { exact: true }).fill('Umów wizytę');
+  await form.getByLabel('Opis', { exact: true }).fill('Zadzwoń przed przyjazdem.');
+  await form.getByRole('button', { name: 'Dodaj', exact: true }).click();
+  await expect(page.frameLocator('iframe').locator('.home-added-section h2')).toContainText('Umów wizytę');
+  await page.getByRole('button', { name: 'Zapisz szkic' }).click();
+  await page.reload();
+  await expect(title).toHaveText('Zapraszamy do salonów Wol-Bud');
+  await page.goto(editorPath + '?sekcja=oferta');
+  await expect(heading(page)).toHaveText(originalTitle);
 });
