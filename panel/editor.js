@@ -1,6 +1,6 @@
 import { isContent, normalize, readPublished, sections } from '../assets/home-content.js';
 import { config } from './config.js';
-import { AccessError, sendPublication, verifyAccess, waitForPublication } from './publish.js';
+import { AccessError, sendPublication, waitForPublication } from './publish.js';
 
 const get = (id) => document.getElementById(id);
 const frame = get('preview');
@@ -275,7 +275,6 @@ function attachPreview() {
 
 function setBusy(value) {
   busy = value;
-  get('logout').disabled = value;
   if (value) clearDrag();
   for (const group of Object.values(home.targets)) {
     for (const target of Object.values(group)) target.contentEditable = value ? 'false' : 'plaintext-only';
@@ -314,7 +313,12 @@ function finishPublication(state) {
 }
 
 async function publishChanges() {
-  if (busy || !credential || !isContent(content)) return;
+  if (busy || !isContent(content)) return;
+  if (!credential) {
+    access.returnValue = '';
+    access.showModal();
+    return;
+  }
   if (!sameContent(content, saved) && !writeDraft()) return;
   setBusy(true);
   setStatus('live-status', 'Sprawdzanie bieżącej wersji…');
@@ -343,16 +347,11 @@ async function publishChanges() {
     setStatus('live-status', 'Zmiany wysłane. Czekam, aż będą widoczne na stronie publicznej.');
     finishPublication(await waitForPublication(home.original, candidate.revision));
   } catch (error) {
+    if (error instanceof AccessError) credential = null;
     const message = error instanceof TypeError || error.name === 'TimeoutError'
       ? 'Połączenie zostało przerwane. Zmiany są w edytorze. Spróbuj ponownie.'
       : error.message;
     setStatus('live-status', message, true);
-    if (error instanceof AccessError) {
-      credential = null;
-      showEditor(false);
-      setStatus('login-status', message, true);
-      credentialInput.focus();
-    }
   } finally {
     setBusy(false);
   }
@@ -390,53 +389,17 @@ async function start() {
 }
 
 if (config.mode === 'hosting') {
-  get('access-help').textContent = 'Wpisz hasło administratora otrzymane od opiekuna strony.';
-  get('credential-label').textContent = 'Hasło administratora';
+  get('access-help').textContent = 'Użyj hasła edytora otrzymanego od administratora strony.';
+  get('credential-label').textContent = 'Hasło edytora';
   credentialInput.autocomplete = 'current-password';
-}
-
-function showEditor(show) {
-  get('sign-in').hidden = show;
-  get('editor-header').hidden = !show;
-  get('editor-workspace').hidden = !show;
 }
 
 save.addEventListener('click', writeDraft);
 publish.addEventListener('click', publishChanges);
-get('logout').addEventListener('click', () => {
-  if (content && !sameContent(content, saved || published) &&
-      !window.confirm('Masz niezapisane zmiany. Czy chcesz się wylogować?')) return;
-  credential = null;
-  location.reload();
-});
-access.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const key = credentialInput.value.trim();
-  const login = get('login');
-  if (!key || login.disabled) return;
-  login.disabled = true;
-  login.textContent = 'Sprawdzanie dostępu…';
-  setStatus('login-status', '');
-  try {
-    await verifyAccess(key);
-    credential = key;
-    showEditor(true);
-    if (!home) {
-      frame.addEventListener('load', () => start().catch((error) => setStatus('live-status', error.message, true)), { once: true });
-      frame.src = frame.dataset.src;
-    }
-    get('editor-header').querySelector('a').focus();
-  } catch (error) {
-    const message = error instanceof TypeError || error.name === 'TimeoutError'
-      ? 'Nie udało się połączyć. Spróbuj ponownie.'
-      : error.message;
-    setStatus('login-status', message, true);
-    credentialInput.focus();
-  } finally {
-    login.disabled = false;
-    login.textContent = 'Zaloguj się';
-    credentialInput.value = '';
-  }
+access.addEventListener('close', () => {
+  if (access.returnValue === 'publish') credential = credentialInput.value.trim();
+  credentialInput.value = '';
+  if (access.returnValue === 'publish' && credential) publishChanges();
 });
 
 for (const mode of ['wide', 'phone']) {
@@ -447,3 +410,7 @@ for (const mode of ['wide', 'phone']) {
     if (home) requestAnimationFrame(() => previewSection(selected));
   });
 }
+
+const initialize = () => start().catch((error) => setStatus('live-status', error.message, true));
+if (frame.contentWindow?.wolbudHome) initialize();
+else frame.addEventListener('load', initialize, { once: true });

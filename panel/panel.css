@@ -10,7 +10,6 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-[hidden] { display: none !important; }
 body { margin: 0; }
 h1, h2, h3, p { margin: 0; }
 h1 { font-size: clamp(1.15rem, 2vw, 1.5rem); }
@@ -144,51 +143,19 @@ iframe {
   background: #fff;
 }
 .stage.is-phone iframe { width: 392px; max-width: 100%; }
-.sign-in {
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-  padding: clamp(1rem, 4vw, 3rem);
-  background: #e7ebe1;
-}
-.sign-in-card {
-  width: min(100%, 58rem);
-  display: grid;
-  grid-template-columns: 1fr .85fr;
-  border: 1px solid #bac5b5;
+dialog {
+  width: min(29rem, calc(100% - 2rem));
+  padding: 1.4rem;
+  border: 1px solid var(--line);
   border-radius: .75rem;
-  overflow: hidden;
+  color: #19261d;
   background: #fcfcf8;
 }
-.sign-in-content { padding: clamp(1.2rem, 5vw, 3.5rem); }
-.sign-in-logo {
-  box-sizing: content-box;
-  max-width: 70%;
-  height: auto;
-  padding: .65rem .75rem;
-  border-radius: .4rem;
-  background: #233821;
-  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-}
-.sign-in h1 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); line-height: 1.08; letter-spacing: -.025em; }
-.sign-in p { margin-top: .75rem; line-height: 1.5; color: var(--quiet); }
-.sign-in form { margin-block: 1.6rem 1.2rem; }
-.sign-in label { display: block; font-weight: 650; margin-bottom: .4rem; }
-.sign-in input {
-  display: block;
-  width: 100%;
-  min-height: 48px;
-  border: 1px solid #879482;
-  border-radius: .4rem;
-  background: white;
-  padding: .5rem .7rem;
-}
-.sign-in button { width: 100%; margin-top: .85rem; min-height: 48px; }
-.sign-in a { color: var(--green); text-underline-offset: 3px; }
-#login-status:empty { margin: 0; }
-.sign-in-photo {
-  background: #345036 url("../img/realizacje/dom-nowoczesna-stodola-04.webp") center 45% / cover no-repeat;
-}
+dialog::backdrop { background: rgb(10 23 12 / 55%); }
+dialog p { margin-block: .65rem 1rem; }
+dialog label { display: block; font-weight: 650; }
+dialog input { width: 100%; min-height: 44px; margin-block: .35rem 1rem; }
+dialog .actions { justify-content: flex-end; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 @media (max-width: 56rem) {
@@ -201,9 +168,4 @@ iframe {
 @media (max-width: 28rem) {
   .top .actions a { flex-basis: 100%; justify-content: flex-start; padding-inline: 0; }
   .stage { padding: .4rem; }
-}
-
-@media (max-width: 42rem) {
-  .sign-in-card { grid-template-columns: 1fr; max-width: 30rem; }
-  .sign-in-photo { display: none; }
 }

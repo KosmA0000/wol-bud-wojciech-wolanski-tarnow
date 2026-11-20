@@ -4,29 +4,10 @@ import { config } from './config.js';
 export class AccessError extends Error {}
 const mismatch = 'Opublikowana treść zmieniła się w trakcie edycji. Zapisz szkic, odśwież panel i sprawdź zmiany przed ponowieniem.';
 const timeout = () => AbortSignal.timeout(12000);
-const githubAuth = (credential) => ({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + credential });
-const hostingAuth = (credential) => 'Basic ' + btoa('editor:' + credential);
 
 function checkAccess(response) {
   if ([401, 403, 404].includes(response.status)) {
-    throw new AccessError(config.mode === 'hosting'
-      ? 'Brak dostępu. Sprawdź hasło administratora.'
-      : 'Brak dostępu. Sprawdź klucz GitHub i uprawnienia do repozytorium.');
-  }
-}
-
-export async function verifyAccess(credential) {
-  const response = config.mode === 'hosting'
-    ? await fetch('./api.php', {
-        headers: { Authorization: hostingAuth(credential) }, cache: 'no-store', signal: timeout(),
-      })
-    : await fetch('https://api.github.com/repos/' + config.repository, {
-        headers: githubAuth(credential), cache: 'no-store', signal: timeout(),
-      });
-  checkAccess(response);
-  if (!response.ok) throw new Error('Nie udało się sprawdzić dostępu. Spróbuj ponownie.');
-  if (config.mode === 'github' && !(await response.json()).permissions?.push) {
-    throw new AccessError('Konto połączone z kluczem GitHub potrzebuje prawa zapisu w repozytorium.');
+    throw new AccessError('Brak dostępu do publikacji. Sprawdź klucz lub poproś administratora o nowy.');
   }
 }
 
@@ -35,7 +16,7 @@ export async function sendPublication(candidate, expected, pending, credential) 
   if (config.mode === 'hosting') {
     const response = await fetch('./api.php', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: hostingAuth(credential) },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + btoa('editor:' + credential) },
       body: JSON.stringify({ candidate, allowed }),
       signal: timeout(),
     });
@@ -46,7 +27,7 @@ export async function sendPublication(candidate, expected, pending, credential) 
   }
 
   const url = new URL('https://api.github.com/repos/' + config.repository + '/contents/assets/home-content.json');
-  const headers = githubAuth(credential);
+  const headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + credential };
   const current = await fetch(url.href + '?ref=' + encodeURIComponent(config.branch), {
     headers, cache: 'no-store', signal: timeout(),
   });
