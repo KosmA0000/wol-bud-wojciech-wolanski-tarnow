@@ -1,6 +1,6 @@
 import { isContent, normalize, readPublished, sections } from '../assets/home-content.js';
 import { config } from './config.js';
-import { AccessError, sendPublication, waitForPublication } from './publish.js';
+import { AccessError, sendPublication, waitForPublication } from './publish.js?v=20261120-2';
 
 const get = (id) => document.getElementById(id);
 const frame = get('preview');
