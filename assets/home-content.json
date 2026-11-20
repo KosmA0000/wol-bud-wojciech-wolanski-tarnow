@@ -1,4 +1,23 @@
 {
   "version": 1,
-  "revision": "original"
+  "revision": "f288f102-fa4e-4e28-bab7-7712952ada7a",
+  "order": [
+    "ofirmie",
+    "oferta",
+    "opinie"
+  ],
+  "fields": {
+    "ofirmie": {
+      "heading": "WOL-BUD Wojciech Wolański",
+      "intro": "WOL-BUD to doświadczona firma, która na rynku okien i drzwi działa już od 31 lat – została założona przez Wojciecha Wolańskiego w 1995 roku. Spośród naszych Klientów wyróżniamy zarówno inwestorów indywidualnych, jak również instytucje. Posiadane referencje, jak też ogromna liczba kontrahentów z polecenia, to najlepszy dowód na najwyższą jakość naszej oferty."
+    },
+    "oferta": {
+      "heading": "Czego szukasz?",
+      "intro": "Wybierz kategorię produktów lub sprawdź nasze usługi montażowe i serwisowe."
+    },
+    "opinie": {
+      "heading": "Co mówią Klienci",
+      "intro": "Wybrane opinie z naszego profilu w Google. Nie sprawdzamy, czy ich autorzy kupili nasze produkty. Wszystkie opinie znajdziesz w Google."
+    }
+  }
 }
