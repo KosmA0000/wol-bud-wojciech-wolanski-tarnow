@@ -1,0 +1,46 @@
+.wolbud-preview .home-copy-field {
+  outline: 1px dashed currentColor;
+  outline-offset: 3px;
+  cursor: text;
+}
+.wolbud-preview .home-copy-field:focus {
+  outline: 3px solid #f1b752;
+  outline-offset: 4px;
+}
+.wolbud-preview .home-copy-field[aria-invalid=true] {
+  outline: 3px solid #e36156;
+}
+.wolbud-preview .editor-section { position: relative; }
+.wolbud-preview .editor-handle {
+  position: absolute;
+  z-index: 2;
+  top: .35rem;
+  right: max(.6rem, calc((100% - 1160px) / 2));
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .2rem .7rem;
+  border: 1px solid #688453;
+  border-radius: .35rem;
+  color: #234616;
+  background: #eff6e9;
+  font: 700 .875rem system-ui, sans-serif;
+  cursor: grab;
+  user-select: none;
+}
+.wolbud-preview .editor-handle.is-selected { background: #2c4d19; color: white; }
+.wolbud-preview .editor-slot {
+  position: absolute;
+  z-index: 3;
+  inset: 0 .5rem auto;
+  min-height: 44px;
+  place-items: center;
+  border: 2px dashed #426728;
+  border-radius: .4rem;
+  background: #f3f9e8;
+  color: #234616;
+  font: 700 .875rem system-ui, sans-serif;
+}
+.wolbud-preview .editor-slot:not([hidden]) { display: grid; }
+.wolbud-preview .editor-slot.is-over { background: #2c4d19; color: #fff; }
+.wolbud-preview .editor-slot.editor-slot-end { inset: auto .5rem 0; }

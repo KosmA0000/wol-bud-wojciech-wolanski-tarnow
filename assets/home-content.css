@@ -1,0 +1,10 @@
+.home-copy-field {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#oferta .offer-head > div,
+#opinie .reviews-head > div,
+#ofirmie .trust-compact > div {
+  min-width: 0;
+}
