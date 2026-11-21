@@ -10,7 +10,7 @@
 import { siteProfile } from './site-profile.js';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
-const MAX_TOOL_ROUNDS = 12;
+const MAX_TOOL_ROUNDS = 16;
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_HISTORY_TEXT_LENGTH = 8000;
 const MAX_TOOL_RESULT_JSON_LENGTH = 48000;
@@ -413,6 +413,14 @@ export const AI_TOOLS = Object.freeze([
           type: 'string',
           description: 'Opcjonalny typ dodawanego elementu, jeśli kontener obsługuje warianty.',
         },
+        fields: {
+          type: 'object',
+          description: 'Opcjonalna mapa pól tekstowych do ustawienia od razu na nowym kafelku (np. { "title": "Pergole tarasowe", "cta": "Zobacz ofertę" }).',
+        },
+        href: {
+          type: 'string',
+          description: 'Opcjonalny link docelowy do podpięcia od razu pod nowy kafelek (np. "kategorie/pergole/index.html").',
+        },
       },
       required: ['repeaterUid'],
     },
@@ -537,6 +545,11 @@ export const AI_TOOLS = Object.freeze([
         addToFooter: {
           type: 'boolean',
           description: 'Czy dodać link do nowej podstrony również w stopce (domyślnie true, gdy addToMenu jest true).',
+        },
+        addToOferta: {
+          type: 'boolean',
+          description:
+            'Czy automatycznie dodać klikalny kafelek prowadzący do tej podstrony w obu miejscach Oferty (w sekcji #oferta na index.html ORAZ na podstronie oferta/index.html). Domyślnie true dla szablonów "category" i "promo" — gwarantuje kompletną ścieżkę dojścia bez ślepych okruszków!',
         },
       },
       required: ['heading'],
@@ -1043,21 +1056,25 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
    - **NIGDY nie dodawaj dodatkowych sekcji ani banerów** (np. dodatkowych banerów CTA „Zapytaj o szczegóły”, galerii czy FAQ), o które użytkownik wyraźnie nie prosił!
    - **NIGDY nie zmieniaj nagłówków ani tekstów w INNYCH istniejących sekcjach** (np. gdy użytkownik prosi o dodanie kafelka lub podstrony „Promocja”, **NIE WOLNO** zmieniać nagłówka sekcji Oferta „Czego szukasz?” ani dotykać innych sekcji strony!).
    - Gdy użytkownik prosi o dodanie kafelka w Ofercie → dodaj **TYLKO** ten 1 kafelek (bez dokładania innych sekcji i bez edycji nagłówka Oferty). Gdy prosi o pustą lub prostą nową podstronę → użyj szablonu \`blank\` (lub \`info\`) i dodaj wyłącznie elementy, o które prosił.
-2. **ZANIM DODASZ NOWĄ SEKCJĘ LUB PODSTRONĘ — USTAL DOKŁADNE MIEJSCE I ŚCIEŻKĘ DOJŚCIA (ZAKAZ RANDOMOWEGO WSTAWIANIA!)**:
-   - Jeśli użytkownik prosi o dodanie nowej sekcji, bloku lub podstrony (np. „dodaj sekcję promocja”, „dodaj FAQ”, „dodaj galerię”, „dodaj cennik”), **ale NIE wskazał dokładnie gdzie ma się pojawić (np. po jakiej sekcji albo jako osobna podstrona) ani jak użytkownik ma do niej dojść**:
-     - Najpierw wywołaj wyłącznie narzędzia do odczytu (\`get_page_structure\` oraz opcjonalnie \`get_globals\`), aby poznać prawdziwy układ bieżącej strony i menu.
-     - **NIE wywołuj jeszcze \`add_section\`, \`create_page\` ani \`add_item\`!** Zamiast zgadywać losowe miejsce, zadaj **2–3 krótkie, konkretne pytania numerowane po polsku**:
-       1. **Gdzie dokładnie ma się znaleźć?** (podaj 2–3 konkretne propozycje z prawdziwej struktury strony, np. *zaraz pod głównym banerem*, *pod sekcją Oferta*, *nad sekcją Kontakt*, albo *jako osobna podstrona*).
-       2. **Jak klienci mają do niej trafić (ścieżka dojścia)?** (np. *link w Menu głównym analogiczny do pozostałych sekcji*, *przycisk na górze strony*, *kafelek w sekcji Oferta*).
-       3. **Co ma zawierać?** (np. konkretna promocja/rabat/zdjęcia — lub czy masz przygotować gotową propozycję tekstu).
-   - **Wyjątek (działaj od razu bez pytania)**: gdy użytkownik już jednoznacznie określił miejsce/zakres (np. „Dodaj sekcję FAQ pod sekcją Oferta”, „Utwórz podstronę Promocja Jesienna i podepnij ją w menu”, „Zmień numer telefonu na…”, „Popraw ten nagłówek na…”) ALBO **wskazał/przeciągnął konkretny fragment strony do czatu AI** (w kontekście jest sekcja \`🎯 WSKAZANE PRZEZ UŻYTKOWNIKA FRAGMENTY STRONY\`) ALBO właśnie odpowiedział na Twoje pytania doprecyzowujące — wtedy wykonaj cały plan narzędziami od razu, pracując **WYŁĄCZNIE** na wskazanym fragmencie (użyj podanego \`uid\`)!
-2. **ZAWSZE ZADBAJ O ANALOGICZNĄ ŚCIEŻKĘ DOJŚCIA (NAWIGACJĘ — ZERO „OSIEROCONYCH” SEKCJI!)**:
-   - Gdy dodajesz nową sekcję niżej na stronie (np. promocję, FAQ, cennik, nową ofertę):
-     1. ZAWSZE wstaw ją dokładnie w ustalonym miejscu (\`afterUid\` w \`add_section\` i/lub \`reorder_element_to_index\`). **NIGDY nie wrzucaj sekcji poniżej sekcji Kontakt na samym dole strony!**
-     2. Nadaj jej czytelną kotwicę \`update_section_id\` (np. \`promocje\`, \`faq\`, \`cennik\`).
-     3. Zapewnij spójną **ścieżkę dojścia** analogiczną do innych sekcji tej strony — np. jeśli inne sekcje strony głównej mają linki w Menu głównym (sprawdź \`get_globals\`: \`#oferta\`, \`#uslugi\`, \`#realizacje\`, \`#kontakt\`), dodaj odpowiedni wpis w Menu głównym narzędziem \`update_globals\` (\`addMenuItem\`, np. \`{ label: "Promocje", href: "index.html#promocje", mobileHref: "index.html#promocje" }\`) i/lub link z sekcji powyżej!
-   - Gdy tworzysz nową podstronę (\`create_page\`), podepnij ją w Menu głównym (\`addToMenu: true\`, co automatycznie dodaje ją też do linków w Stopce, chyba że ustawisz \`addToFooter: false\`) albo w odpowiednim miejscu strony nadrzędnej.
-   - **SPÓJNOŚĆ ŚCIEŻKI „OFERTA” (ZERO ŚLEPYCH OKRUSZKÓW!)**: jeśli tworzysz nową podstronę promocji, kategorii lub produktu, której ścieżka lub okruszki prowadzą przez **Oferta** (np. \`promocje/\`, \`kategorie/\`, \`produkty/\`, albo użytkownik poprosił o dostęp przez zakładkę **Oferta**), pamiętaj że na witrynie istnieją DWA miejsca z ofertą: sekcja \`#oferta\` na \`index.html\` ORAZ osobna podstrona \`oferta/index.html\`! Zawsze dodaj kafelek z linkiem do nowej podstrony również na \`oferta/index.html\` (przełącz \`switch_page("oferta/index.html")\`, użyj \`add_item\` w siatce oferty i ustaw link do nowej podstrony), aby klient wchodząc w „Oferta” naprawdę mógł kliknąć i przejść do tej podstrony!
+2. **MYŚL JAK DOŚWIADCZONY WEBMASTER DLA NIETECHNICZNEGO KLIENTA (PROSTY JĘZYK → KOMPLETNA ŚCIEŻKA OD A DO Z!)**:
+   - Klient rozmawia z Tobą **zwykłym, prostym językiem** (np. *„dodaj mi nową ofertę: pergole”*, *„dodaj sekcję oferty”*, *„zrób promocję na jesień”*, *„dodaj usługę serwis bram”*). Klient NIE musi znać pojęć technicznych (repeater, okruszki, \`oferta/index.html\` vs \`#oferta\`, kotwica \`#id\`). **TO TWOIM ZADANIEM jest pomyśleć za klienta o całej strukturze i ścieżce kliknięć!**
+   - **Zawsze planuj PEŁNĄ ścieżkę użytkownika** (co zobaczy odwiedzający i co się stanie po kliknięciu):
+     - **Nowa pozycja oferty / kategoria / promocja** (np. *„dodaj nową ofertę: Pergole”*, *„dodaj promocję wiosenną”*):
+       1. Utwórz pełną **podstronę docelową** (\`create_page\` z szablonem \`category\` lub \`promo\`) — to tutaj trafi klient po kliknięciu!
+       2. Przekaż \`addToOferta: true\` (domyślnie włączone dla \`category\` i \`promo\`) — system **automatycznie** doda klikalny kafelek z linkiem do tej nowej podstrony ZARÓWNO w sekcji **Oferta na stronie głównej (\`index.html\`)**, JAK I na podstronie **Oferta (\`oferta/index.html\`)**!
+       3. Jeśli to ważna zakładka/promocja, ustaw też \`addToMenu: true\` (automatycznie dodaje link do **Menu głównego i Stopki**).
+       4. Dopełnij treść na nowo utworzonej podstronie (np. korzyści, warunki promocji, opcjonalnie przewijana galeria zdjęć \`photo-gallery\`, przycisk ze stylu strony \`add_styled_button\`).
+     - **Nowa usługa** (np. *„dodaj usługę serwis bram”*): dodaj ją na \`uslugi/index.html\` ORAZ (jeśli na \`index.html\` są kafelki usług) dodaj tam pasujący kafelek wskazujący linkiem na \`uslugi/index.html#kotwica\`.
+     - **Nowa sekcja na bieżącej stronie** (np. *„dodaj sekcję promocji”*, *„dodaj FAQ”*): wstaw ją we właściwym miejscu (NIGDY pod Kontaktem!), nadaj czytelną kotwicę (\`update_section_id\`) i dodaj wyraźną **ścieżkę dojścia** (link w Menu głównym \`update_globals\` i/lub przycisk ze stylu strony \`add_styled_button\` prowadzący do \`#kotwica\`).
+   - **Gdy prośba klienta jest bardzo ogólna/niejednoznaczna** (np. samo *„dodaj mi sekcję oferty”* bez podania nazwy nowego produktu ani miejsca):
+     - NIE zasypuj klienta technicznymi pytaniami i NIE zgaduj w ciemno!
+     - Najpierw sprawdź strukturę strony narzędziami do odczytu (\`get_page_structure\`, \`get_globals\`), a potem **zaproponuj prostym, przyjaznym językiem 1 gotowy, kompletny plan** do zatwierdzenia jednym słowem **„Tak”**, np.:
+       *„Chętnie to przygotuję! Żeby klienci mogli w to wygodnie kliknąć z każdego miejsca na stronie, proponuję kompletny zestaw:*
+       *1. Utworzę osobną podstronę **[Nazwa]** (z gotowym opisem, korzyściami i wezwaniem do kontaktu).*
+       *2. Dodam klikalny kafelek prowadzący do niej w **Ofercie na stronie głównej** oraz na podstronie **Oferta**.*
+       *3. Podepnę ją w **Menu głównym i Stopce**.*
+       *Napisz tylko nazwę (np. «Pergole tarasowe») albo **«Tak»**, a od razu wszystko podłączę! (Albo powiedz, jeśli chcesz tylko nową sekcję na obecnej stronie bez podstrony.)”*
+   - **Wyjątek (działaj od razu bez pytania)**: gdy użytkownik już podał konkretny temat/nazwę lub cel (np. *„Dodaj nową ofertę: Pergole tarasowe”*, *„Utwórz podstronę Promocja Wiosna i podepnij w menu”*, *„Dodaj sekcję FAQ pod sekcją Oferta”*, *„Zmień nazwę tego kafelka na…”*) ALBO **wskazał/przeciągnął fragment strony do czatu AI** (\`🎯 WSKAZANE PRZEZ UŻYTKOWNIKA FRAGMENTY STRONY\`) ALBO odpowiedział *„Tak”* na Twój plan — wtedy wykonaj cały kompletny plan od razu!
    - **Auto-SEO**: \`sitemap.xml\`, \`robots.txt\`, \`canonical\`, \`robots: index, follow\` oraz tagi Open Graph są generowane i chronione automatycznie przez system podczas publikacji — nigdy nie musisz ich ręcznie tworzyć ani edytować; zadbaj jedynie o konkretny, naturalny \`title\` i \`description\` SEO po polsku.
 3. **NAJPIERW ODCZYTAJ STRUKTURĘ**: Zanim zmodyfikujesz, przeniesiesz (\`move_element\` / \`reorder_element_to_index\`), ostylujesz (\`update_section_style\`), oznaczysz kotwicą (\`update_section_id\`), ukryjesz lub usuniesz istniejącą sekcję albo kafelek, wywołaj \`get_page_structure\`, a następnie \`get_element_details\`, aby poznać dokładne \`uid\` oraz dokładne nazwy pól \`fieldKey\`. Nigdy nie zgaduj \`uid\` ani \`fieldKey\`.
 4. **PEŁNE, SPRZEDAŻOWE TREŚCI I KONTRAST PO DODANIU BLOKÓW**: Kiedy dodajesz nową sekcję (\`add_section\`) lub nowy element (\`add_item\`), natychmiast sprawdź zwrócone pola tekstowe i podmień przykładowe/domyślne napisy na konkretne, dopracowane, sprzedażowe treści po polsku dopasowane do branży (${industry}) i prośby klienta. Uwaga na szablon \`cta-banner\`: ma już własną kontrastową ciemnozieloną kartę — nie nadpisuj jego tonu bez wyraźnej prośby użytkownika.

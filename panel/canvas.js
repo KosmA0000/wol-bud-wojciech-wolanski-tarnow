@@ -476,7 +476,15 @@ function updateFrameImageFor(img) {
   if (!img) return;
   const frame = img.closest(FRAME_IMAGE_SELECTOR);
   if (!frame) return;
-  const src = img.currentSrc || img.src || img.getAttribute('src');
+  const raw = img.getAttribute('src') || '';
+  let src = img.currentSrc || img.src || raw;
+  if (src && !/^(?:https?:|data:|blob:|\/)/i.test(src)) {
+    try {
+      src = new URL(src, img.ownerDocument?.baseURI || location.href).href;
+    } catch {
+      // keep raw
+    }
+  }
   if (src) {
     frame.style.setProperty('--frame-image', `url("${src}")`);
   }
@@ -486,7 +494,12 @@ function updateAllFrameImages(root) {
   if (!root) return;
   root.querySelectorAll(FRAME_IMAGE_SELECTOR).forEach((frame) => {
     const img = frame.querySelector('img');
-    if (img) updateFrameImageFor(img);
+    if (img) {
+      updateFrameImageFor(img);
+      if (!img.complete) {
+        img.addEventListener('load', () => updateFrameImageFor(img), { once: true });
+      }
+    }
   });
 }
 
@@ -1017,7 +1030,8 @@ export function connectCanvas(doc, options = {}) {
 
   function clearAllInjectedUi() {
     doc.querySelectorAll('[data-cms-ui]').forEach((node) => {
-      if (node.getAttribute('data-cms-ui') === 'preview-css') return;
+      const uiType = node.getAttribute('data-cms-ui');
+      if (uiType === 'preview-css' || uiType === 'base') return;
       node.remove();
     });
   }
@@ -3493,7 +3507,23 @@ export function connectCanvas(doc, options = {}) {
       doc.body.classList.add('wolbud-preview');
     }
 
+    // Upewnij się, że w trybie srcdoc znacznik <base> pozostaje obecny, aby wszystkie względne obrazy i zasoby ładowały się poprawnie
+    if (doc.location?.href === 'about:srcdoc' && !doc.head.querySelector('base[data-cms-ui="base"]')) {
+      const baseHref = new URL('../' + pagePath, window.location.href).href;
+      const baseEl = createEl(doc, 'base', { href: baseHref, 'data-cms-ui': 'base' });
+      doc.head.prepend(baseEl);
+    }
+
     refreshPendingImages(pendingImages);
+    doc.querySelectorAll('img').forEach((img) => {
+      if (img.closest('[data-cms-ui]')) return;
+      if (img.getAttribute('loading') === 'lazy') {
+        img.loading = 'eager';
+      }
+      if (!img.complete) {
+        img.addEventListener('load', () => updateFrameImageFor(img), { once: true });
+      }
+    });
     selectedUid = typeof snapshot === 'object' ? snapshot.selectedUid || null : null;
     scanStructure();
     callbacks.onStructureChange(getStructure());
@@ -4511,7 +4541,10 @@ export function connectCanvas(doc, options = {}) {
     doc.removeEventListener('drop', onDrop);
     doc.removeEventListener('dragend', onDragEnd);
 
-    doc.querySelectorAll('[data-cms-ui]').forEach((el) => el.remove());
+    doc.querySelectorAll('[data-cms-ui]').forEach((el) => {
+      if (el.getAttribute('data-cms-ui') === 'base') return;
+      el.remove();
+    });
     doc.body?.classList.remove('wolbud-preview', 'cms-browse-mode', 'cms-free-mode', 'cms-ai-pick-mode');
     doc.querySelectorAll('*').forEach((el) => {
       EDITOR_CLASSES.forEach((cls) => el.classList.remove(cls));

@@ -259,6 +259,15 @@ test('edycja tekstu, dodawanie kafelków, podłączanie linku, nowe sekcje, Undo
   await expect(preview.locator('.home-catalog-grid .home-cat-card').last()).toHaveAttribute('href', 'uslugi/index.html');
   await expect(page.locator('#btn-undo')).toBeEnabled();
 
+  // Cofnięcie na podglądzie srcdoc musi zachować poprawne <base> i załadować wszystkie obrazy (zero 404!)
+  await page.locator('#btn-undo').click();
+  await expect.poll(async () => {
+    return preview.locator('img[src]:not([src=""])').evaluateAll((imgs) =>
+      imgs.filter((i) => !i.complete || i.naturalWidth === 0).length
+    );
+  }, { timeout: 8000 }).toBe(0);
+  await page.locator('#btn-redo').click();
+
   // 9. Tryb klocków (swobodne przesuwanie / skalowanie) i uchwyty rozmiaru
   await page.locator('#btn-mode-free').click();
   await expect(preview.locator('body')).toHaveClass(/cms-free-mode/);

@@ -1228,14 +1228,34 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
   const draft = state.pageDrafts[pagePath];
 
   await new Promise((resolve) => {
-    const onLoad = () => resolve();
-    frame.addEventListener('load', onLoad, { once: true });
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(fallbackTimer);
+      frame.removeEventListener('load', onLoad);
+      resolve();
+    };
+    const onLoad = () => {
+      try {
+        const href = frame.contentWindow?.location?.href || '';
+        const hasBody = Boolean(frame.contentDocument?.body && frame.contentDocument.body.children.length > 0);
+        if (href === 'about:blank' && !hasBody) return;
+      } catch {
+        // ignore cross-origin check
+      }
+      done();
+    };
+    const fallbackTimer = setTimeout(done, 12000);
 
     if (draft && !draft.deleted && typeof draft.html === 'string' && draft.html.trim()) {
-      frame.removeAttribute('src');
+      frame.addEventListener('load', onLoad);
       frame.srcdoc = injectCmsBaseTag(draft.html, pagePath);
     } else {
-      frame.removeAttribute('srcdoc');
+      if (frame.hasAttribute('srcdoc')) {
+        frame.removeAttribute('srcdoc');
+      }
+      frame.addEventListener('load', onLoad);
       const liveUrl = new URL('../' + pagePath, location.href);
       liveUrl.searchParams.set('_cms', String(Date.now()));
       frame.src = liveUrl.href;
@@ -4931,6 +4951,99 @@ async function scanPageComponents(pagePath) {
   }
 }
 
+async function wireOfferTilesAcrossSite({ targetPagePath, title, ctaLabel = 'Zobacz ofertę' }) {
+  const cleanTarget = String(targetPagePath || '').trim().replace(/^\/+/, '');
+  const cleanTitle = String(title || '').trim();
+  if (!cleanTarget || !cleanTitle) return [];
+
+  const allPaths = new Set(getAllPagesMerged().filter((p) => !p.deleted).map((p) => p.path));
+  const candidateHosts = ['index.html', 'oferta/index.html'].filter(
+    (p) => p !== cleanTarget && allPaths.has(p)
+  );
+  const updatedPages = [];
+
+  for (const hostPage of candidateHosts) {
+    try {
+      let hostHtml = '';
+      if (state.currentPagePath === hostPage && state.canvas) {
+        hostHtml = safeSerializeHtml();
+      } else if (state.pageDrafts[hostPage]?.html && !state.pageDrafts[hostPage].deleted) {
+        hostHtml = state.pageDrafts[hostPage].html;
+      } else {
+        const res = await fetch(new URL('../' + hostPage, location.href).href, { cache: 'no-store' });
+        if (!res.ok) continue;
+        hostHtml = await res.text();
+      }
+      if (!hostHtml || !hostHtml.trim()) continue;
+
+      const parsed = new DOMParser().parseFromString(hostHtml, 'text/html');
+      const grid = parsed.querySelector('.home-catalog-grid');
+      if (!grid) continue;
+
+      const relHref = toRelativeUrl(cleanTarget, hostPage);
+      const alreadyLinked = Array.from(grid.querySelectorAll('a[href]')).some((a) => {
+        const root = toRootPath(a.getAttribute('href') || '', hostPage);
+        return root === cleanTarget;
+      });
+      if (alreadyLinked) {
+        updatedPages.push(hostPage);
+        continue;
+      }
+
+      const relImg = toRelativeUrl('img/placeholder-photo.svg', hostPage);
+      const card = parsed.createElement('a');
+      card.className = 'home-cat-card';
+      card.setAttribute('href', relHref);
+
+      const thumb = parsed.createElement('div');
+      thumb.className = 'home-cat-thumb';
+      const img = parsed.createElement('img');
+      img.setAttribute('src', relImg);
+      img.setAttribute('alt', `${cleanTitle} – dodaj własne zdjęcie`);
+      img.setAttribute('loading', 'lazy');
+      img.setAttribute('decoding', 'async');
+      thumb.appendChild(img);
+
+      const body = parsed.createElement('div');
+      body.className = 'home-cat-body';
+      const h3 = parsed.createElement('h3');
+      h3.textContent = cleanTitle;
+      const cta = parsed.createElement('div');
+      cta.className = 'home-cat-cta';
+      cta.textContent = `${ctaLabel} `;
+      const arrow = parsed.createElement('span');
+      arrow.textContent = '↗';
+      cta.appendChild(arrow);
+      body.append(h3, cta);
+
+      card.append(thumb, body);
+      grid.appendChild(card);
+
+      const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
+      const existingEntry = getPageEntry(hostPage);
+      const nextDraft = {
+        html: nextHtml,
+        title: parsed.title || existingEntry.title || '',
+        description:
+          parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+          existingEntry.description ||
+          '',
+        label: existingEntry.label,
+        group: existingEntry.group,
+        isNew: Boolean(state.pageDrafts[hostPage]?.isNew),
+        deleted: false,
+      };
+      await savePageDraft(hostPage, nextDraft);
+      state.pageDrafts[hostPage] = nextDraft;
+      updatedPages.push(hostPage);
+    } catch (err) {
+      console.warn(`Nie udało się dopiąć kafelka Oferty na ${hostPage}:`, err);
+    }
+  }
+
+  return updatedPages;
+}
+
 async function collectSiteComponentsCatalog({ sourcePage = '' } = {}) {
   const allManifestPaths = (state.manifest?.pages || [])
     .filter((p) => p && !p.deleted && typeof p.path === 'string')
@@ -5548,6 +5661,22 @@ async function executeAiTool(name, rawArgs = {}) {
         };
       }
       state.expandedRepeaters.add(repeaterUid);
+
+      // Opcjonalne natychmiastowe ustawienie tekstów i linku w tym samym wywołaniu add_item!
+      if (args.fields && typeof args.fields === 'object' && !Array.isArray(args.fields)) {
+        for (const [fKey, fVal] of Object.entries(args.fields)) {
+          if (fVal !== undefined && fVal !== null) {
+            state.canvas.updateField(newUid, String(fKey), String(fVal));
+          }
+        }
+      }
+      if (typeof args.href === 'string' && args.href.trim()) {
+        const safeHref = sanitizeUrl(args.href.trim());
+        if (safeHref) {
+          state.canvas.updateLink(newUid, { href: safeHref });
+        }
+      }
+
       syncUiAfterAiMutation();
       const freshRaw = state.canvas.selectByUid(newUid, { scroll: true });
       return {
@@ -5771,6 +5900,19 @@ async function executeAiTool(name, rawArgs = {}) {
         }
       }
 
+      // Automatyczne podpięcie klikalnego kafelka w obu miejscach Oferty (index.html #oferta ORAZ oferta/index.html)
+      const shouldAddToOferta =
+        args.addToOferta !== undefined
+          ? Boolean(args.addToOferta)
+          : reqTplId === 'category' || reqTplId === 'promo';
+      const addedToOfertaPages = shouldAddToOferta
+        ? await wireOfferTilesAcrossSite({
+            targetPagePath: newPath,
+            title: heading,
+            ctaLabel: reqTplId === 'promo' ? 'Zobacz promocję' : 'Zobacz ofertę',
+          })
+        : [];
+
       await loadPage(newPath);
       const editableSections = (state.structure || []).slice(0, 8).map((sec) => {
         const det = state.canvas?.selectByUid?.(sec.uid, { scroll: false });
@@ -5785,6 +5927,8 @@ async function executeAiTool(name, rawArgs = {}) {
         ok: true,
         pagePath: newPath,
         addedToMenu,
+        addedToFooter,
+        addedToOfertaPages,
         meta: state.canvas?.getMeta?.() || { title, description },
         sections: state.structure,
         editableSections,
