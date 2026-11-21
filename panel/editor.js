@@ -149,6 +149,7 @@ const state = {
   undoStack: [],
   redoStack: [],
   aiUndoStack: [],
+  aiRedoStack: [],
   lastSnapshot: null,
   lastMutateTime: 0,
   autosaveTimer: null,
@@ -629,13 +630,17 @@ function updateTopbarAndIndicators() {
 
 function updateUndoRedoButtons() {
   const canUndo = !state.isPublishing && (state.undoStack.length > 0 || state.aiUndoStack.length > 0);
-  const redoDis = state.isPublishing || state.redoStack.length === 0;
+  const canRedo = !state.isPublishing && (state.redoStack.length > 0 || state.aiRedoStack.length > 0);
   $('btn-undo').disabled = !canUndo;
-  $('btn-redo').disabled = redoDis;
+  $('btn-redo').disabled = !canRedo;
   if ($('more-undo')) $('more-undo').disabled = !canUndo;
   if ($('btn-simple-undo')) {
     $('btn-simple-undo').hidden = !canUndo;
     $('btn-simple-undo').disabled = !canUndo;
+  }
+  if ($('btn-simple-redo')) {
+    $('btn-simple-redo').hidden = !canRedo;
+    $('btn-simple-redo').disabled = !canRedo;
   }
 }
 
@@ -847,18 +852,24 @@ function captureAiTurnCheckpoint() {
   };
 }
 
-async function restoreAiTurnCheckpoint(checkpoint) {
-  if (!checkpoint || checkpoint.restored || state.isPublishing) return false;
-  checkpoint.restored = true;
+async function restoreAiTurnCheckpoint(checkpoint, { isRedo = false } = {}) {
+  if (!checkpoint || state.isPublishing) return null;
   clearTimeout(state.autosaveTimer);
   state.autosaveTimer = null;
 
-  // Usuń checkpoint ze stosu aiUndoStack (jeśli tam jest)
-  const idx = state.aiUndoStack.indexOf(checkpoint);
-  if (idx !== -1) state.aiUndoStack.splice(idx, 1);
+  await flushAutosaveIfNeeded();
+  const reverseCheckpoint = captureAiTurnCheckpoint();
+
+  if (isRedo) {
+    const idx = state.aiRedoStack.indexOf(checkpoint);
+    if (idx !== -1) state.aiRedoStack.splice(idx, 1);
+  } else {
+    const idx = state.aiUndoStack.indexOf(checkpoint);
+    if (idx !== -1) state.aiUndoStack.splice(idx, 1);
+  }
 
   try {
-    // 1. Zsynchronizuj szkice stron w IndexedDB do stanu sprzed tury AI
+    // 1. Zsynchronizuj szkice stron w IndexedDB
     const prevDrafts = checkpoint.pageDrafts || {};
     const currentKeys = new Set(Object.keys(state.pageDrafts || {}));
     const prevKeys = new Set(Object.keys(prevDrafts));
@@ -883,7 +894,14 @@ async function restoreAiTurnCheckpoint(checkpoint) {
       state.globalsDraft = null;
     }
 
-    // 3. Przywróć podgląd bieżącej strony lub wróć na stronę sprzed tury AI
+    // 3. Zapisz stan odwrotny na stosie Redo / Undo
+    if (isRedo) {
+      state.aiUndoStack.push(reverseCheckpoint);
+    } else {
+      state.aiRedoStack.push(reverseCheckpoint);
+    }
+
+    // 4. Przywróć podgląd bieżącej strony lub wróć na stronę docelową
     if (state.currentPagePath === checkpoint.pagePath && state.canvas && checkpoint.canvasHtml) {
       state.isRestoringHistory = true;
       try {
@@ -908,13 +926,16 @@ async function restoreAiTurnCheckpoint(checkpoint) {
       updateTopbarAndIndicators();
     }
 
-    showToast('Cofnięto zmianę wykonaną przez Asystenta AI.');
-    return true;
+    showToast(
+      isRedo
+        ? 'Przywrócono zmianę wykonaną przez Asystenta AI.'
+        : 'Cofnięto zmianę wykonaną przez Asystenta AI.'
+    );
+    return reverseCheckpoint;
   } catch (err) {
-    console.error('AI undo failed:', err);
-    checkpoint.restored = false;
-    showToast('Nie udało się cofnąć zmiany AI.', 'error');
-    return false;
+    console.error('AI checkpoint restore failed:', err);
+    showToast(isRedo ? 'Nie udało się przywrócić zmiany AI.' : 'Nie udało się cofnąć zmiany AI.', 'error');
+    return null;
   }
 }
 
@@ -955,8 +976,16 @@ async function performUndo() {
   }
 }
 
-function performRedo() {
-  if (!state.canvas || state.redoStack.length === 0 || state.isPublishing) return;
+async function performRedo() {
+  if (state.isPublishing) return;
+
+  if ((!state.canvas || state.redoStack.length === 0) && state.aiRedoStack.length > 0) {
+    const cp = state.aiRedoStack[state.aiRedoStack.length - 1];
+    await restoreAiTurnCheckpoint(cp, { isRedo: true });
+    return;
+  }
+
+  if (!state.canvas || state.redoStack.length === 0) return;
   const nextHtml = state.redoStack.pop();
   const currentSnap = safeCaptureSnapshot();
   if (currentSnap) {
@@ -974,10 +1003,10 @@ function performRedo() {
     renderInspector();
     scheduleAutosave();
     updateTopbarAndIndicators();
-    showToast('Ponowiono zmianę.');
+    showToast('Przywrócono zmianę.');
   } catch (err) {
     console.error('Redo failed:', err);
-    showToast('Nie udało się ponowić zmiany.', 'error');
+    showToast('Nie udało się przywrócić zmiany.', 'error');
   } finally {
     state.isRestoringHistory = false;
   }
@@ -5686,8 +5715,13 @@ async function sendAiPrompt(rawPrompt) {
 
     if (aiDidMutate) {
       state.aiUndoStack.push(turnCheckpoint);
+      state.aiRedoStack = [];
       if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
       updateUndoRedoButtons();
+
+      let currentUndoCp = turnCheckpoint;
+      let currentRedoCp = null;
+      let isUndone = false;
 
       const undoBtn = document.createElement('button');
       undoBtn.type = 'button';
@@ -5695,12 +5729,22 @@ async function sendAiPrompt(rawPrompt) {
       undoBtn.textContent = '↶ Cofnij tę zmianę AI';
       undoBtn.addEventListener('click', async () => {
         undoBtn.disabled = true;
-        const ok = await restoreAiTurnCheckpoint(turnCheckpoint);
-        if (ok) {
-          undoBtn.textContent = '✓ Cofnięto zmianę AI';
+        if (!isUndone) {
+          const rev = await restoreAiTurnCheckpoint(currentUndoCp, { isRedo: false });
+          if (rev) {
+            currentRedoCp = rev;
+            isUndone = true;
+            undoBtn.textContent = '↷ Przywróć tę zmianę AI';
+          }
         } else {
-          undoBtn.disabled = false;
+          const rev = await restoreAiTurnCheckpoint(currentRedoCp, { isRedo: true });
+          if (rev) {
+            currentUndoCp = rev;
+            isUndone = false;
+            undoBtn.textContent = '↶ Cofnij tę zmianę AI';
+          }
         }
+        undoBtn.disabled = false;
       });
       bar.append(undoBtn);
     }
@@ -5967,6 +6011,7 @@ function bindUIEvents() {
 
   $('btn-undo').addEventListener('click', performUndo);
   $('btn-simple-undo')?.addEventListener('click', performUndo);
+  $('btn-simple-redo')?.addEventListener('click', performRedo);
   $('btn-simple-discard')?.addEventListener('click', handleDiscardCurrentPage);
   $('btn-redo').addEventListener('click', performRedo);
 

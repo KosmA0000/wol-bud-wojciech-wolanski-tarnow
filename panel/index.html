@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="panel.css?v=20261121-8">
-  <script type="module" src="editor.js?v=20261121-8"></script>
+  <link rel="stylesheet" href="panel.css?v=20261121-9">
+  <script type="module" src="editor.js?v=20261121-9"></script>
 </head>
 <body class="is-simple-mode">
   <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
@@ -115,6 +115,10 @@
       <div class="topbar-group topbar-right">
         <button type="button" id="btn-simple-undo" class="toolbar-btn toolbar-btn--quiet simple-only" title="Cofnij ostatnią zmianę (Ctrl+Z)" hidden>
           ↶ Cofnij
+        </button>
+
+        <button type="button" id="btn-simple-redo" class="toolbar-btn toolbar-btn--quiet simple-only" title="Przywróć cofniętą zmianę (Ctrl+Y)" hidden>
+          ↷ Przywróć
         </button>
 
         <button type="button" id="btn-simple-discard" class="toolbar-btn toolbar-btn--quiet simple-only" title="Odrzuć niezopublikowane zmiany na tej stronie i wróć do wersji opublikowanej" hidden>

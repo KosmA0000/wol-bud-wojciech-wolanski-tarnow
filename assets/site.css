@@ -5108,7 +5108,7 @@ body.lightbox-open {
 }
 
 .cta-banner-dark .eyebrow {
-  color: var(--highlight, #d9e7c8) !important;
+  color: #dcead0 !important;
 }
 
 .cta-banner-dark a.tc-mail,
