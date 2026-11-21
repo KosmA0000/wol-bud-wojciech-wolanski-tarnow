@@ -15,7 +15,8 @@ const MAX_HISTORY_MESSAGES = 12;
 const MAX_HISTORY_TEXT_LENGTH = 8000;
 const MAX_TOOL_RESULT_JSON_LENGTH = 48000;
 const PROXY_STATUS_TIMEOUT_MS = 3500;
-const REQUEST_TIMEOUT_MS = 90000;
+const REQUEST_TIMEOUT_MS = 120000;
+const MODEL_FAILOVER_TIMEOUT_MS = 45000;
 
 export const DEFAULT_AI_SETTINGS = Object.freeze({
   provider: 'openrouter',
@@ -1316,7 +1317,7 @@ function buildFriendlyHttpError(status, rawMessage, provider, proxyUrl) {
   );
 }
 
-async function fetchJsonWithAbort(url, options, externalSignal, provider, proxyUrl) {
+async function fetchJsonWithAbort(url, options, externalSignal, provider, proxyUrl, timeoutMs = REQUEST_TIMEOUT_MS) {
   throwIfAborted(externalSignal);
 
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -1342,7 +1343,7 @@ async function fetchJsonWithAbort(url, options, externalSignal, provider, proxyU
         } catch {
           // ignore
         }
-      }, REQUEST_TIMEOUT_MS)
+      }, timeoutMs)
     : null;
 
   try {
@@ -1672,6 +1673,7 @@ async function runGeminiLoop({
           signal,
           'gemini',
           settings.proxyUrl,
+          i < fallbackChain.length - 1 ? MODEL_FAILOVER_TIMEOUT_MS : REQUEST_TIMEOUT_MS,
         );
         activeModelIndex = i;
         return res;
@@ -1683,7 +1685,8 @@ async function runGeminiLoop({
           msg.includes('404') ||
           msg.includes('429') ||
           msg.includes('przeciążona') ||
-          msg.includes('limit');
+          msg.includes('limit') ||
+          msg.includes('czas oczekiwania');
         if (!isTransient || i === fallbackChain.length - 1) throw err;
       }
     }
@@ -1820,6 +1823,9 @@ async function runOpenAiLoop({
         messages,
         temperature: 0.35,
       };
+      if (isOpenRouter && candidateModel.includes('nemotron')) {
+        payload.reasoning = { effort: 'low' };
+      }
       if (includeTools) {
         payload.tools = openAiTools;
         payload.tool_choice = 'auto';
@@ -1836,13 +1842,19 @@ async function runOpenAiLoop({
           signal,
           isOpenRouter ? 'openrouter' : 'openai',
           settings.proxyUrl,
+          i < fallbackChain.length - 1 ? MODEL_FAILOVER_TIMEOUT_MS : REQUEST_TIMEOUT_MS,
         );
         activeModelIndex = i;
         return res;
       } catch (err) {
         lastErr = err;
         const msg = String(err?.message || '');
-        const isTransient = msg.includes('429') || msg.includes('503') || msg.includes('limit') || msg.includes('przeciążona');
+        const isTransient =
+          msg.includes('429') ||
+          msg.includes('503') ||
+          msg.includes('limit') ||
+          msg.includes('przeciążona') ||
+          msg.includes('czas oczekiwania');
         if (!isTransient || i === fallbackChain.length - 1) throw err;
       }
     }

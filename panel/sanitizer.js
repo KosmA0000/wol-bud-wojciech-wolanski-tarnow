@@ -991,12 +991,16 @@ export class AiGuardrailTracker {
 
     // 2. Bezwzględna ochrona kluczowych stron i limit usuwania podstron
     if (toolName === 'delete_page') {
-      const rawPath =
+      const rawInput =
         typeof safeArgs.pagePath === 'string'
           ? safeArgs.pagePath
           : typeof safeArgs.path === 'string'
             ? safeArgs.path
             : '';
+      let rawPath = rawInput.trim().replace(/^\.\/+/, '').replace(/^\/+/, '').replace(/\/+$/, '');
+      if (rawPath && !rawPath.toLowerCase().endsWith('.html')) {
+        rawPath = `${rawPath}/index.html`;
+      }
       const normalized = normalizeComparablePath(rawPath).replace(/^\/+/, '');
 
       if (
@@ -1015,7 +1019,7 @@ export class AiGuardrailTracker {
         };
       }
 
-      const pathCheck = validateRepoPath(rawPath.trim().replace(/^\.\/+/, ''), {
+      const pathCheck = validateRepoPath(rawPath, {
         allowDelete: true,
         protectedPages: Array.from(this.protectedPages),
       });

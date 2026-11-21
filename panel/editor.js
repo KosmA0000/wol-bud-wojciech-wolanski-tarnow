@@ -1,6 +1,6 @@
 import { config } from './config.js?v=20261121-17';
 import { siteProfile } from './site-profile.js?v=20261121-17';
-import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js?v=20261121-17';
+import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js?v=20261121-19';
 import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
   initStorage,
@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-17';
+} from './canvas.js?v=20261121-20';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-17';
+} from './ai-agent.js?v=20261121-18';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -2130,7 +2130,14 @@ function renderElementInspector(desc) {
     previewBox.className = 'image-preview-box';
     const previewImg = document.createElement('img');
     const rootPath = desc.image.rootPath || toRootPath(desc.image.src || '', state.currentPagePath);
-    previewImg.src = desc.image.resolvedSrc || desc.image.previewSrc || resolveRepoImageUrl(rootPath) || desc.image.src || '';
+    const candidateResolved = desc.image.resolvedSrc || desc.image.previewSrc || '';
+    const isAbsoluteResolved = /^(?:https?:\/\/|data:|blob:|\/)/i.test(candidateResolved);
+    previewImg.src =
+      (isAbsoluteResolved ? candidateResolved : '') ||
+      (rootPath ? resolveRepoImageUrl(rootPath) : '') ||
+      candidateResolved ||
+      desc.image.src ||
+      '';
     previewImg.alt = desc.image.alt || '';
     previewBox.append(previewImg);
 
@@ -6098,8 +6105,11 @@ async function executeAiTool(name, rawArgs = {}) {
 
     // 22. delete_page
     case 'delete_page': {
-      const rawPath = String(args.pagePath || '').trim().replace(/^\/+/, '');
+      let rawPath = String(args.pagePath || args.path || '').trim().replace(/^\.\/+/, '').replace(/^\/+/, '').replace(/\/+$/, '');
       if (!rawPath) return { ok: false, error: 'Podaj ścieżkę podstrony (pagePath).' };
+      if (!rawPath.toLowerCase().endsWith('.html')) {
+        rawPath = `${rawPath}/index.html`;
+      }
       if (CORE_PROTECTED_PAGES.has(rawPath)) {
         return {
           ok: false,

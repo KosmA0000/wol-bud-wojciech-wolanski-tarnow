@@ -2042,9 +2042,21 @@ export function connectCanvas(doc, options = {}) {
     const rawSrc = img.getAttribute('src') || '';
     const repoAttr = img.getAttribute('data-cms-repo-src');
     const rootPath = repoAttr || toRootPath(rawSrc, pagePath) || '';
-    const resolvedSrc =
-      (rootPath && pendingImages[rootPath]) ||
-      (rawSrc.startsWith('data:') || rawSrc.startsWith('blob:') ? rawSrc : img.currentSrc || rawSrc);
+    let resolvedSrc = (rootPath && pendingImages[rootPath]) || '';
+    if (!resolvedSrc) {
+      if (rawSrc.startsWith('data:') || rawSrc.startsWith('blob:') || /^https?:\/\//i.test(rawSrc)) {
+        resolvedSrc = rawSrc;
+      } else if (img.currentSrc && !img.currentSrc.startsWith('about:')) {
+        resolvedSrc = img.currentSrc;
+      } else if (rawSrc) {
+        try {
+          const base = doc.baseURI && !doc.baseURI.startsWith('about:') ? doc.baseURI : win.location.href;
+          resolvedSrc = new URL(rawSrc, base).href;
+        } catch {
+          resolvedSrc = rawSrc;
+        }
+      }
+    }
     return {
       src: rawSrc,
       resolvedSrc,
@@ -3340,6 +3352,10 @@ export function connectCanvas(doc, options = {}) {
     pendingImages = { ...(newPendingImages || {}) };
     doc.querySelectorAll('img').forEach((img) => {
       if (img.closest('[data-cms-ui]')) return;
+      if (img.getAttribute('loading') === 'lazy') {
+        img.setAttribute('data-cms-orig-loading', 'lazy');
+        img.setAttribute('loading', 'eager');
+      }
       const repoAttr = img.getAttribute('data-cms-repo-src');
       const currentSrc = img.getAttribute('src') || '';
       const repoPath = repoAttr || toRootPath(currentSrc, pagePath);
@@ -3425,8 +3441,13 @@ export function connectCanvas(doc, options = {}) {
         if (!el.getAttribute('style').trim()) el.removeAttribute('style');
       }
 
-      // Zamień data:/blob: na prawdziwe ścieżki względne repo
+      // Zamień data:/blob: na prawdziwe ścieżki względne repo i przywróć loading="lazy"
       if (el.tagName === 'IMG') {
+        const origLoading = el.getAttribute('data-cms-orig-loading');
+        if (origLoading) {
+          el.setAttribute('loading', origLoading);
+          el.removeAttribute('data-cms-orig-loading');
+        }
         const repoSrc = el.getAttribute('data-cms-repo-src');
         if (repoSrc) {
           el.setAttribute('src', toRelativeUrl(normalizeRepoPath(repoSrc), pagePath));
