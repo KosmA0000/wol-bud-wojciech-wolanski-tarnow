@@ -49,7 +49,11 @@ import {
   restoreBackup,
   waitForPublication,
 } from './publish.js';
-import { connectCanvas } from './canvas.js';
+import {
+  connectCanvas,
+  extractButtonStylesFromDoc,
+  extractReusableSectionsFromDoc,
+} from './canvas.js';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -914,6 +918,7 @@ const AI_READ_ONLY_TOOLS = new Set([
   'search_images',
   'get_globals',
   'list_backups',
+  'list_site_components',
 ]);
 
 function captureAiTurnCheckpoint() {
@@ -2354,6 +2359,50 @@ function renderElementInspector(desc) {
 
       row.append(addP, addLi);
       advBody.append(row);
+
+      // Dodawanie przycisku w jednym z realnych stylów tej strony
+      const btnStyles = state.canvas?.getAvailableButtonStyles?.() || [];
+      const addBtnWrap = document.createElement('div');
+      addBtnWrap.className = 'field-group';
+      addBtnWrap.style.marginTop = '0.6rem';
+      const addBtnLabel = document.createElement('label');
+      addBtnLabel.className = 'field-label';
+      addBtnLabel.textContent = 'Dodaj przycisk (ze stylów tej strony)';
+      const styleSel = document.createElement('select');
+      styleSel.className = 'input-field';
+      const defaultChoices =
+        btnStyles.length > 0
+          ? btnStyles
+          : [
+              { styleId: 'tc-tel', label: 'Ciemny przycisk główny (zaokrąglony)', templateHtml: '' },
+              { styleId: 'tc-mail', label: 'Przycisk konturowy z ikoną', templateHtml: '' },
+              { styleId: 'trust-about-link', label: 'Przycisk z ramką i strzałką ↗', templateHtml: '' },
+            ];
+      for (const st of defaultChoices) {
+        const opt = document.createElement('option');
+        opt.value = st.styleId;
+        opt.textContent = `${st.label} (.${st.styleId})`;
+        styleSel.append(opt);
+      }
+      const insertBtn = document.createElement('button');
+      insertBtn.type = 'button';
+      insertBtn.className = 'btn-secondary mini-btn';
+      insertBtn.style.marginTop = '0.35rem';
+      insertBtn.style.width = '100%';
+      insertBtn.textContent = '+ Wstaw przycisk w tym stylu';
+      insertBtn.addEventListener('click', () => {
+        const chosen = defaultChoices.find((b) => b.styleId === styleSel.value) || defaultChoices[0];
+        state.canvas?.insertStyledButton?.(desc.uid, {
+          styleId: chosen.styleId,
+          label: 'Zobacz szczegóły',
+          href: 'kontakt/index.html',
+          templateHtml: chosen.templateHtml || '',
+        });
+        handleStructureChange();
+        showToast(`Dodano przycisk ze stylu „${chosen.label}”.`);
+      });
+      addBtnWrap.append(addBtnLabel, styleSel, insertBtn);
+      advBody.append(addBtnWrap);
     }
 
     details.append(summary, advBody);
@@ -4419,6 +4468,9 @@ const AI_TOOL_LABELS = {
   update_section_style: 'Zmieniam styl wizualny sekcji',
   list_backups: 'Sprawdzam kopie zapasowe strony',
   discard_page_draft: 'Przywracam opublikowaną wersję strony',
+  list_site_components: 'Skanuję style i komponenty strony',
+  add_styled_button: 'Dodaję przycisk ze stylu strony',
+  clone_site_component: 'Klonuję istniejący blok strony',
 };
 
 const AI_CHIP_ICONS = ['✨', '📄', '❓', '🛠️'];
@@ -4478,7 +4530,7 @@ function updateAiUiStatus() {
         const proxyModel = state.ai.proxyStatus.model ? getFriendlyAiModelName(state.ai.proxyStatus.model) : '';
         const isLocalProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
         badge.textContent = isLocalProxy
-          ? proxyModel || 'Gemini AI · gotowy'
+          ? proxyModel || 'Nemotron 3.5 Super VL · gotowy'
           : `Serwer${proxyModel ? ` · ${proxyModel}` : ''}`;
         badge.classList.add('is-ready');
       } else {
@@ -4486,7 +4538,13 @@ function updateAiUiStatus() {
         badge.classList.add('is-unconfigured');
       }
     } else if (ready) {
-      badge.textContent = getFriendlyAiModelName(s.model) || (s.provider === 'openai' ? 'OpenAI' : 'Gemini');
+      badge.textContent =
+        getFriendlyAiModelName(s.model) ||
+        (s.provider === 'openrouter'
+          ? 'Nemotron 3.5 Super VL'
+          : s.provider === 'openai'
+          ? 'OpenAI'
+          : 'Gemini');
       badge.classList.add('is-ready');
     } else {
       badge.textContent = 'Wymaga konfiguracji';
@@ -4825,6 +4883,101 @@ function autoResizeAiInput() {
 // AI ASSISTANT: CONTEXT SUMMARY & ALL 21 TOOL EXECUTORS
 // ============================================================================
 
+const siteComponentsPageCache = new Map();
+
+async function scanPageComponents(pagePath) {
+  const cleanPath = String(pagePath || '').trim().replace(/^\/+/, '');
+  if (!cleanPath) return { buttons: [], sections: [] };
+
+  // Dla bieżącej strony czytaj zawsze ze świeżego DOM-u w podglądzie
+  if (cleanPath === state.currentPagePath) {
+    const liveDoc = $('preview')?.contentDocument;
+    if (liveDoc) {
+      return {
+        buttons: extractButtonStylesFromDoc(liveDoc, cleanPath),
+        sections: extractReusableSectionsFromDoc(liveDoc, cleanPath),
+      };
+    }
+  }
+
+  // Jeśli strona ma szkic lokalny, sparsuj szkic
+  const draft = state.pageDrafts[cleanPath];
+  if (draft && !draft.deleted && typeof draft.html === 'string' && draft.html.trim()) {
+    const parsed = new DOMParser().parseFromString(draft.html, 'text/html');
+    return {
+      buttons: extractButtonStylesFromDoc(parsed, cleanPath),
+      sections: extractReusableSectionsFromDoc(parsed, cleanPath),
+    };
+  }
+
+  if (siteComponentsPageCache.has(cleanPath)) {
+    return siteComponentsPageCache.get(cleanPath);
+  }
+
+  try {
+    const url = new URL('../' + cleanPath, location.href);
+    const res = await fetch(url.href, { cache: 'default' });
+    if (!res.ok) return { buttons: [], sections: [] };
+    const html = await res.text();
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+    const result = {
+      buttons: extractButtonStylesFromDoc(parsed, cleanPath),
+      sections: extractReusableSectionsFromDoc(parsed, cleanPath),
+    };
+    siteComponentsPageCache.set(cleanPath, result);
+    return result;
+  } catch {
+    return { buttons: [], sections: [] };
+  }
+}
+
+async function collectSiteComponentsCatalog({ sourcePage = '' } = {}) {
+  const allManifestPaths = (state.manifest?.pages || [])
+    .filter((p) => p && !p.deleted && typeof p.path === 'string')
+    .map((p) => p.path);
+
+  const pagesToScan = [];
+  const addUnique = (p) => {
+    const clean = String(p || '').trim().replace(/^\/+/, '');
+    if (clean && !pagesToScan.includes(clean)) pagesToScan.push(clean);
+  };
+
+  if (sourcePage) {
+    addUnique(sourcePage);
+  }
+  addUnique(state.currentPagePath);
+  addUnique('index.html');
+  for (const preferred of ['uslugi/index.html', 'realizacje/index.html', 'kontakt/index.html']) {
+    if (allManifestPaths.includes(preferred)) addUnique(preferred);
+  }
+  if (pagesToScan.length < 3) {
+    for (const p of allManifestPaths) {
+      if (pagesToScan.length >= 4) break;
+      addUnique(p);
+    }
+  }
+
+  const scans = await Promise.all(pagesToScan.map((p) => scanPageComponents(p)));
+  const buttonsByStyle = new Map();
+  const sections = [];
+
+  for (const sc of scans) {
+    for (const b of sc.buttons || []) {
+      if (!buttonsByStyle.has(b.styleId)) {
+        buttonsByStyle.set(b.styleId, b);
+      }
+    }
+    for (const sec of sc.sections || []) {
+      sections.push(sec);
+    }
+  }
+
+  return {
+    buttons: Array.from(buttonsByStyle.values()),
+    sections,
+  };
+}
+
 function buildAiContextSummary() {
   const entry = getPageEntry(state.currentPagePath);
   const meta = state.canvas?.getMeta?.() || {
@@ -4877,6 +5030,11 @@ function buildAiContextSummary() {
       id: t.id,
       name: t.name,
       category: t.category,
+    })),
+    availableButtonStylesOnCurrentPage: (state.canvas?.getAvailableButtonStyles?.() || []).map((b) => ({
+      styleId: b.styleId,
+      label: b.label,
+      exampleText: b.exampleText,
     })),
     availablePageTemplates: (PAGE_TEMPLATES || []).map((t) => ({
       id: t.id,
@@ -5957,6 +6115,114 @@ async function executeAiTool(name, rawArgs = {}) {
       };
     }
 
+    // 28. list_site_components — pełny katalog stylów przycisków, szablonów i sekcji z tej witryny
+    case 'list_site_components': {
+      const requestedPage = typeof args.sourcePage === 'string' ? args.sourcePage.trim().replace(/^\/+/, '') : '';
+      const catalog = await collectSiteComponentsCatalog({ sourcePage: requestedPage });
+      return {
+        ok: true,
+        currentPage: state.currentPagePath,
+        buttons: catalog.buttons.map(({ styleId, label, cssClass, exampleText, foundOnPage }) => ({
+          styleId,
+          label,
+          cssClass,
+          exampleText,
+          foundOnPage,
+        })),
+        sectionTemplates: (SECTION_TEMPLATES || []).map((t) => ({
+          templateId: t.id,
+          name: t.name,
+          category: t.category,
+          description: t.description,
+        })),
+        existingSiteSections: catalog.sections.map(({ sourcePage, sectionIndex, sectionId, label, cssClass, hasCarousel }) => ({
+          sourcePage,
+          sectionIndex,
+          sectionId: sectionId || undefined,
+          label,
+          cssClass,
+          hasCarousel: hasCarousel || undefined,
+        })),
+        repeaterItemsOnCurrentPage: state.structure.flatMap((sec) =>
+          (sec.repeaters || []).map((rep) => ({
+            sectionUid: sec.uid,
+            sectionLabel: sec.label,
+            repeaterUid: rep.uid,
+            itemType: rep.itemType,
+            label: rep.label,
+            count: rep.count,
+          }))
+        ),
+      };
+    }
+
+    // 29. add_styled_button — dodaje przycisk w jednym z realnych stylów tej strony
+    case 'add_styled_button': {
+      const targetUid = String(args.targetUid || '').trim();
+      const styleId = String(args.styleId || 'tc-tel').trim();
+      const label = String(args.label || 'Zobacz więcej').trim();
+      const href = String(args.href || 'kontakt/index.html').trim();
+      const target = args.target === '_blank' ? '_blank' : '';
+      if (!targetUid) {
+        return { ok: false, error: 'Podaj targetUid sekcji lub karty, do której mam dodać przycisk.' };
+      }
+      const catalog = await collectSiteComponentsCatalog();
+      const matched = catalog.buttons.find((b) => b.styleId === styleId) || null;
+      const res = state.canvas?.insertStyledButton?.(targetUid, {
+        styleId,
+        label,
+        href,
+        target,
+        templateHtml: matched?.templateHtml || '',
+      });
+      if (!res) {
+        return { ok: false, error: `Nie udało się dodać przycisku (sprawdź targetUid „${targetUid}” oraz bezpieczny link).` };
+      }
+      syncUiAfterAiMutation();
+      return {
+        ok: true,
+        ...res,
+        details: formatDescriptorForAi(state.canvas.getSelectedDescriptor?.()),
+      };
+    }
+
+    // 30. clone_site_component — klonuje 1:1 istniejącą sekcję z wybranej podstrony witryny
+    case 'clone_site_component': {
+      const sourcePage = String(args.sourcePage || 'index.html').trim().replace(/^\/+/, '');
+      const sectionId = typeof args.sectionId === 'string' ? args.sectionId.trim() : '';
+      const sectionIndex = Number.isInteger(args.sectionIndex) ? args.sectionIndex : null;
+      const afterUid = typeof args.afterUid === 'string' && args.afterUid.trim() ? args.afterUid.trim() : null;
+
+      const catalog = await collectSiteComponentsCatalog({ sourcePage });
+      const pageSections = catalog.sections.filter((s) => s.sourcePage === sourcePage);
+      let matched = null;
+      if (sectionId) {
+        matched = pageSections.find((s) => s.sectionId === sectionId);
+      }
+      if (!matched && sectionIndex !== null) {
+        matched = pageSections.find((s) => s.sectionIndex === sectionIndex);
+      }
+      if (!matched) {
+        return {
+          ok: false,
+          error: `Nie znaleziono wskazanej sekcji na stronie „${sourcePage}”. Wywołaj najpierw list_site_components({ sourcePage: "${sourcePage}" }).`,
+        };
+      }
+
+      const newUid = state.canvas?.insertClonedSectionHtml?.(matched.html, sourcePage, afterUid);
+      if (!newUid) {
+        return { ok: false, error: 'Nie udało się wstawić sklonowanej sekcji na bieżącą stronę.' };
+      }
+      syncUiAfterAiMutation();
+      const rawDesc = state.canvas.selectByUid(newUid, { scroll: true });
+      return {
+        ok: true,
+        uid: newUid,
+        clonedFrom: { sourcePage, sectionId: matched.sectionId, label: matched.label },
+        details: formatDescriptorForAi(rawDesc),
+      };
+    }
+
     default:
       return { ok: false, error: `Nieznane narzędzie Asystenta AI: ${name}` };
   }
@@ -6945,7 +7211,7 @@ async function bootstrap() {
         state.ai.proxyStatus = proxyInfo;
         if (proxyInfo?.configured) {
           const hasOwnKey = Boolean(String(state.ai.settings?.apiKey || '').trim());
-          if (!hasOwnKey || state.ai.settings.provider === 'proxy') {
+          if (hasLocalDevProxy || !hasOwnKey || state.ai.settings.provider === 'proxy') {
             state.ai.settings = {
               ...state.ai.settings,
               provider: 'proxy',

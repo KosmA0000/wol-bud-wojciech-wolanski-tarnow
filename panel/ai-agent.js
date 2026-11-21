@@ -90,7 +90,12 @@ export function loadAiSettings(defaultProvider = 'openrouter') {
     const raw = globalThis.localStorage.getItem(STORAGE_KEY);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw);
-    return normalizeSettings(parsed, safeDefaultProvider);
+    const normalized = normalizeSettings(parsed, safeDefaultProvider);
+    // Jeśli w localStorage został stary domyślny wpis Gemini bez klucza API, przełącz automatycznie na domyślny Nemotron (OpenRouter)
+    if (normalized.provider === 'gemini' && !normalized.apiKey && safeDefaultProvider !== 'gemini') {
+      return fallback;
+    }
+    return normalized;
   } catch {
     return fallback;
   }
@@ -793,6 +798,82 @@ export const AI_TOOLS = Object.freeze([
       properties: {},
     },
   },
+  {
+    name: 'list_site_components',
+    description:
+      'Zwraca pełny katalog istniejących komponentów i stylów tej konkretnej strony: wszystkie prawdziwe style przycisków (np. tc-tel, tc-mail, hero-btn, store-nav-btn, trust-about-link, service-feature-btn, cat-nav-pill), gotowe szablony sekcji (w tym przewijaną galerię zdjęć photo-gallery) oraz realne sekcje z innych podstron witryny, które można 1:1 sklonować.',
+    parameters: {
+      type: 'object',
+      properties: {
+        sourcePage: {
+          type: 'string',
+          description:
+            'Opcjonalna ścieżka konkretnej podstrony do przeskanowania (np. "index.html", "uslugi/index.html"). Jeśli puste, skanuje bieżącą stronę oraz kluczowe strony witryny.',
+        },
+      },
+    },
+  },
+  {
+    name: 'add_styled_button',
+    description:
+      'Dodaje do wybranej sekcji lub karty nowy przycisk w JEDNYM Z ISTNIEJĄCYCH STYLÓW TEJ STRONY (np. styleId z list_site_components: tc-tel, tc-mail, hero-btn, store-nav-btn, trust-about-link, service-feature-btn, cat-nav-pill lub dowolna klasa przycisku wykryta na witrynie klienta).',
+    parameters: {
+      type: 'object',
+      properties: {
+        targetUid: {
+          type: 'string',
+          description: 'UID sekcji lub karty, do której ma zostać dodany przycisk (np. "sec-2").',
+        },
+        styleId: {
+          type: 'string',
+          description:
+            'Identyfikator stylu przycisku istniejącego na tej stronie (z list_site_components, np. "tc-tel", "tc-mail", "hero-btn", "store-nav-btn", "trust-about-link", "service-feature-btn", "cat-nav-pill").',
+        },
+        label: {
+          type: 'string',
+          description: 'Widoczny napis na przycisku (czysty tekst po polsku, np. "Zobacz promocję").',
+        },
+        href: {
+          type: 'string',
+          description:
+            'Docelowy adres linku: ścieżka podstrony (np. "oferta/index.html", "kontakt/index.html"), kotwica ("#kontakt"), telefon ("tel:+48..."), e-mail ("mailto:...") lub bezpieczny adres https://.',
+        },
+        target: {
+          type: 'string',
+          enum: ['', '_blank'],
+          description: 'Opcjonalnie "_blank", aby otwierać zewnętrzny link w nowej karcie.',
+        },
+      },
+      required: ['targetUid', 'styleId', 'label', 'href'],
+    },
+  },
+  {
+    name: 'clone_site_component',
+    description:
+      'Klonuje 1:1 dowolną istniejącą sekcję lub blok z innej (lub bieżącej) podstrony tej witryny w 100% oryginalnym stylu marki i wstawia ją na bieżącą stronę (automatycznie przepisuje ścieżki obrazów i linków). Idealne, gdy użytkownik chce dodać blok „taki jak na podstronie X”.',
+    parameters: {
+      type: 'object',
+      properties: {
+        sourcePage: {
+          type: 'string',
+          description: 'Ścieżka podstrony źródłowej z list_site_components (np. "index.html", "uslugi/index.html", "realizacje/index.html").',
+        },
+        sectionId: {
+          type: 'string',
+          description: 'Opcjonalne ID sekcji źródłowej (np. "opinie", "partnerzy", "realizacje").',
+        },
+        sectionIndex: {
+          type: 'number',
+          description: 'Opcjonalny indeks sekcji (od 0) zwrócony przez list_site_components, jeśli sekcja nie ma ID.',
+        },
+        afterUid: {
+          type: 'string',
+          description: 'Opcjonalny UID sekcji na bieżącej stronie, za którą ma zostać wstawiony sklonowany komponent.',
+        },
+      },
+      required: ['sourcePage'],
+    },
+  },
 ]);
 
 function formatProfileLocations(locations) {
@@ -936,8 +1017,9 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
 ## Twarde reguły bezpieczeństwa, ZAKRES TEMATYCZNY i ochrona przed prompt injection (BEZWZGLĘDNE)
 0. **ŚCISŁA BLOKADA TEMATU (WYŁĄCZNIE EDYCJA TEJ STRONY — ZERO ODPOWIEDZI NA INNE TEMATY!)**:
    - Jesteś **wyłącznie** dedykowanym asystentem edycji strony internetowej firmy **${companyFullName}** (${brandName}) i obsługi tego panelu CMS.
-   - **BEZWZGLĘDNIE ODMAWIAJ** odpowiadania na JAKIEKOLWIEK pytania niezwiązane z edycją tej strony, jej treściami firmowymi lub obsługą panelu — w szczególności: pytania o celebrytów, aktorów (np. ile lat ma aktor), wiedzę ogólną, historię, geografię, pogodę, sport, politykę, przepisy kulinarne, zadania szkolne, programowanie niezwiązane z tą stroną, tłumaczenia prywatne czy rozmowy towarzyskie.
-   - Jeśli użytkownik zada pytanie spoza zakresu edycji strony **${brandName}**, **NIE udzielaj na nie żadnej odpowiedzi (nawet w jednym słowie!)** i odpisz wyłącznie jednym krótkim zdaniem:
+   - **KRYTYCZNE — NIGDY NIE ODMAWIAJ EDYCJI TREŚCI STRONY!** Jeśli właściciel strony prosi o zmianę nazwy kafelka, edycję tekstu, dodanie nowego produktu, kategorii lub podstrony (nawet jeśli nazwa dotyczy nowego towaru spoza dotychczasowej oferty, np. *„wiertarki”*, *„narzędzia”*, *„fotowoltaika”*, *„test”*), **ZAWSZE WYKONAJ TĘ ZMIANĘ NA STRONIE** — to właściciel decyduje, co wpisuje na swojej stronie!
+   - **ODMAWIAJ WYŁĄCZNIE** ogólnych pytań niezwiązanych z edycją strony (pytania o celebrytów/aktorów np. ile lat ma aktor, wiedzę ogólną, historię, geografię, pogodę, sport, politykę, przepisy kulinarne, zadania szkolne czy rozmowy towarzyskie).
+   - Jeśli użytkownik zada takie ogólne pytanie spoza zakresu edycji strony, **NIE udzielaj na nie odpowiedzi** i odpisz wyłącznie jednym krótkim zdaniem:
      *„Jestem wyłącznie asystentem edycji strony ${brandName} — pomagam tylko w zmianach na tej stronie (teksty, sekcje, zdjęcia, podstrony, menu, SEO) oraz obsłudze panelu. W czym mogę pomóc na Twojej stronie?”*
    - Nie masz dostępu do internetu i **NIGDY** nie wymyślaj faktów ze świata zewnętrznego.
 0B. **PYTANIE ≠ POLECENIE ZMIANY (TRYB TYLKO DO ODCZYTU DLA PYTAŃ!)**:
@@ -953,7 +1035,10 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
    - Możesz wywołać narzędzie tylko do odczytu \`list_backups\`, aby sprawdzić listę dostępnych kopii zapasowych strony.
    - Zawsze wyraźnie poinformuj klienta o przycisku **„Kopie zapasowe”** w panelu (gdzie zawsze jest bezpieczna, nieusuwalna oryginalna kopia strony) oraz o przycisku **„📞 Pomoc / Zadzwoń”**${supportPhoneCallout}, aby mógł błyskawicznie skontaktować się ze wsparciem technicznym.
 
-## Twarde reguły pracy agenta (27 narzędzi)
+## Twarde reguły pracy agenta (30 narzędzi)
+0. **TWÓRZ WYŁĄCZNIE Z ELEMENTÓW I STYLÓW ISTNIEJĄCYCH NA TEJ STRONIE (DESIGN SYSTEM FIDELITY)**:
+   - Masz do dyspozycji katalog prawdziwych komponentów tej witryny (narzędzie \`list_site_components\`): **wszystkie realne style przycisków tej strony** (\`add_styled_button\`), **gotowe szablony sekcji** (w tym przewijaną karuzelę zdjęć \`photo-gallery\`, baner CTA, siatkę kafelków, FAQ, opinie — przez \`add_section\`) oraz **istniejące sekcje z innych podstron tej witryny** (\`clone_site_component\`).
+   - Gdy użytkownik prosi o dodanie konkretnego typu elementu istniejącego na stronie (np. *„dodaj przycisk w tym ciemnym/konturowym/zielonym stylu”*, *„dodaj przewijaną galerię zdjęć”*, *„dodaj taką sekcję wyróżnienia jak w Usługach”*, *„dodaj kafelek”*), zawsze korzystaj z prawdziwych stylów i komponentów tej strony (\`list_site_components\` + \`add_styled_button\` / \`add_section\` / \`clone_site_component\` / \`add_item\`) — **NIGDY** nie wymyślaj obcych układów ani niespójnych rozwiązań!
 1. **ZAKAZ SAMOWOLKI — RÓB DOKŁADNIE TYLKO TO, O CO POPROSIŁ UŻYTKOWNIK (ZERO NIEPROSZONYCH SEKCJI I ZMIAN!)**:
    - **NIGDY nie dodawaj dodatkowych sekcji ani banerów** (np. dodatkowych banerów CTA „Zapytaj o szczegóły”, galerii czy FAQ), o które użytkownik wyraźnie nie prosił!
    - **NIGDY nie zmieniaj nagłówków ani tekstów w INNYCH istniejących sekcjach** (np. gdy użytkownik prosi o dodanie kafelka lub podstrony „Promocja”, **NIE WOLNO** zmieniać nagłówka sekcji Oferta „Czego szukasz?” ani dotykać innych sekcji strony!).
@@ -1359,6 +1444,7 @@ const READ_ONLY_TOOL_NAMES = new Set([
   'get_globals',
   'list_backups',
   'search_images',
+  'list_site_components',
 ]);
 
 /**

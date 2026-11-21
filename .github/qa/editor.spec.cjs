@@ -629,6 +629,7 @@ test('Bezpieczeństwo, kopie zapasowe (oryginał), Pomoc/telefon, guardrails AI,
                 parts: [
                   { functionCall: { name: 'get_page_structure', args: {} } },
                   { functionCall: { name: 'list_backups', args: {} } },
+                  { functionCall: { name: 'list_site_components', args: {} } },
                 ],
               },
             },
@@ -659,6 +660,8 @@ test('Bezpieczeństwo, kopie zapasowe (oryginał), Pomoc/telefon, guardrails AI,
                   { functionCall: { name: 'update_section_style', args: { uid: targetUid, tone: 'accent', align: 'center', spacing: 'spacious' } } },
                   // 4. Bezpieczne ustawienie kotwicy #id — DOZWOLONA
                   { functionCall: { name: 'update_section_id', args: { uid: targetUid, sectionId: 'test-kotwica' } } },
+                  // 5. Dodanie przycisku z istniejącego stylu tej strony — DOZWOLONA
+                  { functionCall: { name: 'add_styled_button', args: { targetUid, styleId: 'tc-tel', label: 'Sprawdź promocję', href: 'oferta/index.html' } } },
                 ],
               },
             },
@@ -744,6 +747,8 @@ test('Bezpieczeństwo, kopie zapasowe (oryginał), Pomoc/telefon, guardrails AI,
   const styleResp = getRes('update_section_style');
   const idResp = getRes('update_section_id');
   const backupsResp = getRes('list_backups');
+  const componentsResp = getRes('list_site_components');
+  const styledBtnResp = getRes('add_styled_button');
 
   expect(linkResp?.ok).toBe(false);
   expect(linkResp?.blockedBySecurity).toBe(true);
@@ -752,9 +757,14 @@ test('Bezpieczeństwo, kopie zapasowe (oryginał), Pomoc/telefon, guardrails AI,
   expect(styleResp?.ok).toBe(true);
   expect(idResp?.ok).toBe(true);
   expect(backupsResp?.ok).toBe(true);
+  expect(componentsResp?.ok).toBe(true);
+  expect(componentsResp?.buttons?.some((b) => b.styleId === 'tc-tel')).toBe(true);
+  expect(componentsResp?.sectionTemplates?.some((t) => t.templateId === 'photo-gallery')).toBe(true);
+  expect(styledBtnResp?.ok).toBe(true);
 
-  // Zweryfikuj klasy stylu i ID na żywo w podglądzie iframe!
+  // Zweryfikuj klasy stylu, ID oraz dodany przycisk ze stylu strony na żywo w podglądzie iframe!
   await expect(preview.locator('#test-kotwica')).toHaveCount(1);
+  await expect(preview.locator('#test-kotwica a.tc-tel', { hasText: 'Sprawdź promocję' })).toHaveCount(1);
   await expect(preview.locator('#test-kotwica')).toHaveClass(/cms-tone-accent/);
   await expect(preview.locator('#test-kotwica')).toHaveClass(/cms-align-center/);
   await expect(preview.locator('#test-kotwica')).toHaveClass(/cms-space-spacious/);

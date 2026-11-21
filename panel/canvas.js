@@ -7,6 +7,152 @@ import {
 } from './templates.js';
 import { sanitizeHtmlFragment, sanitizeUrl, sanitizeText } from './sanitizer.js';
 
+const BUTTON_STYLE_LABELS = {
+  'tc-tel': 'Ciemny przycisk główny (zaokrąglony)',
+  'tc-mail': 'Przycisk konturowy z ikoną',
+  'hero-btn': 'Zielony przycisk główny (Hero)',
+  'hero-mail': 'Jasny przycisk konturowy (Hero)',
+  'store-nav-btn': 'Przycisk linku / nawigacji z ikoną',
+  'trust-about-link': 'Przycisk z ramką i strzałką ↗',
+  'service-feature-btn': 'Jasny przycisk wyróżnienia',
+  'realizations-more': 'Przycisk „Zobacz wszystkie”',
+  'reviews-link': 'Przycisk linku (ciemne tło)',
+  'cat-nav-pill': 'Pigułka nawigacyjna (pill)',
+  'home-extra-category': 'Przycisk kategorii ze strzałką',
+  'sidebar-link': 'Link ze strzałką w karcie',
+  'pnav-all': 'Przycisk powrotu / oferty',
+  'btn-primary': 'Przycisk główny (.btn-primary)',
+  'btn-secondary': 'Przycisk dodatkowy (.btn-secondary)',
+  btn: 'Przycisk standardowy (.btn)',
+  button: 'Przycisk standardowy (.button)',
+};
+
+const KNOWN_BUTTON_CLASSES = new Set(Object.keys(BUTTON_STYLE_LABELS));
+const CARD_LINK_CLASSES = new Set([
+  'home-cat-card',
+  'subcat-card',
+  'realization-card',
+  'home-featured-product',
+  'cat-prod-media',
+  'brand',
+  'phone',
+  'menu-phone',
+  'contact-bubble',
+  'sidebar-tel',
+  'kt-num',
+]);
+
+function detectButtonStyleId(el) {
+  if (!el || !el.classList || el.classList.length === 0) return '';
+  const classes = Array.from(el.classList).filter((c) => !c.startsWith('cms-'));
+  if (classes.some((c) => CARD_LINK_CLASSES.has(c))) return '';
+  for (const c of classes) {
+    if (KNOWN_BUTTON_CLASSES.has(c)) return c;
+  }
+  const genericMatch = classes.find((c) => /(?:^|-)(?:btn|button|cta|pill)(?:-|$)/i.test(c));
+  return genericMatch || '';
+}
+
+function cleanPrototypeHtml(el) {
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('[data-cms-ui]').forEach((n) => n.remove());
+  [clone, ...clone.querySelectorAll('*')].forEach((node) => {
+    EDITOR_CLASSES.forEach((cls) => node.classList?.remove(cls));
+    EDITOR_ATTRS.forEach((attr) => node.removeAttribute?.(attr));
+    if (node.hasAttribute?.('class') && !node.getAttribute('class').trim()) {
+      node.removeAttribute('class');
+    }
+  });
+  return clone.outerHTML;
+}
+
+/**
+ * Skanuje dokument HTML i wykrywa wszystkie realne style przycisków istniejące na tej witrynie.
+ */
+export function extractButtonStylesFromDoc(targetDoc, sourcePage = 'index.html') {
+  if (!targetDoc) return [];
+  const main = targetDoc.querySelector('main#main') || targetDoc.querySelector('main') || targetDoc.body;
+  if (!main) return [];
+
+  const byStyle = new Map();
+  main.querySelectorAll('a[class], button[class]').forEach((el) => {
+    if (el.closest('[data-cms-ui], header.bar, footer, nav.contact-bubbles, .lightbox-modal, .page-nav-bar')) return;
+    if (el.hasAttribute('data-lightbox-trigger') || el.hasAttribute('data-scroll-prev') || el.hasAttribute('data-scroll-next')) return;
+    if (el.querySelector('img, figure, h1, h2, h3, h4, div')) return;
+
+    const styleId = detectButtonStyleId(el);
+    if (!styleId) return;
+
+    const text = truncate(getPreservedText(el), 40);
+    const existing = byStyle.get(styleId);
+    if (existing) {
+      existing.sampleCount += 1;
+      return;
+    }
+
+    const classes = Array.from(el.classList).filter((c) => !c.startsWith('cms-'));
+    byStyle.set(styleId, {
+      styleId,
+      label: BUTTON_STYLE_LABELS[styleId] || `Przycisk ze stylu .${styleId}`,
+      cssClass: classes.join(' '),
+      exampleText: text || 'Zobacz więcej',
+      exampleHref: el.getAttribute('href') || '',
+      foundOnPage: sourcePage,
+      sampleCount: 1,
+      templateHtml: cleanPrototypeHtml(el),
+    });
+  });
+
+  return Array.from(byStyle.values());
+}
+
+/**
+ * Skanuje dokument HTML i zwraca listę istniejących sekcji/bloków możliwych do 1:1 sklonowania na inną stronę.
+ */
+export function extractReusableSectionsFromDoc(targetDoc, sourcePage = 'index.html') {
+  if (!targetDoc) return [];
+  const main = targetDoc.querySelector('main#main') || targetDoc.querySelector('main') || targetDoc.body;
+  if (!main) return [];
+
+  const blocks = [];
+  const subpageContent = main.querySelector('.subpage-content');
+  let candidates = [];
+  if (subpageContent) {
+    candidates = Array.from(subpageContent.children);
+  } else {
+    for (const ch of Array.from(main.children)) {
+      if (ch.classList?.contains('photo-band')) {
+        candidates.push(...Array.from(ch.children));
+      } else {
+        candidates.push(ch);
+      }
+    }
+  }
+
+  let idx = 0;
+  for (const el of candidates) {
+    if (!el || el.nodeType !== 1 || el.hasAttribute('data-cms-ui')) continue;
+    const tag = el.tagName.toUpperCase();
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'NAV') continue;
+    if (el.classList.contains('hero') || el.id === 'start' || el.classList.contains('page-nav-bar')) continue;
+
+    const label = getSectionLabel(el);
+    const classes = Array.from(el.classList).filter((c) => !c.startsWith('cms-'));
+    blocks.push({
+      sourcePage,
+      sectionIndex: idx,
+      sectionId: el.id || '',
+      label,
+      cssClass: classes.join(' '),
+      hasCarousel: Boolean(el.querySelector('.cms-carousel-track, [data-scroll-gallery]')),
+      html: cleanPrototypeHtml(el),
+    });
+    idx += 1;
+  }
+
+  return blocks;
+}
+
 const PREVIEW_CSS_URL = new URL('./preview.css', import.meta.url).href;
 
 const FRAME_IMAGE_SELECTOR =
@@ -2904,6 +3050,154 @@ export function connectCanvas(doc, options = {}) {
     return newUid;
   }
 
+  function getAvailableButtonStyles() {
+    return extractButtonStylesFromDoc(doc, pagePath);
+  }
+
+  function insertStyledButton(
+    targetUid,
+    { styleId = 'tc-tel', label = 'Zobacz więcej', href = 'kontakt/index.html', templateHtml = '', target = '' } = {}
+  ) {
+    const entry = targetUid ? nodesByUid.get(targetUid) : null;
+    const hostBase = entry?.el || doc.querySelector('.subpage-content') || getMainRoot();
+    if (!hostBase || !doc.contains(hostBase)) return null;
+
+    let rawBtnHtml = String(templateHtml || '').trim();
+    if (!rawBtnHtml) {
+      const localMatch = getAvailableButtonStyles().find((b) => b.styleId === styleId);
+      if (localMatch?.templateHtml) {
+        rawBtnHtml = localMatch.templateHtml;
+      }
+    }
+    if (!rawBtnHtml) {
+      const safeClass = String(styleId || 'tc-tel').replace(/[^a-zA-Z0-9_-]/g, '') || 'tc-tel';
+      rawBtnHtml = `<a class="${safeClass}" href="#">Zobacz więcej</a>`;
+    }
+
+    const safeHtml = sanitizeHtmlFragment(rawBtnHtml);
+    const parsed = parseHtmlFragment(doc, safeHtml, true);
+    if (!parsed) return null;
+
+    // Zawsze wstawiaj jako bezpieczny link <a> z oryginalnymi klasami stylu strony
+    let btnEl = parsed;
+    if (btnEl.tagName !== 'A') {
+      const a = doc.createElement('a');
+      if (btnEl.className) a.className = btnEl.className;
+      a.innerHTML = btnEl.innerHTML;
+      btnEl = a;
+    }
+
+    const rawHref = String(href || '').trim();
+    const isDirectScheme = /^(?:https?:|mailto:|tel:|#)/i.test(rawHref);
+    const resolvedHref = rawHref
+      ? isDirectScheme
+        ? rawHref
+        : toRelativeUrl(rawHref, pagePath)
+      : '#';
+    const safeHref = sanitizeUrl(resolvedHref);
+    if (!safeHref || isDangerousHrefScheme(safeHref)) return null;
+
+    // Jeśli klonowany przycisk miał ikonę e-mail/telefon/mapy, usuń ikonę gdy docelowy link jest innego typu
+    const isTel = /^tel:/i.test(safeHref);
+    const isMail = /^mailto:/i.test(safeHref);
+    const isMaps = /google\.com\/maps/i.test(safeHref);
+    if (!isTel && !isMail && !isMaps) {
+      btnEl.querySelectorAll('svg').forEach((s) => s.remove());
+      btnEl.querySelectorAll('i').forEach((ic) => {
+        if (!btnEl.classList.contains('hero-btn') && !btnEl.classList.contains('pill')) ic.remove();
+      });
+    }
+
+    btnEl.setAttribute('href', safeHref);
+    if (target === '_blank' || /^https?:\/\//i.test(safeHref)) {
+      btnEl.setAttribute('target', '_blank');
+      btnEl.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      btnEl.removeAttribute('target');
+      btnEl.removeAttribute('rel');
+    }
+    btnEl.removeAttribute('id');
+    setPreservedText(btnEl, sanitizeText(String(label || 'Zobacz więcej').trim() || 'Zobacz więcej'));
+
+    // Umieść w istniejącym rzędzie przycisków sekcji lub utwórz spójny .cta-actions
+    const existingActionsRow = hostBase.querySelector(
+      '.cta-actions, .hero-cta, .trust-compact-actions, .trust-actions, .location-card__links'
+    );
+    if (existingActionsRow && !existingActionsRow.closest('[data-cms-ui]')) {
+      existingActionsRow.appendChild(btnEl);
+    } else {
+      const targetBody =
+        hostBase.querySelector('.cta-banner-dark') ||
+        hostBase.querySelector('.source-content-body') ||
+        hostBase.querySelector('.mobile-details-body') ||
+        hostBase.querySelector('.article-copy') ||
+        hostBase.querySelector(':scope > .wrap') ||
+        hostBase;
+      const row = createEl(doc, 'div', { class: 'cta-actions' });
+      row.appendChild(btnEl);
+      targetBody.appendChild(row);
+    }
+
+    scanStructure();
+    callbacks.onStructureChange(getStructure());
+    const ownerUid = entry?.uid || hostBase.getAttribute('data-cms-uid');
+    if (ownerUid) {
+      selectByUid(ownerUid, { scroll: true });
+    }
+    callbacks.onMutate('insert-button');
+    return {
+      uid: ownerUid,
+      styleId,
+      label: getPreservedText(btnEl),
+      href: safeHref,
+    };
+  }
+
+  function rewriteClonedUrls(rootEl, sourcePagePath) {
+    if (!rootEl || !sourcePagePath || sourcePagePath === pagePath) return;
+    const rewriteAttr = (node, attr) => {
+      const val = node.getAttribute(attr);
+      if (!val) return;
+      const trimmed = val.trim();
+      if (!trimmed || /^(?:https?:|mailto:|tel:|#|data:|blob:)/i.test(trimmed)) return;
+      const rootPath = toRootPath(trimmed, sourcePagePath);
+      if (rootPath) {
+        node.setAttribute(attr, toRelativeUrl(rootPath, pagePath));
+      }
+    };
+    const all = [rootEl, ...rootEl.querySelectorAll('*')];
+    for (const el of all) {
+      rewriteAttr(el, 'src');
+      rewriteAttr(el, 'href');
+      rewriteAttr(el, 'data-lightbox-src');
+      rewriteAttr(el, 'data-src');
+    }
+  }
+
+  function insertClonedSectionHtml(rawSectionHtml, sourcePagePath = 'index.html', afterSectionUid = null) {
+    if (!rawSectionHtml || typeof rawSectionHtml !== 'string') return null;
+    const safeHtml = sanitizeHtmlFragment(rawSectionHtml);
+    const parsed = parseHtmlFragment(doc, safeHtml, true);
+    if (!parsed) return null;
+
+    const clone = stripEditorArtifactsForClone(parsed);
+    rewriteClonedUrls(clone, sourcePagePath);
+
+    // Jeśli klonowana sekcja ze strony głównej jest wstawiana do .subpage-content i ma .wrap, zachowaj czystość
+    const isSubpage = Boolean(getMainRoot()?.classList?.contains('page-main') && doc.querySelector('.subpage-content'));
+    if (isSubpage && clone.tagName === 'SECTION') {
+      const directWrap = clone.querySelector(':scope > .wrap');
+      if (directWrap && clone.children.length === 1) {
+        while (directWrap.firstChild) {
+          clone.insertBefore(directWrap.firstChild, directWrap);
+        }
+        directWrap.remove();
+      }
+    }
+
+    return insertSection(clone.outerHTML, afterSectionUid);
+  }
+
   function applyLiveGlobals(globals = {}) {
     if (!globals || typeof globals !== 'object') return;
 
@@ -4252,6 +4546,9 @@ export function connectCanvas(doc, options = {}) {
     insertSection,
     insertItem,
     insertBlockInside,
+    getAvailableButtonStyles,
+    insertStyledButton,
+    insertClonedSectionHtml,
     applyLiveGlobals,
     getMeta,
     setMeta,
