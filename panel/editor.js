@@ -1,6 +1,6 @@
 import { config } from './config.js?v=20261121-17';
 import { siteProfile } from './site-profile.js?v=20261121-17';
-import { AiGuardrailTracker, sanitizeUrl, assertSafeSerializedHtml } from './sanitizer.js?v=20261121-25';
+import { AiGuardrailTracker, sanitizeUrl, assertSafeSerializedHtml } from './sanitizer.js?v=20261121-27';
 import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
   initStorage,
@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-25';
+} from './canvas.js?v=20261121-27';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-26';
+} from './ai-agent.js?v=20261121-27';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -192,6 +192,7 @@ const state = {
   dragSectionUid: null,
   loadedCatNavSignature: '',
   isSyncingCatNav: false,
+  liveHtmlCache: new Map(),
 
   ai: {
     open: false,
@@ -931,6 +932,7 @@ const AI_READ_ONLY_TOOLS = new Set([
   'get_element_details',
   'get_section_html',
   'read_page_summary',
+  'search_site_wide',
   'list_pages',
   'search_images',
   'get_globals',
@@ -4547,6 +4549,9 @@ const AI_TOOL_LABELS = {
   read_page_summary: 'Podglądam zawartość innej podstrony',
   update_section_html: 'Aktualizuję kod HTML sekcji',
   insert_custom_section: 'Wstawiam niestandardowy blok HTML',
+  search_site_wide: 'Przeszukuję całą witrynę',
+  sync_element_across_site: 'Synchronizuję blok na podstronach witryny',
+  replace_text_across_site: 'Aktualizuję tekst w całej witrynie',
 };
 
 const AI_CHIP_ICONS = ['✨', '📄', '❓', '🛠️'];
@@ -5004,6 +5009,48 @@ async function scanPageComponents(pagePath) {
     return result;
   } catch {
     return { buttons: [], sections: [] };
+  }
+}
+
+async function readPageHtmlForSiteTool(pagePath) {
+  const cleanPath = String(pagePath || '').trim().replace(/^\/+/, '');
+  if (!cleanPath || cleanPath.includes('..')) return '';
+  if (cleanPath === state.currentPagePath && state.canvas) {
+    return safeSerializeHtml();
+  }
+  const existingDraft = state.pageDrafts[cleanPath];
+  if (existingDraft && !existingDraft.deleted && typeof existingDraft.html === 'string' && existingDraft.html.trim()) {
+    return existingDraft.html;
+  }
+  if (state.liveHtmlCache?.has(cleanPath)) {
+    return state.liveHtmlCache.get(cleanPath);
+  }
+  try {
+    const res = await fetch(new URL('../' + cleanPath, location.href).href, { cache: 'no-store' });
+    if (!res.ok) return '';
+    const html = await res.text();
+    state.liveHtmlCache?.set(cleanPath, html);
+    return html;
+  } catch {
+    return '';
+  }
+}
+
+function rewriteRelativeUrlsBetweenPages(rootEl, fromPagePath, toPagePath) {
+  if (!rootEl || !fromPagePath || !toPagePath || fromPagePath === toPagePath) return;
+  const attrs = ['href', 'src', 'data-lightbox-src', 'data-src'];
+  const all = [rootEl, ...rootEl.querySelectorAll('*')];
+  for (const el of all) {
+    for (const attr of attrs) {
+      const val = el.getAttribute(attr);
+      if (!val) continue;
+      const trimmed = val.trim();
+      if (!trimmed || trimmed === '#' || /^(?:https?:|mailto:|tel:|#|data:|blob:)/i.test(trimmed)) continue;
+      const rootPath = toRootPath(trimmed, fromPagePath);
+      if (rootPath) {
+        el.setAttribute(attr, toRelativeUrl(rootPath, toPagePath));
+      }
+    }
   }
 }
 
@@ -6864,6 +6911,373 @@ async function executeAiTool(name, rawArgs = {}) {
       };
     }
 
+    // 35. search_site_wide — przeszukuje CAŁĄ witrynę (wszystkie podstrony + szkice) po tekście i/lub selektorze CSS
+    case 'search_site_wide': {
+      await flushAutosaveIfNeeded();
+      const query = String(args.query || '').trim();
+      const selector = String(args.selector || '').trim();
+      const pathPrefix = String(args.pathPrefix || '').trim().replace(/^\/+/, '');
+      const limit = Math.min(150, Math.max(1, Number(args.limit) || 40));
+
+      if (!query && !selector) {
+        return { ok: false, error: 'Podaj co najmniej query (szukany tekst) lub selector (selektor CSS).' };
+      }
+      if (selector) {
+        try {
+          document.createElement('div').querySelector(selector);
+        } catch {
+          return { ok: false, error: `Nieprawidłowy selektor CSS: „${selector}”.` };
+        }
+      }
+
+      const pages = getAllPagesMerged()
+        .filter((p) => !p.deleted && (!pathPrefix || p.path.startsWith(pathPrefix)))
+        .map((p) => p.path);
+
+      const qLower = query.toLowerCase();
+      const matches = [];
+      const BATCH = 16;
+
+      for (let i = 0; i < pages.length; i += BATCH) {
+        const chunk = pages.slice(i, i + BATCH);
+        const chunkResults = await Promise.all(
+          chunk.map(async (pagePath) => {
+            const html = await readPageHtmlForSiteTool(pagePath);
+            if (!html) return null;
+            if (qLower && !selector && !html.toLowerCase().includes(qLower)) return null;
+
+            const parsed = new DOMParser().parseFromString(html, 'text/html');
+            const nodes = selector ? Array.from(parsed.querySelectorAll(selector)) : [parsed.body || parsed.documentElement];
+            if (selector && nodes.length === 0) return null;
+
+            const snippets = [];
+            let count = 0;
+            for (const n of nodes) {
+              const txt = (n?.textContent || '').replace(/\s+/g, ' ').trim();
+              if (qLower) {
+                const idx = txt.toLowerCase().indexOf(qLower);
+                if (idx === -1) continue;
+                count += 1;
+                if (snippets.length < 3) {
+                  const start = Math.max(0, idx - 35);
+                  const end = Math.min(txt.length, idx + query.length + 55);
+                  snippets.push(txt.slice(start, end));
+                }
+              } else {
+                count += 1;
+                if (snippets.length < 2) {
+                  snippets.push(txt.slice(0, 110));
+                }
+              }
+            }
+
+            if (count === 0) return null;
+            return { pagePath, count, snippets };
+          })
+        );
+        for (const r of chunkResults) {
+          if (r) matches.push(r);
+        }
+      }
+
+      return {
+        ok: true,
+        totalPagesScanned: pages.length,
+        matchingPagesCount: matches.length,
+        truncated: matches.length > limit,
+        matches: matches.slice(0, limit),
+      };
+    }
+
+    // 36. sync_element_across_site — systemowa propagacja bloku z bieżącej strony na wszystkie pasujące podstrony witryny
+    case 'sync_element_across_site': {
+      const uid = String(args.uid || '').trim();
+      const selector = String(args.selector || '').trim();
+      const pathPrefix = String(args.pathPrefix || '').trim().replace(/^\/+/, '');
+      const excludeSet = new Set(
+        Array.isArray(args.excludePages) ? args.excludePages.map((p) => String(p || '').trim().replace(/^\/+/, '')) : []
+      );
+      const preserveActive = args.preserveActiveClass !== false;
+
+      if (!uid || !selector) {
+        return { ok: false, error: 'Podaj zarówno uid źródłowego elementu na bieżącej stronie, jak i selector CSS na stronach docelowych.' };
+      }
+      try {
+        document.createElement('div').querySelector(selector);
+      } catch {
+        return { ok: false, error: `Nieprawidłowy selektor CSS: „${selector}”.` };
+      }
+
+      const sourceInfo = state.canvas?.getElementCleanHtml?.(uid);
+      if (!sourceInfo || !sourceInfo.html) {
+        return { ok: false, error: `Nie znaleziono elementu o uid „${uid}” na bieżącej stronie.` };
+      }
+
+      // Jeśli podano uid sekcji nadrzędnej (np. .cat-quick-nav), a selector wskazuje na element wewnątrz (np. .cat-quick-nav-pills), wyciągnij dokładnie pasujący pod-element!
+      const srcWrapDoc = new DOMParser().parseFromString(`<!doctype html><html><body>${sourceInfo.html}</body></html>`, 'text/html');
+      let sourceEl = srcWrapDoc.body.firstElementChild;
+      if (!sourceEl) {
+        return { ok: false, error: 'Nie udało się odczytać czystego kodu HTML elementu źródłowego.' };
+      }
+      if (!sourceEl.matches(selector)) {
+        const innerMatch = sourceEl.querySelector(selector);
+        if (innerMatch) {
+          sourceEl = innerMatch;
+        }
+      }
+
+      const sourceCleanHtml = sourceEl.outerHTML;
+      const safety = assertSafeSerializedHtml(`<!doctype html><html><body>${sourceCleanHtml}</body></html>`);
+      if (!safety.ok) {
+        return { ok: false, error: safety.violations?.join(' ') || 'Zablokowano niebezpieczny kod HTML.' };
+      }
+
+      const sourcePagePath = state.currentPagePath;
+      await flushAutosaveIfNeeded();
+
+      const targetPages = getAllPagesMerged()
+        .filter((p) => !p.deleted && p.path !== sourcePagePath && !excludeSet.has(p.path) && (!pathPrefix || p.path.startsWith(pathPrefix)))
+        .map((p) => p.path);
+
+      const updatedPages = [];
+      const skippedPages = [];
+      const failedPages = [];
+      const BATCH = 14;
+
+      for (let i = 0; i < targetPages.length; i += BATCH) {
+        const chunk = targetPages.slice(i, i + BATCH);
+        await Promise.all(
+          chunk.map(async (targetPath) => {
+            try {
+              const targetHtml = await readPageHtmlForSiteTool(targetPath);
+              if (!targetHtml) {
+                skippedPages.push(targetPath);
+                return;
+              }
+              const parsed = new DOMParser().parseFromString(targetHtml, 'text/html');
+              const targetMatch = parsed.querySelector(selector);
+              if (!targetMatch) {
+                skippedPages.push(targetPath);
+                return;
+              }
+
+              // Zapamiętaj dotychczasowe aktywne podświetlenia na stronie docelowej
+              const activeRoots = new Set();
+              const activeTexts = new Set();
+              if (preserveActive) {
+                targetMatch.querySelectorAll('a.is-active, a[aria-current="page"], a[style*="font-weight:700"], a[style*="font-weight: 700"]').forEach((a) => {
+                  const raw = (a.getAttribute('href') || '').trim();
+                  const root = raw && !/^(?:https?:|mailto:|tel:|#)/i.test(raw) ? toRootPath(raw, targetPath) : '';
+                  if (root) activeRoots.add(root);
+                  const txt = (a.textContent || '').replace(/\s+/g, ' ').trim();
+                  if (txt) activeTexts.add(txt);
+                });
+                activeRoots.add(targetPath);
+              }
+
+              // Zbuduj sklonowany element źródłowy z przeliczonymi linkami względnymi dla głębokości targetPath
+              const imported = parsed.importNode(sourceEl, true);
+              rewriteRelativeUrlsBetweenPages(imported, sourcePagePath, targetPath);
+
+              if (preserveActive) {
+                const hadInlineHighlightStyle = Boolean(
+                  targetMatch.querySelector('a[style*="font-weight:700"], a[style*="font-weight: 700"]')
+                );
+                imported.querySelectorAll('a').forEach((a) => {
+                  a.classList.remove('is-active');
+                  if (a.getAttribute('aria-current') === 'page') a.removeAttribute('aria-current');
+                  const st = a.getAttribute('style') || '';
+                  if (/font-weight\s*:\s*700/i.test(st)) a.removeAttribute('style');
+
+                  const raw = (a.getAttribute('href') || '').trim();
+                  const root = raw && !/^(?:https?:|mailto:|tel:|#)/i.test(raw) ? toRootPath(raw, targetPath) : '';
+                  const txt = (a.textContent || '').replace(/\s+/g, ' ').trim();
+                  const isTargetActive =
+                    (root && activeRoots.has(root)) || (!root && activeTexts.has(txt));
+
+                  if (isTargetActive) {
+                    if (a.classList.contains('cat-nav-pill')) {
+                      a.classList.add('is-active');
+                    } else if (hadInlineHighlightStyle) {
+                      a.setAttribute('style', 'font-weight:700; color:var(--highlight);');
+                    } else {
+                      a.classList.add('is-active');
+                    }
+                  }
+                });
+              }
+
+              const beforeOuter = targetMatch.outerHTML;
+              targetMatch.replaceWith(imported);
+              if (imported.outerHTML === beforeOuter) {
+                skippedPages.push(targetPath);
+                return;
+              }
+
+              const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
+              const pageSafety = assertSafeSerializedHtml(nextHtml);
+              if (!pageSafety.ok) {
+                failedPages.push({ pagePath: targetPath, error: pageSafety.violations?.join(' ') });
+                return;
+              }
+
+              const existingDraft = state.pageDrafts[targetPath];
+              const entry = getPageEntry(targetPath);
+              const nextDraft = {
+                html: nextHtml,
+                title: parsed.title || entry.title || '',
+                description:
+                  parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+                  entry.description ||
+                  '',
+                label: existingDraft?.label || entry.label,
+                group: existingDraft?.group || entry.group || inferPageGroup(targetPath),
+                isNew: Boolean(existingDraft?.isNew),
+                deleted: false,
+              };
+              await savePageDraft(targetPath, nextDraft);
+              state.pageDrafts[targetPath] = nextDraft;
+              updatedPages.push(targetPath);
+            } catch (err) {
+              failedPages.push({ pagePath: targetPath, error: err?.message || String(err) });
+            }
+          })
+        );
+      }
+
+      if (updatedPages.length > 0) {
+        updateTopbarAndIndicators();
+        renderPagesList();
+      }
+
+      return {
+        ok: failedPages.length === 0,
+        sourcePage: sourcePagePath,
+        selector,
+        updatedCount: updatedPages.length,
+        totalWithSource: updatedPages.length + 1,
+        updatedPages: updatedPages.slice(0, 50),
+        skippedCount: skippedPages.length,
+        failedCount: failedPages.length,
+        failedPages: failedPages.slice(0, 5),
+      };
+    }
+
+    // 37. replace_text_across_site — bezpieczna globalna zamiana tekstu w węzłach tekstowych w całej witrynie
+    case 'replace_text_across_site': {
+      await flushAutosaveIfNeeded();
+      const findText = String(args.findText || '');
+      const replaceWith = String(args.replaceWith ?? '');
+      const selector = String(args.selector || '').trim();
+      const pathPrefix = String(args.pathPrefix || '').trim().replace(/^\/+/, '');
+      const dryRun = Boolean(args.dryRun);
+
+      if (!findText.trim()) {
+        return { ok: false, error: 'Podaj niepusty tekst findText do znalezienia.' };
+      }
+      if (selector) {
+        try {
+          document.createElement('div').querySelector(selector);
+        } catch {
+          return { ok: false, error: `Nieprawidłowy selektor CSS: „${selector}”.` };
+        }
+      }
+
+      const pages = getAllPagesMerged()
+        .filter((p) => !p.deleted && (!pathPrefix || p.path.startsWith(pathPrefix)))
+        .map((p) => p.path);
+
+      const updatedPages = [];
+      let totalReplacements = 0;
+      const BATCH = 14;
+
+      for (let i = 0; i < pages.length; i += BATCH) {
+        const chunk = pages.slice(i, i + BATCH);
+        await Promise.all(
+          chunk.map(async (targetPath) => {
+            const targetHtml = await readPageHtmlForSiteTool(targetPath);
+            if (!targetHtml || !targetHtml.includes(findText)) return;
+
+            const parsed = new DOMParser().parseFromString(targetHtml, 'text/html');
+            const roots = selector ? Array.from(parsed.querySelectorAll(selector)) : [parsed.body];
+            let pageCount = 0;
+
+            for (const root of roots) {
+              if (!root) continue;
+              const walker = parsed.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+              let node = walker.nextNode();
+              while (node) {
+                const parentTag = node.parentElement?.tagName?.toUpperCase() || '';
+                if (!['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA'].includes(parentTag)) {
+                  const val = node.nodeValue || '';
+                  if (val.includes(findText)) {
+                    const parts = val.split(findText);
+                    pageCount += parts.length - 1;
+                    if (!dryRun) {
+                      node.nodeValue = parts.join(replaceWith);
+                    }
+                  }
+                }
+                node = walker.nextNode();
+              }
+            }
+
+            if (pageCount === 0) return;
+            totalReplacements += pageCount;
+
+            if (dryRun) {
+              updatedPages.push({ pagePath: targetPath, replacements: pageCount });
+              return;
+            }
+
+            const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
+            const pageSafety = assertSafeSerializedHtml(nextHtml);
+            if (!pageSafety.ok) return;
+
+            if (targetPath === state.currentPagePath && state.canvas) {
+              state.canvas.restoreSnapshot({ html: nextHtml });
+              state.structure = normalizeStructure(state.canvas.getStructure?.());
+              state.lastSnapshot = safeCaptureSnapshot();
+              state.loadedCatNavSignature = getCategoryNavSignatureFromHtml(nextHtml, targetPath);
+            }
+
+            const existingDraft = state.pageDrafts[targetPath];
+            const entry = getPageEntry(targetPath);
+            const nextDraft = {
+              html: nextHtml,
+              title: parsed.title || entry.title || '',
+              description:
+                parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+                entry.description ||
+                '',
+              label: existingDraft?.label || entry.label,
+              group: existingDraft?.group || entry.group || inferPageGroup(targetPath),
+              isNew: Boolean(existingDraft?.isNew),
+              deleted: false,
+            };
+            await savePageDraft(targetPath, nextDraft);
+            state.pageDrafts[targetPath] = nextDraft;
+            updatedPages.push({ pagePath: targetPath, replacements: pageCount });
+          })
+        );
+      }
+
+      if (!dryRun && updatedPages.length > 0) {
+        updateTopbarAndIndicators();
+        renderPagesList();
+        renderStructureTree();
+      }
+
+      return {
+        ok: true,
+        dryRun,
+        totalPagesScanned: pages.length,
+        updatedCount: updatedPages.length,
+        totalReplacements,
+        updatedPages: updatedPages.slice(0, 50),
+      };
+    }
+
     default:
       return { ok: false, error: `Nieznane narzędzie Asystenta AI: ${name}` };
   }
@@ -6985,6 +7399,31 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
     }
 
     if (aiDidMutate) {
+      // Policz 100% zweryfikowaną, faktyczną listę zmienionych podstron w tej turze (kod nie może skłamać!)
+      const beforeDrafts = turnCheckpoint.pageDrafts || {};
+      const changedPages = [];
+      for (const [p, draft] of Object.entries(state.pageDrafts || {})) {
+        const prev = beforeDrafts[p];
+        if (!prev || prev.html !== draft?.html || prev.deleted !== draft?.deleted) {
+          changedPages.push(p);
+        }
+      }
+      if (changedPages.length > 0) {
+        const auditBadge = document.createElement('div');
+        auditBadge.className = 'ai-verified-audit';
+        auditBadge.style.cssText =
+          'font-size:11px;color:#2c4d19;background:#edf5e7;border:1px solid #c9dec0;border-radius:8px;padding:4px 8px;margin-bottom:6px;line-height:1.35;width:100%;';
+        const n = changedPages.length;
+        const pageWord = n === 1 ? 'podstronie' : 'podstronach';
+        const sample = changedPages.slice(0, 3).map((p) => getPageEntry(p).label || p).join(', ');
+        auditBadge.textContent =
+          n === 1
+            ? `✓ Zweryfikowany zapis w szkicu na 1 ${pageWord}: ${sample}`
+            : `✓ Zweryfikowany zapis w szkicu na ${n} ${pageWord} (m.in. ${sample}${n > 3 ? '…' : ''})`;
+        auditBadge.title = changedPages.join('\n');
+        bar.append(auditBadge);
+      }
+
       state.aiUndoStack.push(turnCheckpoint);
       state.aiRedoStack = [];
       if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
@@ -7099,6 +7538,8 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       signal: controller.signal,
     });
 
+    await flushAutosaveIfNeeded();
+
     thinkingEl.remove();
     if (totalStepsCount > 0) {
       updateToolsSummaryText(true);
@@ -7153,8 +7594,6 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       state.ai.chatEntries = state.ai.chatEntries.slice(-40);
     }
     persistAiChat();
-
-    await flushAutosaveIfNeeded();
   } catch (err) {
     thinkingEl.remove();
     const isAbort = err?.name === 'AbortError';

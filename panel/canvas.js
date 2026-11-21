@@ -153,7 +153,7 @@ export function extractReusableSectionsFromDoc(targetDoc, sourcePage = 'index.ht
   return blocks;
 }
 
-const PREVIEW_CSS_URL = new URL('./preview.css', import.meta.url).href;
+const PREVIEW_CSS_URL = new URL('./preview.css?v=20261121-27', import.meta.url).href;
 
 const FRAME_IMAGE_SELECTOR =
   '.cat-prod-media, .subcat-card-media, .home-cat-thumb, .montage-step-media, .home-featured-media';

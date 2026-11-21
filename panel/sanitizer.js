@@ -110,6 +110,7 @@ const READ_ONLY_AI_TOOLS = new Set([
   'read_page',
   'get_section_html',
   'read_page_summary',
+  'search_site_wide',
 ]);
 
 const TEXT_MUTATING_AI_TOOLS = new Set([
@@ -120,6 +121,8 @@ const TEXT_MUTATING_AI_TOOLS = new Set([
   'update_element_html',
   'update_section_html',
   'insert_custom_section',
+  'sync_element_across_site',
+  'replace_text_across_site',
   'add_section',
   'insert_section',
   'update_page_meta',

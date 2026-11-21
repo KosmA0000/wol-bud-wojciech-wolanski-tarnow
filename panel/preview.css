@@ -240,6 +240,23 @@ body.wolbud-preview .page-main .wrap > .cms-section > [data-cms-ui="section-tool
   right: 8px;
 }
 
+/* Zapobiegaj ucinaniu pływającego paska narzędzi nad paskiem kategorii i sekcjami z overflow */
+body.wolbud-preview .cat-quick-nav {
+  overflow: visible !important;
+  padding-top: 6px;
+}
+
+body.wolbud-preview .cat-quick-nav > [data-cms-ui="section-toolbar"],
+body.wolbud-preview .page-main .wrap > .cat-quick-nav > [data-cms-ui="section-toolbar"] {
+  top: -34px;
+  right: 4px;
+}
+
+body.wolbud-preview .cms-section.cms-hovered,
+body.wolbud-preview .cms-section.cms-selected {
+  overflow: visible !important;
+}
+
 body.wolbud-preview .cms-section.cms-hovered > [data-cms-ui="section-toolbar"],
 body.wolbud-preview .cms-section.cms-selected > [data-cms-ui="section-toolbar"],
 body.wolbud-preview [data-cms-ui="section-toolbar"]:hover,
