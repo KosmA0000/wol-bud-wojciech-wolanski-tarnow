@@ -25,19 +25,26 @@ export const DEFAULT_AI_SETTINGS = Object.freeze({
 });
 
 export const AI_MODELS = Object.freeze({
+  openrouter: Object.freeze([
+    'nvidia/nemotron-3.5-super-vl:free',
+    'nvidia/nemotron-3.5-lightning:free',
+    'nvidia/nemotron-3-ultra-550b-a55b:free',
+  ]),
   gemini: Object.freeze([
     'gemini-3-flash-preview',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
     'gemini-3.8-flash',
-    'gemini-3.1-flash-lite',
-    'gemini-flash-latest',
+    'gemini-3.1-flash-lite-preview',
     'gemini-3.1-pro-preview',
   ]),
   openai: Object.freeze(['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini']),
 });
 
-const VALID_PROVIDERS = new Set(['gemini', 'openai', 'proxy']);
+const VALID_PROVIDERS = new Set(['openrouter', 'gemini', 'openai', 'proxy']);
 
 function defaultModelForProvider(provider) {
+  if (provider === 'openrouter') return AI_MODELS.openrouter[0];
   if (provider === 'openai') return AI_MODELS.openai[0];
   return AI_MODELS.gemini[0];
 }
@@ -1610,8 +1617,15 @@ async function runOpenAiLoop({
   signal,
   toolLog,
 }) {
-  const model = settings.model || AI_MODELS.openai[0];
-  const endpoint = 'https://api.openai.com/v1/chat/completions';
+  const isOpenRouter = settings.provider === 'openrouter';
+  const primaryModel = settings.model || (isOpenRouter ? AI_MODELS.openrouter[0] : AI_MODELS.openai[0]);
+  const fallbackChain = isOpenRouter
+    ? Array.from(new Set([primaryModel, 'nvidia/nemotron-3.5-super-vl:free', 'nvidia/nemotron-3.5-lightning:free']))
+    : [primaryModel];
+  let activeModelIndex = 0;
+  const endpoint = isOpenRouter
+    ? 'https://openrouter.ai/api/v1/chat/completions'
+    : 'https://api.openai.com/v1/chat/completions';
   const openAiTools = toOpenAiTools(AI_TOOLS);
 
   const messages = [
@@ -1621,30 +1635,50 @@ async function runOpenAiLoop({
   ];
 
   const callOpenAi = async (includeTools) => {
-    const payload = {
-      model,
-      messages,
-      temperature: 0.35,
+    const reqHeaders = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${settings.apiKey}`,
     };
-    if (includeTools) {
-      payload.tools = openAiTools;
-      payload.tool_choice = 'auto';
+    if (isOpenRouter) {
+      reqHeaders['HTTP-Referer'] = typeof location !== 'undefined' ? location.origin : 'https://localhost';
+      reqHeaders['X-Title'] = siteProfile.studioTitle || 'CMS Studio';
     }
 
-    return fetchJsonWithAbort(
-      endpoint,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.apiKey}`,
-        },
-        body: JSON.stringify(payload),
-      },
-      signal,
-      'openai',
-      settings.proxyUrl,
-    );
+    let lastErr = null;
+    for (let i = activeModelIndex; i < fallbackChain.length; i += 1) {
+      const candidateModel = fallbackChain[i];
+      const payload = {
+        model: candidateModel,
+        messages,
+        temperature: 0.35,
+      };
+      if (includeTools) {
+        payload.tools = openAiTools;
+        payload.tool_choice = 'auto';
+      }
+
+      try {
+        const res = await fetchJsonWithAbort(
+          endpoint,
+          {
+            method: 'POST',
+            headers: reqHeaders,
+            body: JSON.stringify(payload),
+          },
+          signal,
+          isOpenRouter ? 'openrouter' : 'openai',
+          settings.proxyUrl,
+        );
+        activeModelIndex = i;
+        return res;
+      } catch (err) {
+        lastErr = err;
+        const msg = String(err?.message || '');
+        const isTransient = msg.includes('429') || msg.includes('503') || msg.includes('limit') || msg.includes('przeciążona');
+        if (!isTransient || i === fallbackChain.length - 1) throw err;
+      }
+    }
+    throw lastErr;
   };
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
@@ -1932,7 +1966,7 @@ export async function runAiTurn({
     );
   }
 
-  if (resolvedSettings.provider === 'openai') {
+  if (resolvedSettings.provider === 'openai' || resolvedSettings.provider === 'openrouter') {
     return runOpenAiLoop({
       userMessage: trimmedMessage,
       trimmedHistory,

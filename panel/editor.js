@@ -4030,7 +4030,12 @@ function setViewportMode(mode) {
 // ============================================================================
 
 const AI_MODEL_LABELS = {
+  'nvidia/nemotron-3.5-super-vl:free': 'Nemotron 3.5 Super VL',
+  'nvidia/nemotron-3.5-lightning:free': 'Nemotron 3.5 Lightning',
+  'nvidia/nemotron-3-ultra-550b-a55b:free': 'Nemotron 3 Ultra',
   'gemini-3-flash-preview': 'Gemini 3 Flash',
+  'gemini-3.5-flash': 'Gemini 3.5 Flash',
+  'gemini-3.5-flash-lite': 'Gemini 3.5 Flash Lite',
   'gemini-3.8-flash': 'Gemini 3.8 Flash',
   'gemini-3.1-flash-lite': 'Gemini 3.1 Flash Lite',
   'gemini-2.5-flash': 'Gemini 2.5 Flash',
@@ -4181,11 +4186,13 @@ function populateAiModelDatalist(provider) {
   if (!datalist) return;
   datalist.replaceChildren();
   const list =
-    provider === 'openai'
-      ? AI_MODELS.openai || []
-      : provider === 'gemini'
-        ? AI_MODELS.gemini || []
-        : [...(AI_MODELS.gemini || []), ...(AI_MODELS.openai || [])];
+    provider === 'openrouter'
+      ? AI_MODELS.openrouter || []
+      : provider === 'openai'
+        ? AI_MODELS.openai || []
+        : provider === 'gemini'
+          ? AI_MODELS.gemini || []
+          : [...(AI_MODELS.openrouter || []), ...(AI_MODELS.gemini || []), ...(AI_MODELS.openai || [])];
 
   for (const modelId of list) {
     const opt = document.createElement('option');
@@ -4211,12 +4218,18 @@ function syncAiSettingsFormVisibility(provider, { updateModelIfDefault = false }
 
   if (updateModelIfDefault && modelInput) {
     const cur = modelInput.value.trim();
-    const allKnown = [...(AI_MODELS.gemini || []), ...(AI_MODELS.openai || [])];
+    const allKnown = [
+      ...(AI_MODELS.openrouter || []),
+      ...(AI_MODELS.gemini || []),
+      ...(AI_MODELS.openai || []),
+    ];
     if (!cur || allKnown.includes(cur)) {
-      if (provider === 'openai') {
+      if (provider === 'openrouter') {
+        modelInput.value = AI_MODELS.openrouter?.[0] || 'nvidia/nemotron-3.5-super-vl:free';
+      } else if (provider === 'openai') {
         modelInput.value = AI_MODELS.openai?.[0] || 'gpt-4.1-mini';
       } else if (provider === 'gemini') {
-        modelInput.value = AI_MODELS.gemini?.[0] || 'gemini-2.5-flash';
+        modelInput.value = AI_MODELS.gemini?.[0] || 'gemini-3-flash-preview';
       } else if (state.ai.proxyStatus?.model) {
         modelInput.value = state.ai.proxyStatus.model;
       }
@@ -4224,7 +4237,10 @@ function syncAiSettingsFormVisibility(provider, { updateModelIfDefault = false }
   }
 
   if (apiKeyHelp) {
-    if (provider === 'openai') {
+    if (provider === 'openrouter') {
+      apiKeyHelp.innerHTML =
+        'Klucz jest zapisywany wyłącznie lokalnie w Twojej przeglądarce. Klucz OpenRouter (z darmowym Nemotron 3.5 Super VL) wygenerujesz w <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" class="ai-help-link">OpenRouter Keys ↗</a>.';
+    } else if (provider === 'openai') {
       apiKeyHelp.innerHTML =
         'Klucz jest zapisywany wyłącznie lokalnie w Twojej przeglądarce. Klucz OpenAI utworzysz w <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="ai-help-link">panelu OpenAI ↗</a>.';
     } else {
