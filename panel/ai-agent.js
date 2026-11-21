@@ -1451,7 +1451,17 @@ async function runGeminiLoop({
   toolLog,
 }) {
   const primaryModel = settings.model === 'gemini-2.5-flash' ? AI_MODELS.gemini[0] : (settings.model || AI_MODELS.gemini[0]);
-  const fallbackChain = Array.from(new Set([primaryModel, 'gemini-3-flash-preview', 'gemini-3.8-flash', 'gemini-3.1-flash-lite']));
+  const fallbackChain = Array.from(
+    new Set([
+      primaryModel,
+      'gemini-3-flash-preview',
+      'gemini-3.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite-preview',
+      'gemini-3.1-flash-lite',
+    ])
+  );
   let activeModelIndex = 0;
   const endpointFor = (m) =>
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(settings.apiKey)}`;
