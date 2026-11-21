@@ -73,7 +73,8 @@ export function saveAiSettings(settings) {
 
 export async function checkProxyStatus(proxyUrl = './ai-proxy.php') {
   try {
-    const res = await fetch(proxyUrl, { method: 'GET', cache: 'no-store' });
+    const sep = proxyUrl.includes('?') ? '&' : '?';
+    const res = await fetch(`${proxyUrl}${sep}status=1`, { method: 'GET', cache: 'no-store' });
     if (!res.ok) return { available: false, configured: false };
     const data = await res.json();
     return { available: true, configured: Boolean(data?.configured), ...data };
