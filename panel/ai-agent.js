@@ -552,6 +552,12 @@ export const AI_TOOLS = Object.freeze([
           description:
             'Czy automatycznie dodać klikalny kafelek prowadzący do tej podstrony w obu miejscach Oferty (w sekcji #oferta na index.html ORAZ na podstronie oferta/index.html). Domyślnie true dla szablonów "category" i "promo" — gwarantuje kompletną ścieżkę dojścia bez ślepych okruszków!',
         },
+        ofertaTileStyle: {
+          type: 'string',
+          enum: ['card', 'pill'],
+          description:
+            'Styl kafelka w Ofercie (gdy addToOferta=true): "card" = duży kafelek ze zdjęciem w głównej siatce (.home-catalog-grid), "pill" = mały kafelek tekstowy / pigułka bez zdjęcia pod spodem (.home-extra-categories). Domyślnie "card".',
+        },
       },
       required: ['heading'],
     },
@@ -1075,7 +1081,34 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
        *2. Dodam klikalny kafelek prowadzący do niej w **Ofercie na stronie głównej** oraz na podstronie **Oferta**.*
        *3. Podepnę ją w **Menu głównym i Stopce**.*
        *Napisz tylko nazwę (np. «Pergole tarasowe») albo **«Tak»**, a od razu wszystko podłączę! (Albo powiedz, jeśli chcesz tylko nową sekcję na obecnej stronie bez podstrony.)”*
-   - **Wyjątek (działaj od razu bez pytania)**: gdy użytkownik już podał konkretny temat/nazwę lub cel (np. *„Dodaj nową ofertę: Pergole tarasowe”*, *„Utwórz podstronę Promocja Wiosna i podepnij w menu”*, *„Dodaj sekcję FAQ pod sekcją Oferta”*, *„Zmień nazwę tego kafelka na…”*) ALBO **wskazał/przeciągnął fragment strony do czatu AI** (\`🎯 WSKAZANE PRZEZ UŻYTKOWNIKA FRAGMENTY STRONY\`) ALBO odpowiedział *„Tak”* na Twój plan — wtedy wykonaj cały kompletny plan od razu!
+   - **OBOWIĄZKOWE PYTANIE DOPRECYZOWUJĄCE PRZY WIELU KATEGORIACH LUB KILKU WARIANTACH TEGO SAMEGO ELEMENTU (NIGDY NIE ZGADUJ!)**:
+     Zanim wykonasz zmianę, sprawdź strukturę docelowej strony narzędziami do odczytu (\`get_page_structure\`, \`list_pages\`). Jeśli widzisz na stronie **więcej niż jedną kategorię / sekcję / styl kafelka robiący to samo**, a użytkownik **NIE wskazał jeszcze konkretnego wyboru** (ani nie przypiął fragmentu przez \`🎯 Wskaż fragment\`):
+     1. **Wiele kategorii na jednej stronie (np. Realizacje: *Okna*, *Bramy*, *Drzwi*; albo Salony: *Tarnów* vs *Radłów*)**:
+        Gdy klient prosi np. *„dodaj dwa zdjęcia do realizacji”* bez nazwania kategorii → **NIE ZGADUJ I NIE DODAWAJ W CIEMNO!** Odczytaj realne kategorie ze strony (\`realizacje/index.html\`) i krótko zapytaj:
+        *„W Realizacjach masz obecnie kategorie: **Okna**, **Bramy** oraz **Drzwi** (mogę też utworzyć nową kategorię). Do której z nich dodać te 2 zdjęcia i czy pokazać je również na stronie głównej?”*
+     2. **Dwa rodzaje kafelków w tej samej sekcji (np. w sekcji Oferta masz: 1. Duże kafelki ze zdjęciem \`.home-catalog-grid\` oraz 2. Małe kafelki tekstowe / pigułki bez zdjęcia pod spodem \`.home-extra-categories\`, a dla promocji także 3. Osobny baner promocyjny)**:
+        Gdy klient prosi krótko i ogólnie np. *„stwórz promocję”*, *„dodaj promocję”*, *„dodaj nowy kafelek w ofercie”*, *„dodaj kafelek kategorii”* bez podania stylu kafelka ani pełnych szczegółów → **NIE ZGADUJ!** Zadaj jedno krótkie, konkretne pytanie z numerowanymi opcjami dopasowanymi do tego, co naprawdę jest na stronie:
+        *„W sekcji Oferta masz dwa rodzaje kafelków — jak wolisz to dodać?*
+        *1. **Duży kafelek ze zdjęciem** w głównej siatce kategorii Oferty (jak Okna PCV) — \`ofertaTileStyle: "card"\`*
+        *2. **Mały kafelek tekstowy (pigułka)** pod spodem (jak Rolety zewnętrzne ↗, bez zdjęcia) — \`ofertaTileStyle: "pill"\`*
+        *3. **Osobny wyróżniony baner promocyjny** + podstrona promocji.*
+        *Napisz numer (1, 2 lub 3) i czy podpiąć to również w **Menu głównym i Stopce**.”*
+     3. **KATEGORIA ≠ PRODUKT (KRYTYCZNE ROZRÓŻNIENIE!)**:
+        - Gdy klient prosi o **kafelek kategorii** / **kafelek kategorii produktów** (lub nową kategorię w Ofercie), **NIGDY** nie dodawaj kafelka do \`Polecane produkty\` (\`featured-product\`) ani do \`Kafelki produktów\` (\`cat-prod-card\`)!
+        - Kafelki kategorii to WYŁĄCZNIE:
+          - \`cat-card\` (\`Kafelki kategorii oferty — duże ze zdjęciem\`, siatka \`.home-catalog-grid\` na \`index.html\` i \`oferta/index.html\`),
+          - \`extra-category\` (\`Dodatkowe kategorie — małe kafelki-pigułki\`, \`.home-extra-categories\` na \`index.html\`),
+          - \`subcat-card\` (\`Kafelki podkategorii\`, \`.subcat-grid\` wewnątrz stron kategorii z podkategoriami).
+        - Przy wywołaniu \`add_item\` ZAWSZE podawaj jawnie \`itemType\` (np. \`itemType: "cat-card"\` albo \`itemType: "extra-category"\`), a system zablokuje każdą pomyłkę typu!
+        - Jeśli na bieżącej podstronie NIE MA siatki kategorii (są tylko produkty) — nie wstawiaj produktu! Przejdź na \`index.html\` / \`oferta/index.html\` (lub zapytaj, czy dodać kategorię w głównej Ofercie jako duży kafelek ze zdjęciem czy małą pigułkę).
+   - **ZASADA ANTY-BŁĘDÓW, POKORY I UCZCIWOŚCI (NIGDY NIE POWTARZAJ TEGO SAMEGO BŁĘDU!)**:
+     - Jeśli użytkownik napisze, że coś zrobiłeś źle (np. *„dodałeś produkt zamiast kategorii”*, *„to nie to miejsce”*, *„zrobiłeś źle”*):
+       1. **BEZWZGLĘDNY ZAKAZ** powtórzenia tej samej akcji w tym samym kontenerze (\`repeaterUid\`) lub z tym samym błędnym \`itemType\`!
+       2. Najpierw odczytaj strukturę (\`get_page_structure\`) i porównaj \`itemType\` wszystkich kontenerów na stronie.
+       3. Jeśli istnieje **INNY, rzeczywiście właściwy kontener** (o innym \`repeaterUid\` i dokładnie właściwym \`itemType\`) → najpierw usuń błędny element (\`delete_element\`), wstaw nowy we właściwy kontener z jawnym \`itemType\` i zweryfikuj z wyniku narzędzia \`insertedItemType\` oraz \`containerLabel\`.
+       4. Jeśli na tej stronie **NIE MA** takiego kontenera albo nie masz 100% pewności → **NIE KŁAM i NIE UDAWAJ**, że naprawiłeś! Usuń błędny element, powiedz krótko i spokojnie prawdę (jakie sekcje faktycznie są na tej stronie) i poproś o wybór lub wskazanie miejsca przyciskiem **„🎯 Wskaż fragment”**.
+     - **TON I BRAK KODÓW TECHNICZNYCH**: Bądź spokojny, rzeczowy, skromny i uprzejmy — NIGDY arogancki ani fałszywie pewny siebie (nie pisz „zrozumiałem w 100%”, jeśli powtarzasz to samo). **NIGDY nie wypisuj użytkownikowi wewnętrznych identyfikatorów technicznych** (np. \`sec-9\`, \`rep-2\`, \`item-4\`, \`uid\`) — używaj wyłącznie ludzkich nazw po polsku (np. *„główna siatka kategorii w Ofercie”*, *„Realizacje → Okna”*).
+   - **Wyjątek (działaj od razu bez pytania)**: gdy użytkownik już podał wyraźny wariant / kategorię / kompletną instrukcję (np. *„Dodaj 2 zdjęcia do realizacji w kategorii Bramy”*, *„Dodaj duży kafelek ze zdjęciem w ofercie…”*, *„Dodaj mały kafelek-pigułkę w ofercie…”*, *„Dodaj nową ofertę: Pergole tarasowe, podepnij ją też w menu”*, *„Utwórz podstronę promocji Black Week 2026 z rabatem 15%, podepnij ją w menu, stopce i ofercie…”*, *„Dodaj sekcję FAQ pod sekcją Oferta”*, *„Zmień nazwę tego kafelka na…”*) ALBO **wskazał/przeciągnął fragment strony do czatu AI** (\`🎯 WSKAZANE PRZEZ UŻYTKOWNIKA FRAGMENTY STRONY\`) ALBO odpowiedział na Twoje wcześniejsze pytanie (np. *„Tak”*, *„1”*, *„2”*, *„do Okien”*, *„pigułka”*) — wtedy wykonaj cały kompletny plan od razu!
    - **Auto-SEO**: \`sitemap.xml\`, \`robots.txt\`, \`canonical\`, \`robots: index, follow\` oraz tagi Open Graph są generowane i chronione automatycznie przez system podczas publikacji — nigdy nie musisz ich ręcznie tworzyć ani edytować; zadbaj jedynie o konkretny, naturalny \`title\` i \`description\` SEO po polsku.
 3. **NAJPIERW ODCZYTAJ STRUKTURĘ**: Zanim zmodyfikujesz, przeniesiesz (\`move_element\` / \`reorder_element_to_index\`), ostylujesz (\`update_section_style\`), oznaczysz kotwicą (\`update_section_id\`), ukryjesz lub usuniesz istniejącą sekcję albo kafelek, wywołaj \`get_page_structure\`, a następnie \`get_element_details\`, aby poznać dokładne \`uid\` oraz dokładne nazwy pól \`fieldKey\`. Nigdy nie zgaduj \`uid\` ani \`fieldKey\`.
 4. **PEŁNE, SPRZEDAŻOWE TREŚCI I KONTRAST PO DODANIU BLOKÓW**: Kiedy dodajesz nową sekcję (\`add_section\`) lub nowy element (\`add_item\`), natychmiast sprawdź zwrócone pola tekstowe i podmień przykładowe/domyślne napisy na konkretne, dopracowane, sprzedażowe treści po polsku dopasowane do branży (${industry}) i prośby klienta. Uwaga na szablon \`cta-banner\`: ma już własną kontrastową ciemnozieloną kartę — nie nadpisuj jego tonu bez wyraźnej prośby użytkownika.
@@ -1473,15 +1506,21 @@ const READ_ONLY_TOOL_NAMES = new Set([
 export function isPureInformationalQuestion(rawText) {
   const text = String(rawText || '').trim().toLowerCase();
   if (!text) return false;
+
+  // Wyraźna prośba użytkownika, aby NIC nie zmieniać i tylko doradzić / opisać plan
+  const explicitNoEditRe =
+    /(?:nic\s+(?:jeszcze\s+)?nie\s+(?:zmieniaj|r[oó]b|ruszaj|dodawaj|usuwaj)|nie\s+zmieniaj\s+(?:jeszcze\s+)?nic|tylko\s+(?:dorad[zź]|powiedz|opisz|zaproponuj|wyja[sś]nij|sprawd[zź]|poka[zż]|plan)|zanim\s+co[sś]\s+zmienisz|bez\s+wprowadzania\s+zmian)/i;
+  if (explicitNoEditRe.test(text)) return true;
+
   const imperativeActionRe =
-    /(?:^|[\s,;.!?])(?:dodaj|utw[oó]rz|stw[oó]rz|zmie[nń]|edytuj|usu[nń]|skasuj|przenie[sś]|przestaw|wstaw|podmie[nń]|zast[aą]p|ukryj|odkryj|duplikuj|zduplikuj|cofnij|przywr[oó][cć]|odrzu[cć]|zapisz|podepnij|popraw|zaktualizuj|ustaw|zr[oó]b|wykonaj|napraw|przebuduj|przer[oó]b)(?=$|[\s,;.!?])/i;
+    /(?:^|[\s,;.!?])(?:dodaj|dodasz|utw[oó]rz|utworzysz|stw[oó]rz|zmie[nń]|zmienisz|edytuj|usu[nń]|usuniesz|skasuj|przenie[sś]|przeniesiesz|przestaw|wstaw|wstawisz|wrzu[cć]|wrzucisz|podmie[nń]|podmienisz|zast[aą]p|ukryj|odkryj|duplikuj|zduplikuj|sklonuj|dopisz|zamie[nń]|pod[lł][aą]cz|cofnij|przywr[oó][cć]|odrzu[cć]|zapisz|podepnij|popraw|zaktualizuj|ustaw|zr[oó]b|wykonaj|napraw|przebuduj|przer[oó]b)(?=$|[\s,;.!?])/i;
   const politeCommandRe =
-    /(?:^|[\s,;.!?])(?:czy\s+)?(?:mo[zż]esz|m[oó]g[lł]by[sś]|mog[lł]aby[sś]|zrobi[lł]by[sś]|doda[lł]by[sś]|zmieni[lł]by[sś]|prosz[eę]\s+(?:o\s+)?(?:doda|zmieni|utworz|usuni|wstawi|przenies|podmieni|poprawi))/i;
+    /(?:^|[\s,;.!?])(?:czy\s+)?(?:mo[zż]esz|m[oó]g[lł]by[sś]|mog[lł]aby[sś]|zrobi[lł]by[sś]|doda[lł]by[sś]|zmieni[lł]by[sś]|chcia[lł](?:a)?bym\s+(?:doda|zmieni|utworz|usuni|wstawi|przenies|podmieni|poprawi)|prosz[eę]\s+(?:o\s+)?(?:doda|zmieni|utworz|usuni|wstawi|przenies|podmieni|poprawi))/i;
   if (politeCommandRe.test(text)) return false;
   if (imperativeActionRe.test(text)) return false;
 
   const questionStarterRe =
-    /^(?:hej[,\s]+|cze[sś][cć][,\s]+|a\s+|no\s+a\s+|ale\s+)?(?:jak\s+(?:mog[eę]|mo[zż]na|si[eę]|dzia[lł]a|to|wygl[aą]da|wej[sś][cć]|do[jsś][cć]|dosta[cć]|odsta[cć]|przej[sś][cć]|znale[zź][cć]|otworzy[cć])|w\s+jaki\s+spos[oó]b|gdzie\s+(?:jest|s[aą]|znajd[eę]|mog[eę]|mo[zż]na|si[eę]|wida[cć])|dlaczego|czemu|po\s+co|co\s+(?:to|jest|robi|si[eę]|oznacza|znaczy|zawiera|mamy|masz)|czy\s+(?:jest|s[aą]|istnieje|dzia[lł]a|strona|panel|ai|klient|to|doda[lł]e[sś]|zmieni[lł]e[sś]|ma|mamy|b[eę]dzie|da\s+si[eę]|je[sś]li|jak)|sk[aą]d|kiedy|kt[oó]r[aeyo])(?=$|[\s,;.!?])/i;
+    /^(?:hej[,\s]+|cze[sś][cć][,\s]+|a\s+|no\s+a\s+|ale\s+)?(?:jak\s+(?:mog[eę]|mo[zż]na|si[eę]|dzia[lł]a|to|wygl[aą]da|wej[sś][cć]|do[jsś][cć]|dosta[cć]|odsta[cć]|przej[sś][cć]|znale[zź][cć]|otworzy[cć])|w\s+jaki\s+spos[oó]b|gdzie\s+(?:jest|s[aą]|znajd[eę]|mog[eę]|mo[zż]na|si[eę]|wida[cć])|dlaczego|czemu|po\s+co|co\s+(?:to|jest|robi|si[eę]|oznacza|znaczy|zawiera|mamy|masz|warto)|czy\s+(?:jest|s[aą]|istnieje|dzia[lł]a|strona|panel|ai|klient|to|doda[lł]e[sś]|zmieni[lł]e[sś]|ma|mamy|b[eę]dzie|da\s+si[eę]|je[sś]li|jak)|sk[aą]d|kiedy|kt[oó]r[aeyo]|ile|jaki[eay]?|poka[zż]|sprawd[zź]|opisz|wyja[sś]nij|podsumuj|wypisz|zaproponuj|dorad[zź])(?=$|[\s,;.!?])/i;
   if (questionStarterRe.test(text)) return true;
   if (text.endsWith('?')) return true;
   return false;

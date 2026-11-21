@@ -222,9 +222,9 @@ const EDITOR_ATTRS = [
 ];
 
 const REPEATER_SPECS = [
-  { selector: '.home-catalog-grid', itemSelector: ':scope > .home-cat-card', itemType: 'cat-card', label: 'Kafelki oferty' },
-  { selector: '.home-extra-categories', itemSelector: ':scope > .home-extra-category', itemType: 'extra-category', label: 'Dodatkowe kategorie' },
-  { selector: '.home-featured-grid', itemSelector: ':scope > .home-featured-product', itemType: 'featured-product', label: 'Polecane produkty' },
+  { selector: '.home-catalog-grid', itemSelector: ':scope > .home-cat-card', itemType: 'cat-card', label: 'Kafelki oferty (duże kategorie ze zdjęciem)' },
+  { selector: '.home-extra-categories', itemSelector: ':scope > .home-extra-category', itemType: 'extra-category', label: 'Dodatkowe kategorie (małe kafelki-pigułki bez zdjęcia)' },
+  { selector: '.home-featured-grid', itemSelector: ':scope > .home-featured-product', itemType: 'featured-product', label: 'Polecane produkty (karty produktów)' },
   { selector: '.home-services-grid', itemSelector: ':scope > .home-service-item', itemType: 'home-service', label: 'Kafelki usług' },
   { selector: '.reviews-track', itemSelector: ':scope > .review', itemType: 'review-card', label: 'Opinie' },
   { selector: '.realization-cards', itemSelector: ':scope > .realization-card', itemType: 'realization-card', label: 'Kafelki realizacji' },
@@ -2974,7 +2974,10 @@ export function connectCanvas(doc, options = {}) {
 
     if (!rep || !doc.contains(rep.el)) return null;
 
-    const resolvedType = itemType || rep.spec.itemType;
+    // Dla znanego kontenera (repeatera) ZAWSZE zachowuj jego własny typ kafelka,
+    // aby nie wstawić np. kafelka produktu do siatki kategorii (chyba że przekazano czysty HTML).
+    const isRawHtmlArg = typeof itemType === 'string' && itemType.trim().startsWith('<');
+    const resolvedType = isRawHtmlArg ? itemType : (rep.spec?.itemType || itemType);
     let newEl = null;
 
     const tpl = ITEM_TEMPLATES[resolvedType];

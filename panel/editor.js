@@ -33,7 +33,7 @@ import {
   SECTION_TEMPLATES,
   ITEM_TEMPLATES,
   PAGE_TEMPLATES,
-} from './templates.js?v=20261121-17';
+} from './templates.js?v=20261121-22';
 import {
   AccessError,
   ConflictError,
@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-20';
+} from './canvas.js?v=20261121-23';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-18';
+} from './ai-agent.js?v=20261121-22';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -4958,9 +4958,15 @@ async function scanPageComponents(pagePath) {
   }
 }
 
-async function wireOfferTilesAcrossSite({ targetPagePath, title, ctaLabel = 'Zobacz ofertę' }) {
+async function wireOfferTilesAcrossSite({
+  targetPagePath,
+  title,
+  ctaLabel = 'Zobacz ofertę',
+  ofertaTileStyle = 'card',
+}) {
   const cleanTarget = String(targetPagePath || '').trim().replace(/^\/+/, '');
   const cleanTitle = String(title || '').trim();
+  const tileStyle = String(ofertaTileStyle || 'card').trim().toLowerCase() === 'pill' ? 'pill' : 'card';
   if (!cleanTarget || !cleanTitle) return [];
 
   const allPaths = new Set(getAllPagesMerged().filter((p) => !p.deleted).map((p) => p.path));
@@ -4985,10 +4991,15 @@ async function wireOfferTilesAcrossSite({ targetPagePath, title, ctaLabel = 'Zob
 
       const parsed = new DOMParser().parseFromString(hostHtml, 'text/html');
       const grid = parsed.querySelector('.home-catalog-grid');
-      if (!grid) continue;
+      const extraWrap = parsed.querySelector('.home-extra-categories');
+      if (!grid && !extraWrap) continue;
 
       const relHref = toRelativeUrl(cleanTarget, hostPage);
-      const alreadyLinked = Array.from(grid.querySelectorAll('a[href]')).some((a) => {
+      const existingLinks = [
+        ...(grid ? Array.from(grid.querySelectorAll('a[href]')) : []),
+        ...(extraWrap ? Array.from(extraWrap.querySelectorAll('a[href]')) : []),
+      ];
+      const alreadyLinked = existingLinks.some((a) => {
         const root = toRootPath(a.getAttribute('href') || '', hostPage);
         return root === cleanTarget;
       });
@@ -4997,34 +5008,49 @@ async function wireOfferTilesAcrossSite({ targetPagePath, title, ctaLabel = 'Zob
         continue;
       }
 
-      const relImg = toRelativeUrl('img/placeholder-photo.svg', hostPage);
-      const card = parsed.createElement('a');
-      card.className = 'home-cat-card';
-      card.setAttribute('href', relHref);
+      if (tileStyle === 'pill' && extraWrap) {
+        const pill = parsed.createElement('a');
+        pill.className = 'home-extra-category';
+        pill.setAttribute('href', relHref);
+        const spanTitle = parsed.createElement('span');
+        spanTitle.textContent = cleanTitle;
+        const spanArrow = parsed.createElement('span');
+        spanArrow.setAttribute('aria-hidden', 'true');
+        spanArrow.textContent = '↗';
+        pill.append(spanTitle, spanArrow);
+        extraWrap.appendChild(pill);
+      } else if (grid) {
+        const relImg = toRelativeUrl('img/placeholder-photo.svg', hostPage);
+        const card = parsed.createElement('a');
+        card.className = 'home-cat-card';
+        card.setAttribute('href', relHref);
 
-      const thumb = parsed.createElement('div');
-      thumb.className = 'home-cat-thumb';
-      const img = parsed.createElement('img');
-      img.setAttribute('src', relImg);
-      img.setAttribute('alt', `${cleanTitle} – dodaj własne zdjęcie`);
-      img.setAttribute('loading', 'lazy');
-      img.setAttribute('decoding', 'async');
-      thumb.appendChild(img);
+        const thumb = parsed.createElement('div');
+        thumb.className = 'home-cat-thumb';
+        const img = parsed.createElement('img');
+        img.setAttribute('src', relImg);
+        img.setAttribute('alt', `${cleanTitle} – dodaj własne zdjęcie`);
+        img.setAttribute('loading', 'lazy');
+        img.setAttribute('decoding', 'async');
+        thumb.appendChild(img);
 
-      const body = parsed.createElement('div');
-      body.className = 'home-cat-body';
-      const h3 = parsed.createElement('h3');
-      h3.textContent = cleanTitle;
-      const cta = parsed.createElement('div');
-      cta.className = 'home-cat-cta';
-      cta.textContent = `${ctaLabel} `;
-      const arrow = parsed.createElement('span');
-      arrow.textContent = '↗';
-      cta.appendChild(arrow);
-      body.append(h3, cta);
+        const body = parsed.createElement('div');
+        body.className = 'home-cat-body';
+        const h3 = parsed.createElement('h3');
+        h3.textContent = cleanTitle;
+        const cta = parsed.createElement('div');
+        cta.className = 'home-cat-cta';
+        cta.textContent = `${ctaLabel} `;
+        const arrow = parsed.createElement('span');
+        arrow.textContent = '↗';
+        cta.appendChild(arrow);
+        body.append(h3, cta);
 
-      card.append(thumb, body);
-      grid.appendChild(card);
+        card.append(thumb, body);
+        grid.appendChild(card);
+      } else {
+        continue;
+      }
 
       const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
       const existingEntry = getPageEntry(hostPage);
@@ -5659,12 +5685,43 @@ async function executeAiTool(name, rawArgs = {}) {
       if (err) return err;
       const repeaterUid = String(args.repeaterUid || '').trim();
       if (!repeaterUid) return { ok: false, error: 'Brak wymaganego parametru repeaterUid.' };
+
+      const allRepeaters = (state.structure || []).flatMap((sec) =>
+        (sec.repeaters || []).map((r) => ({
+          repeaterUid: r.uid,
+          sectionUid: sec.uid,
+          sectionLabel: sec.label,
+          label: r.label,
+          itemType: r.itemType,
+          count: (r.items || []).length,
+        }))
+      );
+      const matchedRep = allRepeaters.find((r) => r.repeaterUid === repeaterUid);
+      const requestedType = String(args.itemType || '').trim();
+      if (
+        matchedRep &&
+        requestedType &&
+        !requestedType.startsWith('<') &&
+        matchedRep.itemType &&
+        matchedRep.itemType !== requestedType
+      ) {
+        const matchingReps = allRepeaters.filter((r) => r.itemType === requestedType);
+        return {
+          ok: false,
+          mismatchError: true,
+          error: `Niezgodny typ kontenera! Kontener „${repeaterUid}” (${matchedRep.label}) przyjmuje wyłącznie elementy typu „${matchedRep.itemType}”, a żądano „${requestedType}”. Wybierz kontener o typie „${requestedType}” albo zapytaj użytkownika, gdzie dokładnie dodać element.`,
+          matchingRepeatersForRequestedType: matchingReps,
+          allRepeatersOnPage: allRepeaters,
+        };
+      }
+
       state.lastMutateTime = 0;
       const newUid = state.canvas.insertItem(repeaterUid, args.itemType || null);
       if (!newUid) {
         return {
           ok: false,
           error: `Nie udało się dodać elementu do kontenera „${repeaterUid}”. Sprawdź repeaterUid przez get_page_structure.`,
+          allRepeatersOnPage: allRepeaters,
         };
       }
       state.expandedRepeaters.add(repeaterUid);
@@ -5678,7 +5735,12 @@ async function executeAiTool(name, rawArgs = {}) {
         }
       }
       if (typeof args.href === 'string' && args.href.trim()) {
-        const safeHref = sanitizeUrl(args.href.trim());
+        const trimmedHref = args.href.trim();
+        const resolvedHref =
+          /^(https?:|\/\/|tel:|mailto:|#|\.\.\/|javascript:)/i.test(trimmedHref)
+            ? trimmedHref
+            : toRelativeUrl(trimmedHref.replace(/^\/+/, ''), state.currentPagePath);
+        const safeHref = sanitizeUrl(resolvedHref);
         if (safeHref) {
           state.canvas.updateLink(newUid, { href: safeHref });
         }
@@ -5686,10 +5748,13 @@ async function executeAiTool(name, rawArgs = {}) {
 
       syncUiAfterAiMutation();
       const freshRaw = state.canvas.selectByUid(newUid, { scroll: true });
+      const resolvedRepAfter = matchedRep || allRepeaters.find((r) => r.sectionUid === repeaterUid && (!requestedType || r.itemType === requestedType)) || null;
       return {
         ok: true,
         newUid,
-        repeaterUid,
+        repeaterUid: resolvedRepAfter?.repeaterUid || repeaterUid,
+        insertedItemType: resolvedRepAfter?.itemType || freshRaw?.itemType || '',
+        containerLabel: resolvedRepAfter?.label || '',
         details: formatDescriptorForAi(freshRaw),
       };
     }
@@ -5917,6 +5982,7 @@ async function executeAiTool(name, rawArgs = {}) {
             targetPagePath: newPath,
             title: heading,
             ctaLabel: reqTplId === 'promo' ? 'Zobacz promocję' : 'Zobacz ofertę',
+            ofertaTileStyle: args.ofertaTileStyle === 'pill' ? 'pill' : 'card',
           })
         : [];
 

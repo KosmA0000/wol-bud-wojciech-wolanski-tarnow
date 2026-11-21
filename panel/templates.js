@@ -912,7 +912,7 @@ export const ITEM_TEMPLATES = {
       const rel = (p) => toRelativeUrl(p, pagePath);
       return `<a class="subcat-card" href="${rel('oferta/index.html')}">
   <div class="subcat-card-media">
-    <img src="${rel('img/products/rolety-zewnetrzne.webp')}" alt="Nowa podkategoria" loading="lazy" decoding="async">
+    <img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async">
   </div>
   <div class="subcat-card-body">
     <h3>Nowa podkategoria</h3>
@@ -929,7 +929,7 @@ export const ITEM_TEMPLATES = {
       const href = rel('produkty/okna-drzwi-alu/index.html');
       return `<article class="cat-prod-card">
   <a class="cat-prod-media" href="${href}" aria-label="Nowy produkt">
-    <img src="${rel('img/products/okna-alu-przesuwne.webp')}" alt="Nowy produkt" loading="lazy" decoding="async">
+    <img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async">
   </a>
   <div class="cat-prod-body">
     <span class="cat-prod-tag">WOL-BUD Tarnów</span>
