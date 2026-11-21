@@ -150,22 +150,37 @@ export async function runAiTurn({
             : {}),
         })),
       }];
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(s.apiKey)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal,
-          body: JSON.stringify({
-            ...(contextSummary ? { systemInstruction: { parts: [{ text: contextSummary }] } } : {}),
-            contents: geminiContents,
-            tools: gTools,
-            generationConfig: model.includes('hydrogen') ? { thinkingConfig: { thinkingLevel: 'HIGH' } } : {},
-          }),
-        }
+      const candidateModels = Array.from(
+        new Set([model, 'gemini-4-hydrogen', 'gemini-3.1-pro-preview', 'gemini-3.8-flash'].filter(Boolean))
       );
-      if (!res.ok) throw new Error(`Błąd Gemini API (HTTP ${res.status})`);
-      const data = await res.json();
+      let data = null;
+      let lastErrMsg = '';
+      for (const m of candidateModels) {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(s.apiKey)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal,
+            body: JSON.stringify({
+              ...(contextSummary ? { systemInstruction: { parts: [{ text: contextSummary }] } } : {}),
+              contents: geminiContents,
+              tools: gTools,
+              generationConfig: m.includes('hydrogen') ? { thinkingConfig: { thinkingLevel: 'HIGH' } } : {},
+            }),
+          }
+        );
+        const json = await res.json().catch(() => ({}));
+        if (res.ok) {
+          data = json;
+          break;
+        }
+        lastErrMsg = json?.error?.message ? `HTTP ${res.status}: ${json.error.message}` : `HTTP ${res.status}`;
+        if (res.status !== 429 && res.status !== 404 && res.status !== 503) {
+          throw new Error(`Błąd Gemini API (${lastErrMsg})`);
+        }
+      }
+      if (!data) throw new Error(`Błąd Gemini API (${lastErrMsg || 'HTTP 429'})`);
       const parts = data?.candidates?.[0]?.content?.parts || [];
       const text = parts.filter((p) => !p.thought && p.text).map((p) => p.text).join('\n').trim();
       const toolCalls = parts.filter((p) => p.functionCall).map((p, i) => ({

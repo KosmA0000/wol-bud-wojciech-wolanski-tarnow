@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-30';
+} from './ai-agent.js?v=20261121-31';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -5624,20 +5624,6 @@ function syncUiAfterAiMutation() {
 
 async function executeAiTool(name, rawArgs = {}) {
   const args = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
-
-
-  if (guard.requiresConfirm) {
-    const targetDesc = args.pagePath || args.path || name;
-    const confirmed = window.confirm(
-      `Asystent AI prosi o potwierdzenie operacji „${name}” dla „${targetDesc}”. Czy zezwalasz?`
-    );
-    if (!confirmed) {
-      return {
-        ok: false,
-        error: 'Użytkownik nie wyraził zgody na wykonanie tej operacji.',
-      };
-    }
-  }
 
   // Helper ensuring canvas is ready for page-level DOM tools
   const requireCanvas = () => {
