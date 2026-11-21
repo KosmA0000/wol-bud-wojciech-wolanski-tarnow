@@ -169,6 +169,20 @@ test('panel uruchamia się w ultra-prostym trybie bez błędów konsoli i wykryw
   await page.locator('#btn-close-inspector').click();
   await expect(page.locator('#panel-right')).not.toHaveClass(/is-drawer-open/);
 
+  // Interaktywna nawigacja po stronie jak na normalnej witrynie: MENU strony -> Usługi -> tryb Przeglądaj -> powrót na stronę główną
+  await preview.locator('#menuButton').click();
+  await expect(preview.locator('#site-menu')).toBeVisible();
+  await preview.locator('#site-menu a', { hasText: 'Usługi' }).click();
+  await waitForPreviewReady(page);
+  await expect(page.locator('#topbar-page-path')).toHaveText('uslugi/index.html');
+
+  await page.locator('#btn-mode-browse').click();
+  await expect(preview.locator('body')).toHaveClass(/cms-browse-mode/);
+  await preview.locator('a.brand').click();
+  await waitForPreviewReady(page);
+  await expect(page.locator('#topbar-page-path')).toHaveText('index.html');
+  await page.locator('#btn-mode-edit').click();
+
   // Przełączenie na tryb zaawansowany pokazuje wszystkie sekcje w drzewie
   await switchToAdvancedMode(page);
   const sectionCount = await page.locator('#structure-tree .tree-section').count();

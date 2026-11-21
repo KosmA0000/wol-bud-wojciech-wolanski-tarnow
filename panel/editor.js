@@ -156,6 +156,8 @@ const state = {
 
   activeTab: 'structure',
   uiMode: 'simple',
+  browseMode: false,
+  pageHistory: [],
   viewport: 'desktop',
   pendingInsertAfterUid: null,
   blocksQuery: '',
@@ -976,9 +978,71 @@ function performRedo() {
 // PAGE LOADING INTO IFRAME
 // ============================================================================
 
-async function loadPage(pagePath, { focusSectionId = null, skipFlush = false } = {}) {
+function setCanvasBrowseMode(enabled) {
+  state.browseMode = Boolean(enabled);
+  state.canvas?.setBrowseMode?.(state.browseMode);
+  if (state.browseMode && state.uiMode === 'simple') {
+    closeSimpleInspector();
+  }
+  const editBtn = $('btn-mode-edit');
+  const browseBtn = $('btn-mode-browse');
+  if (editBtn) {
+    editBtn.classList.toggle('is-active', !state.browseMode);
+    editBtn.setAttribute('aria-pressed', String(!state.browseMode));
+  }
+  if (browseBtn) {
+    browseBtn.classList.toggle('is-active', state.browseMode);
+    browseBtn.setAttribute('aria-pressed', String(state.browseMode));
+  }
+}
+
+async function handleCanvasNavigate({ pagePath = null, hash = null, back = false, externalUrl = null } = {}) {
+  if (externalUrl) {
+    window.open(sanitizeUrl(externalUrl, { allowRelative: false }), '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  if (back) {
+    const prev = state.pageHistory.pop();
+    if (prev) {
+      await loadPage(prev, { fromHistory: true });
+    } else if (state.currentPagePath !== 'index.html') {
+      await loadPage('index.html', { fromHistory: true });
+    }
+    return;
+  }
+
+  if (!pagePath) return;
+  const clean = String(pagePath).replace(/^\/+/, '');
+  const all = getAllPagesMerged().filter((p) => !p.deleted);
+  const matched =
+    all.find((p) => p.path === clean) ||
+    all.find((p) => p.path === `${clean.replace(/\/+$/, '')}/index.html`);
+
+  if (!matched) {
+    showToast(`Podstrona „${clean}” nie istnieje jeszcze w projekcie.`, 'warn');
+    return;
+  }
+
+  if (matched.path === state.currentPagePath) {
+    if (hash) {
+      const targetEl = $('preview')?.contentDocument?.getElementById(hash);
+      targetEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    return;
+  }
+
+  await loadPage(matched.path, { focusSectionId: hash || null });
+}
+
+async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fromHistory = false } = {}) {
   if (!skipFlush) {
     await flushAutosaveIfNeeded();
+  }
+
+  if (!fromHistory && state.currentPagePath && state.currentPagePath !== pagePath) {
+    state.pageHistory.push(state.currentPagePath);
+    if (state.pageHistory.length > 30) state.pageHistory.shift();
   }
 
   const seq = ++state.loadSeq;
@@ -1045,6 +1109,7 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false } =
 
     state.canvas = connectCanvas(doc, {
       pagePath,
+      browseMode: state.browseMode,
       pendingImages: getPendingImageUrlMap(),
       onSelect: handleCanvasSelect,
       onStructureChange: handleStructureChange,
@@ -1052,6 +1117,7 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false } =
       onRequestImage: handleRequestImage,
       onRequestAddSection: handleRequestAddSection,
       onRequestAddItem: handleRequestAddItem,
+      onNavigate: handleCanvasNavigate,
     });
 
     // Bind keyboard shortcuts inside iframe too
@@ -1909,6 +1975,26 @@ function renderElementInspector(desc) {
       });
 
       card.append(picker);
+
+      // Szybkie przejście do podpiętej podstrony bezpośrednio z Inspektora
+      const resolvedLinkTarget = toRootPath(String(lnk.href || '').split('#')[0], state.currentPagePath);
+      const linkHash = String(lnk.href || '').includes('#') ? String(lnk.href).split('#')[1] : null;
+      const linkedPage = resolvedLinkTarget
+        ? getAllPagesMerged().find((p) => !p.deleted && p.path === resolvedLinkTarget)
+        : null;
+      if (linkedPage && linkedPage.path !== state.currentPagePath) {
+        const jumpBtn = document.createElement('button');
+        jumpBtn.type = 'button';
+        jumpBtn.className = 'btn-secondary mini-btn btn-full';
+        jumpBtn.style.marginTop = '0.45rem';
+        jumpBtn.textContent = `↗ Otwórz „${linkedPage.label}” w edytorze`;
+        jumpBtn.addEventListener('click', () => {
+          closeSimpleInspector();
+          loadPage(linkedPage.path, { focusSectionId: linkHash || null });
+        });
+        card.append(jumpBtn);
+      }
+
       linkSec.append(card);
     });
 
@@ -4607,19 +4693,56 @@ async function executeAiTool(name, rawArgs = {}) {
       };
     }
 
-    // 3. update_element_text
+    // 3. update_element_text (obsługuje pojedyncze fieldKey+value ORAZ wsadowe fields: { k: v, ... })
     case 'update_element_text': {
       const err = requireCanvas();
       if (err) return err;
       const uid = String(args.uid || '').trim();
       if (!uid) return { ok: false, error: 'Brak wymaganego parametru uid.' };
-      if (args.value === undefined || args.value === null) {
-        return { ok: false, error: 'Brak nowej treści tekstowej (value).' };
-      }
 
       const raw = state.canvas.selectByUid(uid, { scroll: false });
       if (!raw || raw.uid !== uid) {
         return { ok: false, error: `Nie znaleziono elementu o uid „${uid}”.` };
+      }
+
+      // Tryb wsadowy: wiele pól tekstu naraz w jednym wywołaniu
+      if (args.fields && typeof args.fields === 'object' && !Array.isArray(args.fields)) {
+        const entries = Object.entries(args.fields).filter(([, v]) => v !== undefined && v !== null);
+        if (entries.length === 0) {
+          return { ok: false, error: 'Obiekt fields nie zawiera żadnych pól do aktualizacji.' };
+        }
+        state.lastMutateTime = 0;
+        const updatedKeys = [];
+        const skippedKeys = [];
+        for (const [reqKey, val] of entries) {
+          const resolvedKey = resolveTextFieldKey(raw.textFields, reqKey);
+          if (resolvedKey && state.canvas.updateField(uid, resolvedKey, String(val))) {
+            updatedKeys.push(resolvedKey);
+          } else {
+            skippedKeys.push(reqKey);
+          }
+        }
+        if (updatedKeys.length === 0) {
+          return {
+            ok: false,
+            error: `Nie dopasowano żadnego pola z fields. Dostępne pola: ${
+              (raw.textFields || []).map((f) => `${f.key} (${f.label})`).join(', ') || 'brak'
+            }.`,
+          };
+        }
+        syncUiAfterAiMutation();
+        const freshRaw = state.canvas.selectByUid(uid, { scroll: false });
+        return {
+          ok: true,
+          uid,
+          updatedKeys,
+          ...(skippedKeys.length ? { skippedKeys } : {}),
+          details: formatDescriptorForAi(freshRaw),
+        };
+      }
+
+      if (args.value === undefined || args.value === null) {
+        return { ok: false, error: 'Brak nowej treści tekstowej (value lub fields).' };
       }
 
       const nextValue = String(args.value);
@@ -5086,38 +5209,58 @@ async function executeAiTool(name, rawArgs = {}) {
       }
 
       await loadPage(newPath);
+      const editableSections = (state.structure || []).slice(0, 8).map((sec) => {
+        const det = state.canvas?.selectByUid?.(sec.uid, { scroll: false });
+        return {
+          uid: sec.uid,
+          label: sec.label,
+          textFields: (det?.textFields || []).map((f) => ({ key: f.key, label: f.label, value: f.value })),
+        };
+      });
+      state.canvas?.clearSelection?.();
       return {
         ok: true,
         pagePath: newPath,
         addedToMenu,
         meta: state.canvas?.getMeta?.() || { title, description },
         sections: state.structure,
+        editableSections,
       };
     }
 
-    // 18. search_images
+    // 18. search_images (inteligentne wyszukiwanie wielowyrazowe z punktacją)
     case 'search_images': {
       const q = normalizeTextForSearch(args.query || '');
+      const tokens = q.split(/\s+/).filter((t) => t.length >= 2);
       const folder = String(args.folder || 'all').trim();
       const limit = Math.min(50, Math.max(1, Number(args.limit) || 20));
       const includeThumbs = q.includes('thumb') || q.includes('miniatur');
 
       const all = getAllMediaItems();
-      const filtered = all.filter((item) => {
-        if (item.thumb && !includeThumbs) return false;
+      const scored = [];
+      for (const item of all) {
+        if (item.thumb && !includeThumbs) continue;
         if (folder && folder !== 'all') {
           if (folder === 'uploads') {
-            if (!item.isPending && item.folder !== 'uploads') return false;
+            if (!item.isPending && item.folder !== 'uploads') continue;
           } else if (item.folder !== folder) {
-            return false;
+            continue;
           }
         }
-        if (q) {
+        if (tokens.length > 0) {
           const hay = normalizeTextForSearch(`${item.name} ${item.path} ${item.folder}`);
-          if (!hay.includes(q)) return false;
+          let hits = 0;
+          for (const tok of tokens) {
+            if (hay.includes(tok)) hits += 1;
+          }
+          if (hits === 0) continue;
+          scored.push({ item, score: hits + (hay.includes(q) ? 5 : 0) });
+        } else {
+          scored.push({ item, score: 1 });
         }
-        return true;
-      });
+      }
+      scored.sort((a, b) => b.score - a.score);
+      const filtered = scored.map((s) => s.item);
 
       return {
         ok: true,
@@ -5443,13 +5586,19 @@ async function sendAiPrompt(rawPrompt) {
   userWrap.append(userBubble);
   messagesEl.append(userWrap);
 
-  // Przygotuj kontener odpowiedzi asystenta z listą kroków narzędzi + spinnerem
+  // Przygotuj kontener odpowiedzi asystenta ze zwijanym podsumowaniem kroków + spinnerem
   const botWrap = document.createElement('div');
   botWrap.className = 'ai-msg ai-msg--assistant';
 
+  const toolsDetails = document.createElement('details');
+  toolsDetails.className = 'ai-tools-details';
+  toolsDetails.hidden = true;
+  const toolsSummary = document.createElement('summary');
+  toolsSummary.className = 'ai-tools-summary';
+  toolsSummary.textContent = 'Wykonuję kroki…';
   const toolsList = document.createElement('div');
   toolsList.className = 'ai-tools-list';
-  toolsList.hidden = true;
+  toolsDetails.append(toolsSummary, toolsList);
 
   const thinkingEl = document.createElement('div');
   thinkingEl.className = 'ai-thinking';
@@ -5459,9 +5608,19 @@ async function sendAiPrompt(rawPrompt) {
   botBubble.className = 'ai-msg-bubble ai-md';
   botBubble.hidden = true;
 
-  botWrap.append(toolsList, thinkingEl, botBubble);
+  botWrap.append(toolsDetails, thinkingEl, botBubble);
   messagesEl.append(botWrap);
   scrollAiMessagesToBottom();
+
+  let doneStepsCount = 0;
+  let totalStepsCount = 0;
+  const updateToolsSummaryText = (finished = false) => {
+    const n = totalStepsCount;
+    const plural = n === 1 ? 'krok' : n >= 2 && n <= 4 ? 'kroki' : 'kroków';
+    toolsSummary.textContent = finished
+      ? `✓ Wykonano ${n} ${plural} (szczegóły)`
+      : `⏳ Krok ${doneStepsCount}/${n}…`;
+  };
 
   const toolPillsById = new Map();
   const controller = new AbortController();
@@ -5517,7 +5676,9 @@ async function sendAiPrompt(rawPrompt) {
         const toolName = callInfo?.name || '';
         const toolArgs = callInfo?.args || {};
 
-        toolsList.hidden = false;
+        toolsDetails.hidden = false;
+        totalStepsCount += 1;
+        updateToolsSummaryText(false);
         const pill = document.createElement('div');
         pill.className = 'ai-tool-pill is-running';
 
@@ -5541,6 +5702,8 @@ async function sendAiPrompt(rawPrompt) {
         if (ok && resInfo?.name && !AI_READ_ONLY_TOOLS.has(resInfo.name)) {
           aiDidMutate = true;
         }
+        doneStepsCount += 1;
+        updateToolsSummaryText(false);
         if (!entry) return;
         entry.pill.classList.remove('is-running');
         entry.pill.classList.add(ok ? 'is-done' : 'is-error');
@@ -5554,6 +5717,10 @@ async function sendAiPrompt(rawPrompt) {
     });
 
     thinkingEl.remove();
+    if (totalStepsCount > 0) {
+      updateToolsSummaryText(true);
+      toolsDetails.open = false;
+    }
     const replyText = String(result?.reply || '').trim() || 'Gotowe! Zmiany zostały wprowadzone w szkicu.';
     botBubble.innerHTML = renderSimpleMarkdown(replyText);
     attachAiUndoButtonIfMutated();
@@ -5637,6 +5804,15 @@ function bindUIEvents() {
     }
     switchSidebarTab('pages');
     $('pages-search').focus();
+  });
+
+  $('btn-mode-edit')?.addEventListener('click', () => {
+    setCanvasBrowseMode(false);
+    showToast('Tryb edycji: kliknij tekst lub zdjęcie na stronie, żeby je zmienić.');
+  });
+  $('btn-mode-browse')?.addEventListener('click', () => {
+    setCanvasBrowseMode(true);
+    showToast('Tryb przeglądania: wszystkie przyciski i linki działają jak na normalnej stronie.');
   });
 
   $('btn-simple-add-block')?.addEventListener('click', () => {

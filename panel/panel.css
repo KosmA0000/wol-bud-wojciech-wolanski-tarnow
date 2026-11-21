@@ -3434,3 +3434,84 @@ body.is-simple-mode #btn-support .btn-label-lg {
   border-color: var(--border);
   background: var(--bg-subtle);
 }
+
+/* Przełącznik „✏️ Edytuj | 🧭 Przeglądaj” w górnym pasku */
+.mode-switch-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.mode-switch-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0.32rem 0.68rem;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.mode-switch-btn:hover {
+  color: var(--text);
+}
+
+.mode-switch-btn.is-active {
+  background: var(--bg-white);
+  color: var(--brand);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+/* Zwijana lista kroków AI (zero ściany 18 zielonych pigułek w czacie!) */
+.ai-tools-details {
+  margin-bottom: 0.45rem;
+  border: 1px solid rgba(44, 77, 25, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.35rem 0.6rem;
+}
+
+.ai-tools-details[hidden] {
+  display: none;
+}
+
+.ai-tools-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  user-select: none;
+}
+
+.ai-tools-summary::-webkit-details-marker {
+  display: none;
+}
+
+.ai-tools-summary::after {
+  content: '▾';
+  font-size: 11px;
+  opacity: 0.7;
+  transition: transform 0.14s ease;
+}
+
+.ai-tools-details[open] .ai-tools-summary::after {
+  transform: rotate(180deg);
+}
+
+.ai-tools-details .ai-tools-list {
+  margin-top: 0.45rem;
+}

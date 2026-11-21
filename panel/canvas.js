@@ -575,8 +575,10 @@ export function connectCanvas(doc, options = {}) {
     onRequestImage: typeof options.onRequestImage === 'function' ? options.onRequestImage : () => {},
     onRequestAddSection: typeof options.onRequestAddSection === 'function' ? options.onRequestAddSection : () => {},
     onRequestAddItem: typeof options.onRequestAddItem === 'function' ? options.onRequestAddItem : () => {},
+    onNavigate: typeof options.onNavigate === 'function' ? options.onNavigate : () => {},
   };
 
+  let browseMode = Boolean(options.browseMode);
   let uidCounter = { sec: 0, rep: 0, item: 0, el: 0 };
   let selectedUid = null;
   let hoveredSectionEl = null;
@@ -3025,9 +3027,123 @@ export function connectCanvas(doc, options = {}) {
     }
   }
 
+  function setBrowseMode(enabled) {
+    browseMode = Boolean(enabled);
+    doc.body?.classList.toggle('cms-browse-mode', browseMode);
+    if (browseMode) {
+      clearSelection();
+      if (hoveredSectionEl) hoveredSectionEl.classList.remove('cms-hovered');
+      if (hoveredItemEl) hoveredItemEl.classList.remove('cms-hovered');
+      hoveredSectionEl = null;
+      hoveredItemEl = null;
+      doc.querySelectorAll('.cms-editable-text').forEach((el) => {
+        el.removeAttribute('contenteditable');
+      });
+    } else {
+      doc.querySelectorAll('.cms-editable-text').forEach((el) => {
+        if (!el.closest('[data-cms-ui]')) {
+          el.setAttribute('contenteditable', 'plaintext-only');
+        }
+      });
+    }
+  }
+
+  function getBrowseMode() {
+    return browseMode;
+  }
+
+  function closeOpenSiteMenus() {
+    const menuPanel = doc.getElementById('site-menu');
+    const menuBtn = doc.getElementById('menuButton');
+    if (menuPanel && !menuPanel.hidden) {
+      menuPanel.hidden = true;
+      menuBtn?.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function navigateAnchorHref(rawHref) {
+    const href = String(rawHref || '').trim();
+    if (!href) return false;
+
+    if (/^mailto:|^tel:/i.test(href)) {
+      return false;
+    }
+
+    if (/^https?:\/\//i.test(href)) {
+      callbacks.onNavigate({ externalUrl: href });
+      return true;
+    }
+
+    if (href.startsWith('#')) {
+      const targetId = href.slice(1).trim();
+      closeOpenSiteMenus();
+      if (targetId) {
+        const el = doc.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      return true;
+    }
+
+    const hashIdx = href.indexOf('#');
+    const pathPart = hashIdx >= 0 ? href.slice(0, hashIdx) : href;
+    const hashPart = hashIdx >= 0 ? href.slice(hashIdx + 1).trim() : '';
+    const resolvedRoot = pathPart ? toRootPath(pathPart, pagePath) : pagePath;
+
+    closeOpenSiteMenus();
+    if (resolvedRoot === pagePath && hashPart) {
+      const el = doc.getElementById(hashPart);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return true;
+      }
+    }
+
+    if (resolvedRoot) {
+      callbacks.onNavigate({ pagePath: resolvedRoot, hash: hashPart || null });
+      return true;
+    }
+    return false;
+  }
+
   function onClickCapture(e) {
     const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
     if (!target) return;
+
+    // 0. Przycisk Wstecz strony działa jak normalna nawigacja w panelu
+    const backBtn = target.closest('[data-history-back]');
+    if (backBtn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      callbacks.onNavigate({ back: true });
+      return;
+    }
+
+    // 0b. Natywne kontrolki strony (MENU, zamknij menu, Do góry, miniaturki/strzałki galerii, próbnik) działają normalnie!
+    const nativeSiteControl = target.closest(
+      '[data-menu-toggle], [data-menu-close], .scroll-top-btn, .product-gallery-thumb, [data-gallery-prev], [data-gallery-next], [data-palette-src]'
+    );
+    if (nativeSiteControl) {
+      return;
+    }
+
+    // 0c. Tryb „Przeglądaj” (normalna strona): wszystkie linki, przyciski, akordeony i lightbox działają jak na żywej stronie
+    if (browseMode) {
+      const anchor = target.closest('a[href]');
+      if (anchor) {
+        if (anchor.hasAttribute('data-lightbox-trigger') || anchor.hasAttribute('data-gallery-trigger')) {
+          return; // Pozwól otworzyć lightbox zdjęcia!
+        }
+        const href = anchor.getAttribute('href') || '';
+        if (href && !/^mailto:|^tel:/i.test(href)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          navigateAnchorHref(href);
+        }
+      }
+      return;
+    }
 
     // 1. Kliknięcie w przycisk nakładki zmiany zdjęcia
     const imgEditBtn = target.closest('[data-cms-ui="img-edit-btn"]');
@@ -3061,23 +3177,39 @@ export function connectCanvas(doc, options = {}) {
       return;
     }
 
-    // 3. Zablokuj nawigację po linkach <a>, lightbox, menu, wstecz i kopiowanie mailto
+    // 3. Linki nawigacyjne (Menu główne, nagłówek, stopka, okruszki, paginacja lub Ctrl+Klik) — działają jak normalna strona!
     const anchor = target.closest('a');
     if (anchor) {
+      const href = anchor.getAttribute('href') || '';
+      const isNavChrome = Boolean(
+        anchor.closest('header, nav, footer, .breadcrumbs, .detail-pagination') &&
+        !anchor.closest('.cms-section, .cms-item')
+      );
+      if ((isNavChrome || e.ctrlKey || e.metaKey) && href) {
+        if (/^mailto:|^tel:/i.test(href)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        navigateAnchorHref(href);
+        return;
+      }
+
+      // Pozostałe linki wewnątrz edytowalnych sekcji/kart — zapobiegaj przypadkowemu opuszczeniu strony podczas edycji tekstu
       e.preventDefault();
       if (
         anchor.hasAttribute('data-lightbox-trigger') ||
-        (anchor.getAttribute('href') || '').startsWith('mailto:') ||
-        (anchor.getAttribute('href') || '').startsWith('#')
+        href.startsWith('mailto:') ||
+        href.startsWith('#')
       ) {
         e.stopImmediatePropagation();
       }
     }
 
-    const blockedBtn = target.closest(
-      '[data-lightbox-trigger], [data-gallery-trigger], [data-history-back], [data-menu-toggle], [data-menu-close], .scroll-top-btn, .product-gallery-thumb, [data-gallery-prev], [data-gallery-next], [data-palette-src]'
-    );
-    if (blockedBtn) {
+    const blockedEditTrigger = target.closest('[data-lightbox-trigger], [data-gallery-trigger]');
+    if (blockedEditTrigger) {
       e.preventDefault();
       e.stopImmediatePropagation();
     }
@@ -3125,6 +3257,7 @@ export function connectCanvas(doc, options = {}) {
   }
 
   function onDblClickCapture(e) {
+    if (browseMode) return;
     const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
     if (!target || target.closest('[data-cms-ui]')) return;
 
@@ -3156,7 +3289,7 @@ export function connectCanvas(doc, options = {}) {
   }
 
   function onMouseMove(e) {
-    if (dragState) return;
+    if (dragState || browseMode) return;
     const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
     if (!target) return;
 
@@ -3438,6 +3571,9 @@ export function connectCanvas(doc, options = {}) {
   // Inicjalny skan i podmiana tymczasowych zdjęć
   refreshPendingImages(pendingImages);
   scanStructure();
+  if (browseMode) {
+    setBrowseMode(true);
+  }
   callbacks.onStructureChange(getStructure());
 
   function destroy() {
@@ -3461,7 +3597,7 @@ export function connectCanvas(doc, options = {}) {
     doc.removeEventListener('dragend', onDragEnd);
 
     doc.querySelectorAll('[data-cms-ui]').forEach((el) => el.remove());
-    doc.body?.classList.remove('wolbud-preview');
+    doc.body?.classList.remove('wolbud-preview', 'cms-browse-mode');
     doc.querySelectorAll('*').forEach((el) => {
       EDITOR_CLASSES.forEach((cls) => el.classList.remove(cls));
       EDITOR_ATTRS.forEach((attr) => el.removeAttribute(attr));
@@ -3499,6 +3635,8 @@ export function connectCanvas(doc, options = {}) {
     captureSnapshot,
     restoreSnapshot,
     refreshPendingImages,
+    setBrowseMode,
+    getBrowseMode,
     destroy,
   };
 }

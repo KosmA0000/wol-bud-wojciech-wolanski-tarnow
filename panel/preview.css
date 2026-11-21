@@ -15,11 +15,39 @@ body.wolbud-preview {
   --cms-ui-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Mniej inwazyjne pływające przyciski strony podczas edycji */
-body.wolbud-preview .contact-bubbles,
-body.wolbud-preview .scroll-top-btn {
-  opacity: 0.22 !important;
-  pointer-events: none !important;
+/* Pływające przyciski strony podczas edycji: „Do góry” zawsze klikalne, dymki kontaktu dyskretne */
+body.wolbud-preview .contact-bubbles {
+  opacity: 0.45 !important;
+  transition: opacity 0.16s ease;
+}
+
+body.wolbud-preview .contact-bubbles:hover {
+  opacity: 1 !important;
+}
+
+/* Tryb „Przeglądaj” (normalna interaktywna strona w podglądzie) */
+body.wolbud-preview.cms-browse-mode .contact-bubbles,
+body.wolbud-preview.cms-browse-mode .scroll-top-btn {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+body.wolbud-preview.cms-browse-mode [data-cms-ui] {
+  display: none !important;
+}
+
+body.wolbud-preview.cms-browse-mode .cms-section,
+body.wolbud-preview.cms-browse-mode .cms-item,
+body.wolbud-preview.cms-browse-mode .cms-editable-text {
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: auto !important;
+}
+
+body.wolbud-preview.cms-browse-mode a,
+body.wolbud-preview.cms-browse-mode button,
+body.wolbud-preview.cms-browse-mode summary {
+  cursor: pointer !important;
 }
 
 /* Zabezpieczenie klikalności sekcji i elementów */

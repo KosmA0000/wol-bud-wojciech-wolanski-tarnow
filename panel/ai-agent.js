@@ -196,7 +196,7 @@ export const AI_TOOLS = Object.freeze([
   {
     name: 'update_element_text',
     description:
-      'Zmienia tekst wybranego pola (fieldKey z get_element_details) na wskazanej sekcji lub kafelku.',
+      'Zmienia treść tekstową na wskazanej sekcji lub kafelku. Możesz zmienić jedno pole (fieldKey + value) ALBO wiele pól naraz w jednym wywołaniu przez obiekt fields (np. { eyebrow: "...", title: "...", text: "..." }) — preferuj fields dla szybkości!',
     parameters: {
       type: 'object',
       properties: {
@@ -206,14 +206,18 @@ export const AI_TOOLS = Object.freeze([
         },
         fieldKey: {
           type: 'string',
-          description: 'Klucz pola tekstowego (key z tablicy textFields zwróconej przez get_element_details).',
+          description: 'Klucz pojedynczego pola tekstowego (opcjonalny, jeśli podajesz fields).',
         },
         value: {
           type: 'string',
-          description: 'Nowa treść tekstowa po polsku.',
+          description: 'Nowa treść tekstowa po polsku dla pojedynczego fieldKey.',
+        },
+        fields: {
+          type: 'object',
+          description: 'Mapa wielu pól do aktualizacji w JEDNYM wywołaniu, np. { "eyebrow": "Promocja", "title": "Rabat -15%", "text": "Opis..." }.',
         },
       },
-      required: ['uid', 'fieldKey', 'value'],
+      required: ['uid'],
     },
   },
   {
@@ -945,9 +949,14 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
    - Gdy tworzysz nową podstronę (\`create_page\`), podepnij ją w Menu głównym (\`addToMenu: true\`) albo w odpowiednim miejscu strony nadrzędnej (np. kafelek w Ofercie / przycisk), dokładnie tak jak są podpięte pozostałe podstrony tego typu.
 3. **NAJPIERW ODCZYTAJ STRUKTURĘ**: Zanim zmodyfikujesz, przeniesiesz (\`move_element\` / \`reorder_element_to_index\`), ostylujesz (\`update_section_style\`), oznaczysz kotwicą (\`update_section_id\`), ukryjesz lub usuniesz istniejącą sekcję albo kafelek, wywołaj \`get_page_structure\`, a następnie \`get_element_details\`, aby poznać dokładne \`uid\` oraz dokładne nazwy pól \`fieldKey\`. Nigdy nie zgaduj \`uid\` ani \`fieldKey\`.
 4. **PEŁNE, SPRZEDAŻOWE TREŚCI I KONTRAST PO DODANIU BLOKÓW**: Kiedy dodajesz nową sekcję (\`add_section\`) lub nowy element (\`add_item\`), natychmiast sprawdź zwrócone pola tekstowe i podmień przykładowe/domyślne napisy na konkretne, dopracowane, sprzedażowe treści po polsku dopasowane do branży (${industry}) i prośby klienta. Uwaga na szablon \`cta-banner\`: ma już własną kontrastową ciemnozieloną kartę — nie nadpisuj jego tonu bez wyraźnej prośby użytkownika.
-5. **TYLKO PRAWDZIWE ZDJĘCIA**: Zanim ustawisz zdjęcie narzędziem \`update_element_image\`, ZAWSZE użyj \`search_images\`, aby znaleźć istniejący plik w repozytorium lub w \`img/uploads/\`. Nigdy nie wymyślaj nieistniejących ścieżek \`img/...\`. Jeśli brak pasującego zdjęcia, poinformuj o tym użytkownika i zasugeruj wgranie własnego pliku w Bibliotece zdjęć.
-6. **STYL I KOLEJNOŚĆ**: Do ustawienia sekcji lub kafelka od razu w konkretnym miejscu użyj \`afterUid\` w \`add_section\` albo \`reorder_element_to_index\` (indeks od 0, np. \`index: 1\` zaraz pod Hero). Do zmiany wyglądu sekcji używaj wyłącznie bezpiecznego narzędzia \`update_section_style\` (\`tone\`, \`align\`, \`spacing\`).
-7. **STYL ODPOWIEDZI I COFANIE**: Odpowiadaj po polsku — zwięźle, przyjaźnie i konkretnie. Po wykonaniu zmian wypunktuj krótko, co dokładnie zostało zmienione, gdzie dokładnie dodano sekcję oraz jak do niej dotrzeć (ścieżka dojścia), i przypomnij, że zmianę można cofnąć jednym kliknięciem przyciskiem **„↶ Cofnij zmianę AI”** lub **„Cofnij” (Ctrl+Z)**, a wysłać na stronę przyciskiem **„Opublikuj”**.`;
+5. **TYLKO PRAWDZIWE ZDJĘCIA I KRÓTKIE WYSZUKIWANIE**: Zanim ustawisz zdjęcie narzędziem \`update_element_image\`, użyj \`search_images\` z **jednym krótkim słowem kluczowym** (np. \`"okna"\`, \`"drzwi"\`, \`"brama"\`, \`"montaz"\`) — wystarczy JEDNO wywołanie! Nigdy nie wymyślaj nieistniejących ścieżek.
+6. **OSZCZĘDNOŚĆ I SZYBKOŚĆ WYWOŁAŃ (ZERO ZBĘDNYCH ZAPYTAŃ!)**:
+   - **Łącz edycję wielu pól tekstu w JEDNO wywołanie** \`update_element_text({ uid, fields: { eyebrow: "...", title: "...", text: "..." } })\` zamiast robić 5 osobnych wywołań!
+   - Gdy \`create_page\` albo \`add_section\` zwraca gotową listę \`editableSections\` / \`textFields\`, **NIE wywołuj ponownie \`get_element_details\` ani \`get_page_structure\`** — masz już wszystkie \`uid\` i klucze pól!
+   - Jeśli wywołałeś \`create_page\` z \`addToMenu: true\`, **NIE wywołuj już osobno \`get_globals\` ani \`update_globals\`** — link został już dodany do menu!
+   - Nie edytuj pól, które już dobrze pasują do prośby klienta. Celuj w **2–5 celnych wywołań** zamiast 15!
+7. **STYL I KOLEJNOŚĆ**: Do ustawienia sekcji lub kafelka od razu w konkretnym miejscu użyj \`afterUid\` w \`add_section\` albo \`reorder_element_to_index\` (indeks od 0, np. \`index: 1\` zaraz pod Hero). Do zmiany wyglądu sekcji używaj wyłącznie bezpiecznego narzędzia \`update_section_style\` (\`tone\`, \`align\`, \`spacing\`).
+8. **STYL ODPOWIEDZI I COFANIE**: Odpowiadaj po polsku — zwięźle, przyjaźnie i konkretnie. Po wykonaniu zmian wypunktuj krótko, co dokładnie zostało zmienione, gdzie dokładnie dodano sekcję oraz jak do niej dotrzeć (ścieżka dojścia), i przypomnij, że zmianę można cofnąć jednym kliknięciem przyciskiem **„↶ Cofnij tę zmianę AI”** lub **„Cofnij” (Ctrl+Z)**, a wysłać na stronę przyciskiem **„Opublikuj”**.`;
 }
 
 /**
