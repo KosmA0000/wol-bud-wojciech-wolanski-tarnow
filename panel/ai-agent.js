@@ -1132,7 +1132,7 @@ Gdy użytkownik pyta, jak coś zrobić ręcznie w panelu, udzielaj krótkiej i t
 ## Zasady pracy nowoczesnego webmastera (34 narzędzia — prawdziwe oczy i bezpieczna swoboda)
 1. **NAJPIERW PATRZ NA BIEŻĄCĄ STRONĘ — NIGDY NIE PRZESKAKUJ W CIEMNO NA INNĄ PODSTRONĘ!**:
    - Użytkownik widzi przed sobą **bieżącą otwartą stronę** (\`currentPage\`). ZAWSZE zacznij od \`get_page_structure\` (i w razie potrzeby \`get_section_html\`) na TEJ bieżącej stronie!
-   - Zwracaj baczną uwagę na WSZYSTKIE sekcje i paski nawigacyjne na bieżącej stronie — w szczególności na podstronach kategorii (\`kategorie/*\`) u samej góry znajduje się **Pasek kategorii („Kategorie:”)** (\`.cat-quick-nav\` → \`cat-quick-nav-pills\`, typ elementu \`nav-pill\`, np. *Okna PCV, Drzwi wejściowe, Stolarka aluminiowa…*)!
+   - Zwracaj baczną uwagę na WSZYSTKIE sekcje i paski nawigacyjne na bieżącej stronie — w szczególności na podstronach kategorii (\`kategorie/*\`) u samej góry znajduje się **Pasek kategorii („Kategorie:”)** (\`.cat-quick-nav\` → \`cat-quick-nav-pills\`, typ elementu \`nav-pill\`, np. *Okna PCV, Drzwi wejściowe, Stolarka aluminiowa…*). Każda zmiana w tym pasku na podstronie kategorii jest **automatycznie synchronizowana przez system na wszystkich pozostałych podstronach kategorii** (nie musisz otwierać ich po kolei)!
    - **ZAKAZ samowolnego przeskakiwania (\`open_page\`) na \`index.html\` lub \`oferta/index.html\`**, gdy na bieżącej stronie istnieje już pasująca sekcja (np. pasek \`Kategorie:\`, podkategorie itp.) albo gdy nie masz 100% pewności, że użytkownik chciał edytować inną stronę!
    - Jeśli chcesz zajrzeć na inną podstronę (np. sprawdzić sekcję Oferta na \`index.html\` lub kategorie w \`realizacje/index.html\`), użyj **\`read_page_summary\`** — to pozwala czytać inne strony **bez przełączania widoku użytkownika**.
 2. **MASZ PRAWDZIWE OCZY I BEZPIECZNĄ SWOBODĘ TWÓRCZĄ (\`get_section_html\`, \`update_section_html\`, \`insert_custom_section\`)**:
@@ -1561,9 +1561,9 @@ export function isPureInformationalQuestion(rawText) {
   if (explicitNoEditRe.test(text)) return true;
 
   const imperativeActionRe =
-    /(?:^|[\s,;.!?])(?:dodaj|dodasz|utw[oó]rz|utworzysz|stw[oó]rz|zmie[nń]|zmienisz|edytuj|usu[nń]|usuniesz|skasuj|przenie[sś]|przeniesiesz|przestaw|wstaw|wstawisz|wrzu[cć]|wrzucisz|podmie[nń]|podmienisz|zast[aą]p|ukryj|odkryj|duplikuj|zduplikuj|sklonuj|dopisz|zamie[nń]|pod[lł][aą]cz|cofnij|przywr[oó][cć]|odrzu[cć]|zapisz|podepnij|popraw|zaktualizuj|ustaw|zr[oó]b|wykonaj|napraw|przebuduj|przer[oó]b)(?=$|[\s,;.!?])/i;
+    /(?:^|[\s,;.!?])(?:dodaj|dodasz|utw[oó]rz|utworzysz|stw[oó]rz|zmie[nń]|zmienisz|edytuj|usu[nń]|usuniesz|skasuj|przenie[sś]|przeniesiesz|przestaw|wstaw|wstawisz|wrzu[cć]|wrzucisz|podmie[nń]|podmienisz|zast[aą]p|ukryj|odkryj|duplikuj|zduplikuj|sklonuj|dopisz|zamie[nń]|pod[lł][aą]cz|cofnij|przywr[oó][cć]|odrzu[cć]|zapisz|podepnij|popraw|zaktualizuj|ustaw|zr[oó]b|wykonaj|napraw|przebuduj|przer[oó]b|uzupe[lł]nij|zsynchronizuj)(?=$|[\s,;.!?])/i;
   const politeCommandRe =
-    /(?:^|[\s,;.!?])(?:czy\s+)?(?:mo[zż]esz|m[oó]g[lł]by[sś]|mog[lł]aby[sś]|zrobi[lł]by[sś]|doda[lł]by[sś]|zmieni[lł]by[sś]|chcia[lł](?:a)?bym\s+(?:doda|zmieni|utworz|usuni|wstawi|przenies|podmieni|poprawi)|prosz[eę]\s+(?:o\s+)?(?:doda|zmieni|utworz|usuni|wstawi|przenies|podmieni|poprawi))/i;
+    /(?:^|[\s,;.!?])(?:(?:czy\s+)?(?:mo[zż]esz|m[oó]g[lł]by[sś]|mog[lł]aby[sś]|zrobi[lł]by[sś]|doda[lł]by[sś]|zmieni[lł]by[sś]|wstawi[lł]by[sś]|wrzuci[lł]by[sś]|poprawi[lł]by[sś]|naprawi[lł]by[sś]|usun[aą][lł]by[sś])|(?:chc[eę]|chcia[lł](?:a)?bym|prosz[eę]|prosi[lł](?:e|a)m|poprosi[lł](?:e|a)m|mia[lł](?:e|a)[sś])\s+(?:o\s+|aby[sś]?\s+|[zż]eby[sś]?\s+|by[sś]?\s+)?(?:doda|zmieni|utworz|stworz|usuni|usun[aą]|wstawi|wrzuci|przenies|podmieni|poprawi|naprawi|zrobi|podpi[aą]|pod[lł][aą]cz))/i;
   if (politeCommandRe.test(text)) return false;
   if (imperativeActionRe.test(text)) return false;
 
@@ -2232,7 +2232,7 @@ export async function runAiTurn({
 
   const resolvedSettings = normalizeSettings(settings || loadAiSettings());
   const trimmedHistory = sanitizeHistory(history);
-  const pureQuestion = isPureInformationalQuestion(trimmedMessage);
+  const pureQuestion = !forceExecute && isPureInformationalQuestion(trimmedMessage);
   const needsConfirmationPlan =
     Boolean(confirmBeforeEdit) &&
     !forceExecute &&
@@ -2243,9 +2243,9 @@ export async function runAiTurn({
     ? AI_TOOLS.filter((t) => READ_ONLY_TOOL_NAMES.has(t.name))
     : AI_TOOLS;
   const readOnlyNote = pureQuestion
-    ? '\n\n[TRYB PYTANIA — TYLKO DO ODCZYTU]: Użytkownik zadał pytanie, a nie polecił wykonania zmian. Odpowiedz krótko i konkretnie na pytanie na podstawie obecnego stanu strony (możesz użyć wyłącznie narzędzi do odczytu), a na końcu zapytaj, czy chcesz, aby wykonać odpowiednią zmianę.'
+    ? '\n\n[TRYB PYTANIA — TYLKO DO ODCZYTU]: Użytkownik zadał pytanie informacyjne. Odpowiedz krótko i konkretnie na podstawie obecnego stanu strony (masz dostęp wyłącznie do narzędzi odczytu). NIGDY nie twierdź, że coś właśnie dodałeś/zmieniłeś, i NIGDY nie wspominaj o „trybie odczytu pytania” ani wewnętrznych blokadach. Na końcu zapytaj prosto, czy masz teraz wykonać odpowiednią zmianę.'
     : needsConfirmationPlan
-      ? '\n\n[TRYB „PYTAJ PRZED ZMIANĄ” — AKTYWNY]: Użytkownik włączył potwierdzanie przed każdą edycją. Użyj WYŁĄCZNIE narzędzi do odczytu (get_page_structure, list_pages, get_globals), aby dokładnie sprawdzić stronę, ale NIE WYKONUJ jeszcze żadnych zmian! Zamiast tego krótko i po ludzku wypunktuj: (1) CO dokładnie chcesz zrobić, (2) GDZIE dokładnie (na której podstronie, w której sekcji i w jakim typie kafelka/elementu — bez kodów typu sec-9), oraz (3) jeśli polecenie jest dwuznaczne, daj 2–3 proste opcje do wyboru. Na końcu poproś o potwierdzenie («Tak» lub kliknięcie przycisku «✓ Wykonaj ten plan»).'
+      ? '\n\n[TRYB „PYTAJ PRZED ZMIANĄ” — AKTYWNY]: Użytkownik włączył potwierdzanie przed każdą edycją. Użyj WYŁĄCZNIE narzędzi do odczytu (get_page_structure, get_section_html, read_page_summary, list_pages, get_globals), aby dokładnie sprawdzić stronę, ale NIE WYKONUJ jeszcze żadnych zmian! NIGDY nie twierdź, że zmiana już zaszła. Zamiast tego krótko i po ludzku wypunktuj: (1) CO dokładnie chcesz zrobić, (2) GDZIE dokładnie (na której podstronie, w której sekcji i w jakim typie kafelka/elementu — bez kodów typu sec-9), oraz (3) jeśli polecenie jest dwuznaczne, daj 2–3 proste opcje do wyboru. Na końcu poproś o potwierdzenie («Tak» lub kliknięcie przycisku «✓ Wykonaj ten plan»).'
       : '';
   const fullSystemPrompt = buildCombinedSystemPrompt(contextSummary) + readOnlyNote;
   const toolLog = [];

@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-25';
+} from './ai-agent.js?v=20261121-26';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -190,6 +190,8 @@ const state = {
   loadSeq: 0,
   isPublishing: false,
   dragSectionUid: null,
+  loadedCatNavSignature: '',
+  isSyncingCatNav: false,
 
   ai: {
     open: false,
@@ -864,6 +866,18 @@ async function saveCurrentPageDraft({ silent = false } = {}) {
     state.pageDrafts[state.currentPagePath] = draft;
     state.currentPageDirty = false;
 
+    // Automatyczna synchronizacja wspólnego paska „Kategorie:” na wszystkich podstronach kategorii
+    if (/^kategorie\//i.test(state.currentPagePath) && !state.isSyncingCatNav) {
+      const currentPills = extractCategoryNavPillsFromHtml(html, state.currentPagePath);
+      const nextSig = serializeCategoryNavSignature(currentPills);
+      if (nextSig && state.loadedCatNavSignature && nextSig !== state.loadedCatNavSignature) {
+        state.loadedCatNavSignature = nextSig;
+        await syncCategoryQuickNavAcrossSite(state.currentPagePath, currentPills);
+      } else if (nextSig && !state.loadedCatNavSignature) {
+        state.loadedCatNavSignature = nextSig;
+      }
+    }
+
     updateTopbarAndIndicators();
     renderPagesList();
     if (!state.selectedDescriptor) {
@@ -991,6 +1005,7 @@ async function restoreAiTurnCheckpoint(checkpoint, { isRedo = false } = {}) {
         state.canvas.restoreSnapshot(checkpoint.canvasHtml);
         applyGlobalsPreview(getActiveGlobals());
         state.lastSnapshot = safeCaptureSnapshot();
+        state.loadedCatNavSignature = getCategoryNavSignatureFromHtml(safeSerializeHtml(), state.currentPagePath);
         state.structure = normalizeStructure(state.canvas.getStructure?.());
         state.selectedDescriptor = normalizeDescriptor(state.canvas.getSelectedDescriptor?.());
         state.currentPageDirty = false;
@@ -1323,6 +1338,7 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
 
     state.structure = normalizeStructure(state.canvas.getStructure?.());
     state.lastSnapshot = safeCaptureSnapshot();
+    state.loadedCatNavSignature = getCategoryNavSignatureFromHtml(safeSerializeHtml(), pagePath);
 
     // Przywróć zapisaną historię Cofnij / Ponów dla tej podstrony (działa także po odświeżeniu F5!)
     const persisted = restoreUndoRedoForPage(pagePath);
@@ -4991,6 +5007,139 @@ async function scanPageComponents(pagePath) {
   }
 }
 
+function extractCategoryNavPillsFromHtml(html, pagePath) {
+  if (!html || !/^kategorie\//i.test(String(pagePath || ''))) return [];
+  try {
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+    const wrap = parsed.querySelector('.cat-quick-nav-pills');
+    if (!wrap) return [];
+    return Array.from(wrap.querySelectorAll(':scope > a.cat-nav-pill'))
+      .map((a) => {
+        const text = (a.textContent || '').replace(/\s+/g, ' ').trim();
+        const rawHref = (a.getAttribute('href') || '#').trim() || '#';
+        const isExternalOrHash = rawHref === '#' || /^(?:https?:|mailto:|tel:|#)/i.test(rawHref);
+        const rootHref = isExternalOrHash ? '' : toRootPath(rawHref, pagePath) || '';
+        return {
+          text,
+          rawHref,
+          rootHref,
+          hidden: a.classList.contains('cms-hidden'),
+          target: a.getAttribute('target') || '',
+          rel: a.getAttribute('rel') || '',
+        };
+      })
+      .filter((p) => p.text.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+function serializeCategoryNavSignature(pills) {
+  if (!Array.isArray(pills) || pills.length === 0) return '';
+  return JSON.stringify(
+    pills.map((p) => [p.text, p.rootHref || p.rawHref, p.hidden ? 1 : 0, p.target || ''])
+  );
+}
+
+function getCategoryNavSignatureFromHtml(html, pagePath) {
+  return serializeCategoryNavSignature(extractCategoryNavPillsFromHtml(html, pagePath));
+}
+
+async function syncCategoryQuickNavAcrossSite(sourcePagePath, sourcePills) {
+  if (!/^kategorie\//i.test(String(sourcePagePath || ''))) return [];
+  if (!Array.isArray(sourcePills) || sourcePills.length === 0) return [];
+  if (state.isSyncingCatNav) return [];
+
+  state.isSyncingCatNav = true;
+  const sourceSig = serializeCategoryNavSignature(sourcePills);
+  const syncedPages = [];
+
+  try {
+    const targetPages = getAllPagesMerged()
+      .filter((p) => !p.deleted && /^kategorie\//i.test(p.path) && p.path !== sourcePagePath)
+      .map((p) => p.path);
+
+    await Promise.all(
+      targetPages.map(async (targetPath) => {
+        try {
+          let targetHtml = '';
+          const existingDraft = state.pageDrafts[targetPath];
+          if (existingDraft && !existingDraft.deleted && typeof existingDraft.html === 'string' && existingDraft.html.trim()) {
+            targetHtml = existingDraft.html;
+          } else {
+            const res = await fetch(new URL('../' + targetPath, location.href).href, { cache: 'no-store' });
+            if (!res.ok) return;
+            targetHtml = await res.text();
+          }
+          if (!targetHtml || !targetHtml.includes('cat-quick-nav-pills')) return;
+
+          const currentTargetPills = extractCategoryNavPillsFromHtml(targetHtml, targetPath);
+          if (serializeCategoryNavSignature(currentTargetPills) === sourceSig) return;
+
+          const parsed = new DOMParser().parseFromString(targetHtml, 'text/html');
+          const wrap = parsed.querySelector('.cat-quick-nav-pills');
+          if (!wrap) return;
+
+          const existingActiveRoots = new Set();
+          const existingActiveTexts = new Set();
+          wrap.querySelectorAll(':scope > a.cat-nav-pill.is-active').forEach((a) => {
+            const raw = (a.getAttribute('href') || '').trim();
+            const r = raw && !/^(?:https?:|mailto:|tel:|#)/i.test(raw) ? toRootPath(raw, targetPath) : '';
+            if (r) existingActiveRoots.add(r);
+            const t = (a.textContent || '').replace(/\s+/g, ' ').trim();
+            if (t) existingActiveTexts.add(t);
+          });
+
+          wrap.innerHTML = '';
+          for (const pill of sourcePills) {
+            const a = parsed.createElement('a');
+            const href = pill.rootHref ? toRelativeUrl(pill.rootHref, targetPath) : pill.rawHref || '#';
+            a.setAttribute('href', href);
+
+            const isActive =
+              Boolean(pill.rootHref && pill.rootHref === targetPath) ||
+              Boolean(pill.rootHref && existingActiveRoots.has(pill.rootHref)) ||
+              (!pill.rootHref && existingActiveTexts.has(pill.text));
+
+            const classes = ['cat-nav-pill'];
+            if (isActive) classes.push('is-active');
+            if (pill.hidden) classes.push('cms-hidden');
+            a.className = classes.join(' ');
+            if (pill.target) a.setAttribute('target', pill.target);
+            if (pill.rel) a.setAttribute('rel', pill.rel);
+            a.textContent = pill.text;
+            wrap.appendChild(a);
+          }
+
+          const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
+          const entry = getPageEntry(targetPath);
+          const nextDraft = {
+            html: nextHtml,
+            title: parsed.title || entry.title || '',
+            description:
+              parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+              entry.description ||
+              '',
+            label: existingDraft?.label || entry.label,
+            group: existingDraft?.group || entry.group || inferPageGroup(targetPath),
+            isNew: Boolean(existingDraft?.isNew),
+            deleted: false,
+          };
+          await savePageDraft(targetPath, nextDraft);
+          state.pageDrafts[targetPath] = nextDraft;
+          syncedPages.push(targetPath);
+        } catch (err) {
+          console.warn(`Nie udało się zsynchronizować paska kategorii na ${targetPath}:`, err);
+        }
+      })
+    );
+  } finally {
+    state.isSyncingCatNav = false;
+  }
+
+  return syncedPages;
+}
+
 async function wireOfferTilesAcrossSite({
   targetPagePath,
   title,
@@ -5104,6 +5253,66 @@ async function wireOfferTilesAcrossSite({
       updatedPages.push(hostPage);
     } catch (err) {
       console.warn(`Nie udało się dopiąć kafelka Oferty na ${hostPage}:`, err);
+    }
+  }
+
+  // Jeśli nowa podstrona należy do katalogu kategorii (kategorie/*), dopnij ją również do wspólnego paska „Kategorie:” na wszystkich podstronach kategorii
+  if (/^kategorie\//i.test(cleanTarget)) {
+    const catPages = getAllPagesMerged()
+      .filter((p) => !p.deleted && /^kategorie\//i.test(p.path))
+      .map((p) => p.path);
+
+    for (const catPage of catPages) {
+      try {
+        let catHtml = '';
+        if (state.currentPagePath === catPage && state.canvas) {
+          catHtml = safeSerializeHtml();
+        } else if (state.pageDrafts[catPage]?.html && !state.pageDrafts[catPage].deleted) {
+          catHtml = state.pageDrafts[catPage].html;
+        } else {
+          const res = await fetch(new URL('../' + catPage, location.href).href, { cache: 'no-store' });
+          if (!res.ok) continue;
+          catHtml = await res.text();
+        }
+        if (!catHtml || !catHtml.includes('cat-quick-nav-pills')) continue;
+
+        const parsed = new DOMParser().parseFromString(catHtml, 'text/html');
+        const wrap = parsed.querySelector('.cat-quick-nav-pills');
+        if (!wrap) continue;
+
+        const exists = Array.from(wrap.querySelectorAll('a.cat-nav-pill')).some((a) => {
+          const r = toRootPath(a.getAttribute('href') || '', catPage);
+          return r === cleanTarget;
+        });
+        if (exists) continue;
+
+        const a = parsed.createElement('a');
+        a.setAttribute('href', toRelativeUrl(cleanTarget, catPage));
+        a.className = catPage === cleanTarget ? 'cat-nav-pill is-active' : 'cat-nav-pill';
+        a.textContent = cleanTitle;
+        wrap.appendChild(a);
+
+        const nextHtml = `<!doctype html>\n${parsed.documentElement.outerHTML}\n`;
+        const entry = getPageEntry(catPage);
+        const existingDraft = state.pageDrafts[catPage];
+        const nextDraft = {
+          html: nextHtml,
+          title: parsed.title || entry.title || '',
+          description:
+            parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+            entry.description ||
+            '',
+          label: existingDraft?.label || entry.label,
+          group: existingDraft?.group || entry.group || inferPageGroup(catPage),
+          isNew: Boolean(existingDraft?.isNew),
+          deleted: false,
+        };
+        await savePageDraft(catPage, nextDraft);
+        state.pageDrafts[catPage] = nextDraft;
+        updatedPages.push(catPage);
+      } catch (err) {
+        console.warn(`Nie udało się dopiąć pigułki kategorii na ${catPage}:`, err);
+      }
     }
   }
 
@@ -6510,6 +6719,7 @@ async function executeAiTool(name, rawArgs = {}) {
 
     // 32. read_page_summary — podgląd struktury innej podstrony BEZ przełączania widoku użytkownika
     case 'read_page_summary': {
+      await flushAutosaveIfNeeded();
       const cleanPath = String(args.pagePath || '').trim().replace(/^\/+/, '');
       if (!cleanPath || cleanPath.includes('..')) {
         return { ok: false, error: 'Podaj poprawną ścieżkę podstrony z list_pages (np. "index.html", "oferta/index.html").' };
