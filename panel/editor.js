@@ -5660,29 +5660,51 @@ async function sendAiPrompt(rawPrompt) {
   await flushAutosaveIfNeeded();
   const turnCheckpoint = captureAiTurnCheckpoint();
   let aiDidMutate = false;
+  const pendingPhotoPickTargets = new Map(); // uid -> label (kafelki/sekcje z placeholder-photo.svg do wyboru zdjęcia przez człowieka)
 
   const attachAiUndoButtonIfMutated = () => {
-    if (!aiDidMutate) return;
-    state.aiUndoStack.push(turnCheckpoint);
-    if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
-    updateUndoRedoButtons();
+    const hasPhotoTargets = pendingPhotoPickTargets.size > 0;
+    if (!aiDidMutate && !hasPhotoTargets) return;
 
     const bar = document.createElement('div');
     bar.className = 'ai-undo-bar';
-    const undoBtn = document.createElement('button');
-    undoBtn.type = 'button';
-    undoBtn.className = 'ai-undo-turn-btn';
-    undoBtn.textContent = '↶ Cofnij tę zmianę AI';
-    undoBtn.addEventListener('click', async () => {
-      undoBtn.disabled = true;
-      const ok = await restoreAiTurnCheckpoint(turnCheckpoint);
-      if (ok) {
-        undoBtn.textContent = '✓ Cofnięto zmianę AI';
-      } else {
-        undoBtn.disabled = false;
+
+    if (hasPhotoTargets) {
+      for (const [targetUid, targetLabel] of pendingPhotoPickTargets.entries()) {
+        const pickBtn = document.createElement('button');
+        pickBtn.type = 'button';
+        pickBtn.className = 'ai-undo-turn-btn ai-pick-photo-btn';
+        pickBtn.textContent = targetLabel
+          ? `🖼️ Wybierz lub wgraj zdjęcie: „${targetLabel}”`
+          : '🖼️ Wybierz lub wgraj zdjęcie';
+        pickBtn.addEventListener('click', () => {
+          handleRequestImage(targetUid);
+        });
+        bar.append(pickBtn);
       }
-    });
-    bar.append(undoBtn);
+    }
+
+    if (aiDidMutate) {
+      state.aiUndoStack.push(turnCheckpoint);
+      if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
+      updateUndoRedoButtons();
+
+      const undoBtn = document.createElement('button');
+      undoBtn.type = 'button';
+      undoBtn.className = 'ai-undo-turn-btn';
+      undoBtn.textContent = '↶ Cofnij tę zmianę AI';
+      undoBtn.addEventListener('click', async () => {
+        undoBtn.disabled = true;
+        const ok = await restoreAiTurnCheckpoint(turnCheckpoint);
+        if (ok) {
+          undoBtn.textContent = '✓ Cofnięto zmianę AI';
+        } else {
+          undoBtn.disabled = false;
+        }
+      });
+      bar.append(undoBtn);
+    }
+
     botBubble.append(bar);
   };
 
@@ -5726,6 +5748,25 @@ async function sendAiPrompt(rawPrompt) {
         const ok = resInfo?.ok !== false && resInfo?.result?.ok !== false;
         if (ok && resInfo?.name && !AI_READ_ONLY_TOOLS.has(resInfo.name)) {
           aiDidMutate = true;
+        }
+        if (ok && (resInfo?.name === 'add_item' || resInfo?.name === 'add_section')) {
+          const det = resInfo?.result?.details || null;
+          const newUid = resInfo?.result?.uid || det?.uid || '';
+          const imgSrc = String(det?.image?.rootPath || det?.image?.src || '');
+          if (newUid && imgSrc.includes('placeholder-photo.svg')) {
+            pendingPhotoPickTargets.set(newUid, det?.label || '');
+          }
+        }
+        if (ok && resInfo?.name === 'update_element_text') {
+          const det = resInfo?.result?.details || null;
+          const uid = resInfo?.result?.uid || det?.uid || '';
+          if (uid && pendingPhotoPickTargets.has(uid) && det?.label) {
+            pendingPhotoPickTargets.set(uid, det.label);
+          }
+        }
+        if (ok && resInfo?.name === 'update_element_image') {
+          const uid = resInfo?.result?.uid || '';
+          if (uid) pendingPhotoPickTargets.delete(uid);
         }
         doneStepsCount += 1;
         updateToolsSummaryText(false);

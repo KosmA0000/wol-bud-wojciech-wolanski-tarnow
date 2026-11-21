@@ -657,9 +657,9 @@ export const SECTION_TEMPLATES = [
     render(pagePath, inSubpage) {
       const rel = (p) => toRelativeUrl(p, pagePath);
       const secId = uniqueSectionId('zdjecie');
-      const img = rel('img/products/okna-alu-przesuwne.webp');
+      const img = rel('img/placeholder-photo.svg');
       const figureHtml = `<figure class="category-feature" id="${secId}">
-  <img src="${img}" alt="Zdjęcie promocyjne WOL-BUD" data-lightbox-trigger data-lightbox-src="${img}" data-lightbox-group="${secId}" loading="lazy" decoding="async">
+  <img src="${img}" alt="Dodaj własne zdjęcie" data-lightbox-trigger data-lightbox-src="${img}" data-lightbox-group="${secId}" loading="lazy" decoding="async">
 </figure>`;
       if (inSubpage) return figureHtml;
       return `<section class="cms-text-section" id="${secId}-wrap">\n  <div class="wrap">\n${figureHtml}\n  </div>\n</section>`;
@@ -720,7 +720,7 @@ export const ITEM_TEMPLATES = {
       const rel = (p) => toRelativeUrl(p, pagePath);
       return `<a class="home-cat-card" href="${rel('oferta/index.html')}">
   <div class="home-cat-thumb">
-    <img src="${rel('img/products/okno-infinity-passive-83md.webp')}" alt="Nowa kategoria" loading="lazy" decoding="async">
+    <img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async">
   </div>
   <div class="home-cat-body">
     <h3>Nowa kategoria</h3>
@@ -742,11 +742,11 @@ export const ITEM_TEMPLATES = {
     label: 'Karta polecanego produktu',
     createHtml(pagePath = 'index.html') {
       const rel = (p) => toRelativeUrl(p, pagePath);
-      return `<a class="home-featured-product" href="${rel('produkty/okna-drzwi-alu/index.html')}">
-  <div class="home-featured-media"><img src="${rel('img/products/okna-alu-przesuwne.webp')}" alt="Polecany produkt" loading="lazy" decoding="async"></div>
+      return `<a class="home-featured-product" href="${rel('oferta/index.html')}">
+  <div class="home-featured-media"><img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async"></div>
   <div class="home-featured-copy">
     <h4>Polecany produkt</h4>
-    <p>Krótki opis polecanego rozwiązania z oferty WOL-BUD Tarnów.</p>
+    <p>Krótki opis polecanego rozwiązania.</p>
     <span>Zobacz produkt ↗</span>
   </div>
 </a>`;
