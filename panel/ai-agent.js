@@ -853,8 +853,8 @@ export const AI_TOOLS = Object.freeze([
         },
         target: {
           type: 'string',
-          enum: ['', '_blank'],
-          description: 'Opcjonalnie "_blank", aby otwierać zewnętrzny link w nowej karcie.',
+          enum: ['_self', '_blank'],
+          description: 'Opcjonalnie "_blank", aby otwierać zewnętrzny link w nowej karcie (domyślnie "_self" w tej samej karcie).',
         },
       },
       required: ['targetUid', 'styleId', 'label', 'href'],
@@ -1161,7 +1161,8 @@ function convertSchemaToGemini(schema) {
     out.description = schema.description;
   }
   if (Array.isArray(schema.enum)) {
-    out.enum = [...schema.enum];
+    const nonEmpty = schema.enum.filter((v) => v !== '' && v !== null && v !== undefined);
+    if (nonEmpty.length > 0) out.enum = nonEmpty;
   }
   if (schema.items && typeof schema.items === 'object') {
     out.items = convertSchemaToGemini(schema.items);
