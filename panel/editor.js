@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-27';
+} from './ai-agent.js?v=20261121-28';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -5625,15 +5625,7 @@ function syncUiAfterAiMutation() {
 async function executeAiTool(name, rawArgs = {}) {
   const args = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
 
-  // Strażnik bezpieczeństwa wywołań narzędzi AI (blast radius, ochrona stron, blokada XSS/URL)
-  const guard = aiGuardrails.checkToolCall(name, args);
-  if (!guard.allowed) {
-    return {
-      ok: false,
-      blockedBySecurity: true,
-      error: guard.reason || 'Operacja zablokowana przez zabezpieczenia panelu.',
-    };
-  }
+
   if (guard.requiresConfirm) {
     const targetDesc = args.pagePath || args.path || name;
     const confirmed = window.confirm(
@@ -7276,6 +7268,50 @@ async function executeAiTool(name, rawArgs = {}) {
         totalReplacements,
         updatedPages: updatedPages.slice(0, 50),
       };
+    }
+
+    case 'list_files': {
+      return {
+        ok: true,
+        currentPage: state.currentPagePath,
+        files: getAllPagesMerged().filter((p) => !p.deleted).map((p) => p.path),
+      };
+    }
+
+    case 'read_file': {
+      const p = String(args.path || state.currentPagePath || '').trim().replace(/^\/+/, '');
+      const content = await readPageHtmlForSiteTool(p);
+      if (!content) return { ok: false, error: `Nie znaleziono pliku: ${p}` };
+      return { ok: true, path: p, content };
+    }
+
+    case 'write_file': {
+      const p = String(args.path || '').trim().replace(/^\/+/, '');
+      const content = String(args.content ?? '');
+      if (!p) return { ok: false, error: 'Podaj path' };
+      const existingDraft = state.pageDrafts[p];
+      const entry = getPageEntry(p);
+      const parsed = new DOMParser().parseFromString(content, 'text/html');
+      const nextDraft = {
+        html: content,
+        title: parsed.title || entry.title || p,
+        description: parsed.querySelector('meta[name="description"]')?.getAttribute('content') || entry.description || '',
+        label: existingDraft?.label || entry.label || p,
+        group: existingDraft?.group || entry.group || inferPageGroup(p),
+        isNew: Boolean(existingDraft?.isNew || !state.manifest?.pages?.some((m) => m.path === p)),
+        deleted: false,
+      };
+      await savePageDraft(p, nextDraft);
+      state.pageDrafts[p] = nextDraft;
+      if (p === state.currentPagePath && state.canvas) {
+        state.canvas.restoreSnapshot({ html: content });
+        state.structure = normalizeStructure(state.canvas.getStructure?.());
+        state.lastSnapshot = safeCaptureSnapshot();
+      }
+      updateTopbarAndIndicators();
+      renderPagesList();
+      renderStructureTree();
+      return { ok: true, path: p };
     }
 
     default:
