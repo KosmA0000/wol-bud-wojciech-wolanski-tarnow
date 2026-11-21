@@ -2408,11 +2408,15 @@ export function connectCanvas(doc, options = {}) {
 
     if (nextHref !== null) {
       const trimmedHref = String(nextHref).trim();
-      const safeHref = sanitizeUrl(trimmedHref);
-      if (trimmedHref && (!safeHref || isDangerousHrefScheme(trimmedHref) || isDangerousHrefScheme(safeHref))) {
-        return false;
+      if (!trimmedHref || trimmedHref === '#') {
+        nextHref = '#';
+      } else {
+        const safeHref = sanitizeUrl(trimmedHref);
+        if (!safeHref || isDangerousHrefScheme(trimmedHref) || isDangerousHrefScheme(safeHref)) {
+          return false;
+        }
+        nextHref = safeHref;
       }
-      nextHref = safeHref || '';
     }
 
     const targets =
@@ -2444,7 +2448,7 @@ export function connectCanvas(doc, options = {}) {
       setPreservedText(spec.el, sanitizeText(linkData.text));
     }
 
-    callbacks.onSelect(getSelectedDescriptor());
+    // NIE wywołujemy tutaj callbacks.onSelect(), aby nie przebudowywać Inspektora i nie odbierać fokusu przy wpisywaniu URL litera po literze!
     callbacks.onMutate('link');
     return true;
   }
@@ -3728,10 +3732,18 @@ export function connectCanvas(doc, options = {}) {
   function setAiPickMode(enabled) {
     aiPickMode = Boolean(enabled);
     doc.body?.classList.toggle('cms-ai-pick-mode', aiPickMode);
+    doc.querySelectorAll('[data-cms-ui="ai-pick-banner"]').forEach((n) => n.remove());
     if (!aiPickMode) {
       clearAiPickVisuals();
     } else {
       removeFreeHandles();
+      const banner = createEl(
+        doc,
+        'div',
+        { 'data-cms-ui': 'ai-pick-banner', role: 'status' },
+        '🎯 Tryb wskazywania dla AI: kliknij element LUB przeciągnij prostokąt myszką, aby wskazać dokładnie o które miejsce chodzi · Esc = zamknij'
+      );
+      doc.body?.appendChild(banner);
     }
   }
 
@@ -3829,8 +3841,14 @@ export function connectCanvas(doc, options = {}) {
         if (anchor.hasAttribute('data-lightbox-trigger') || anchor.hasAttribute('data-gallery-trigger')) {
           return; // Pozwól otworzyć lightbox zdjęcia!
         }
-        const href = anchor.getAttribute('href') || '';
-        if (href && !/^mailto:|^tel:/i.test(href)) {
+        const href = (anchor.getAttribute('href') || '').trim();
+        if (!href || href === '#') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          callbacks.onNavigate({ unlinked: true, label: truncate(getPreservedText(anchor), 50) });
+          return;
+        }
+        if (!/^mailto:|^tel:/i.test(href)) {
           e.preventDefault();
           e.stopImmediatePropagation();
           navigateAnchorHref(href);

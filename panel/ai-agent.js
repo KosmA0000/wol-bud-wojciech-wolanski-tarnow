@@ -15,8 +15,8 @@ const MAX_HISTORY_MESSAGES = 12;
 const MAX_HISTORY_TEXT_LENGTH = 8000;
 const MAX_TOOL_RESULT_JSON_LENGTH = 48000;
 const PROXY_STATUS_TIMEOUT_MS = 3500;
-const REQUEST_TIMEOUT_MS = 120000;
-const MODEL_FAILOVER_TIMEOUT_MS = 45000;
+const REQUEST_TIMEOUT_MS = 180000;
+const MODEL_FAILOVER_TIMEOUT_MS = 95000;
 
 export const DEFAULT_AI_SETTINGS = Object.freeze({
   provider: 'openrouter',
@@ -32,12 +32,13 @@ export const AI_MODELS = Object.freeze({
     'nvidia/nemotron-3-ultra-550b-a55b:free',
   ]),
   gemini: Object.freeze([
+    'gemini-4-hydrogen',
+    'gemini-3.1-pro-preview',
+    'gemini-3.8-flash',
     'gemini-3-flash-preview',
     'gemini-3.5-flash',
     'gemini-3.5-flash-lite',
-    'gemini-3.8-flash',
     'gemini-3.1-flash-lite-preview',
-    'gemini-3.1-pro-preview',
   ]),
   openai: Object.freeze(['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini']),
 });
@@ -1701,13 +1702,22 @@ async function runGeminiLoop({
     let lastErr = null;
     for (let i = activeModelIndex; i < fallbackChain.length; i += 1) {
       const candidateModel = fallbackChain[i];
+      const modelPayload = {
+        ...payload,
+        generationConfig: {
+          ...payload.generationConfig,
+          ...(candidateModel.includes('hydrogen') || candidateModel.includes('gemini-4')
+            ? { thinkingConfig: { thinkingLevel: 'HIGH' } }
+            : {}),
+        },
+      };
       try {
         const res = await fetchJsonWithAbort(
           endpointFor(candidateModel),
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(modelPayload),
           },
           signal,
           'gemini',
@@ -1863,7 +1873,7 @@ async function runOpenAiLoop({
         temperature: 0.35,
       };
       if (isOpenRouter && candidateModel.includes('nemotron')) {
-        payload.reasoning = { effort: 'low' };
+        payload.reasoning = { effort: 'high' };
       }
       if (includeTools) {
         payload.tools = openAiTools;
@@ -2140,6 +2150,18 @@ async function runProxyLoop({
  * @param {AbortSignal} [options.signal]
  * @returns {Promise<{ reply: string, toolLog: Array<{ name: string, args: object, ok: boolean, summary: string }> }>}
  */
+function isExplicitPlanApproval(rawText, history = []) {
+  const text = String(rawText || '').trim().toLowerCase();
+  if (!text || !Array.isArray(history) || history.length === 0) return false;
+  const lastAssistant = [...history].reverse().find((m) => m && m.role === 'assistant');
+  if (!lastAssistant || !lastAssistant.text) return false;
+  const approvalRe =
+    /^(?:tak|ok|okej|dobrze|super|jasne|zgoda|zgadzam|potwierdzam|wykonaj|zr[oó]b|dawaj|le[cć]|wybieram|opcja|numer|nr|w\s+porz[aą]dku|dok[lł]adnie|chodzi\s+mi|do\s+kategorii|1|2|3|4)(?:[\s,;.!?]|$)/i;
+  if (approvalRe.test(text)) return true;
+  if (/(?:wykonaj\s+ten\s+plan|zr[oó]b\s+to\s+teraz|potwierdzam\s+plan)/i.test(text)) return true;
+  return false;
+}
+
 export async function runAiTurn({
   userMessage,
   history = [],
@@ -2147,6 +2169,8 @@ export async function runAiTurn({
   settings,
   csrfToken = '',
   authHeader = '',
+  confirmBeforeEdit = false,
+  forceExecute = false,
   toolExecutor,
   onToolCall,
   onToolResult,
@@ -2161,18 +2185,31 @@ export async function runAiTurn({
 
   const resolvedSettings = normalizeSettings(settings || loadAiSettings());
   const trimmedHistory = sanitizeHistory(history);
-  const readOnlyMode = isPureInformationalQuestion(trimmedMessage);
+  const pureQuestion = isPureInformationalQuestion(trimmedMessage);
+  const needsConfirmationPlan =
+    Boolean(confirmBeforeEdit) &&
+    !forceExecute &&
+    !pureQuestion &&
+    !isExplicitPlanApproval(trimmedMessage, trimmedHistory);
+  const readOnlyMode = pureQuestion || needsConfirmationPlan;
   const activeTools = readOnlyMode
     ? AI_TOOLS.filter((t) => READ_ONLY_TOOL_NAMES.has(t.name))
     : AI_TOOLS;
-  const readOnlyNote = readOnlyMode
+  const readOnlyNote = pureQuestion
     ? '\n\n[TRYB PYTANIA — TYLKO DO ODCZYTU]: Użytkownik zadał pytanie, a nie polecił wykonania zmian. Odpowiedz krótko i konkretnie na pytanie na podstawie obecnego stanu strony (możesz użyć wyłącznie narzędzi do odczytu), a na końcu zapytaj, czy chcesz, aby wykonać odpowiednią zmianę.'
-    : '';
+    : needsConfirmationPlan
+      ? '\n\n[TRYB „PYTAJ PRZED ZMIANĄ” — AKTYWNY]: Użytkownik włączył potwierdzanie przed każdą edycją. Użyj WYŁĄCZNIE narzędzi do odczytu (get_page_structure, list_pages, get_globals), aby dokładnie sprawdzić stronę, ale NIE WYKONUJ jeszcze żadnych zmian! Zamiast tego krótko i po ludzku wypunktuj: (1) CO dokładnie chcesz zrobić, (2) GDZIE dokładnie (na której podstronie, w której sekcji i w jakim typie kafelka/elementu — bez kodów typu sec-9), oraz (3) jeśli polecenie jest dwuznaczne, daj 2–3 proste opcje do wyboru. Na końcu poproś o potwierdzenie («Tak» lub kliknięcie przycisku «✓ Wykonaj ten plan»).'
+      : '';
   const fullSystemPrompt = buildCombinedSystemPrompt(contextSummary) + readOnlyNote;
   const toolLog = [];
 
+  const finalizeResult = (res) => ({
+    ...res,
+    awaitingConfirmation: needsConfirmationPlan,
+  });
+
   if (resolvedSettings.provider === 'proxy') {
-    return runProxyLoop({
+    return finalizeResult(await runProxyLoop({
       userMessage: trimmedMessage,
       trimmedHistory,
       fullSystemPrompt,
@@ -2187,7 +2224,7 @@ export async function runAiTurn({
       onToolResult,
       signal,
       toolLog,
-    });
+    }));
   }
 
   if (!resolvedSettings.apiKey) {
@@ -2197,7 +2234,7 @@ export async function runAiTurn({
   }
 
   if (resolvedSettings.provider === 'openai' || resolvedSettings.provider === 'openrouter') {
-    return runOpenAiLoop({
+    return finalizeResult(await runOpenAiLoop({
       userMessage: trimmedMessage,
       trimmedHistory,
       fullSystemPrompt,
@@ -2209,10 +2246,10 @@ export async function runAiTurn({
       onToolResult,
       signal,
       toolLog,
-    });
+    }));
   }
 
-  return runGeminiLoop({
+  return finalizeResult(await runGeminiLoop({
     userMessage: trimmedMessage,
     trimmedHistory,
     fullSystemPrompt,
@@ -2224,5 +2261,5 @@ export async function runAiTurn({
     onToolResult,
     signal,
     toolLog,
-  });
+  }));
 }

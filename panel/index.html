@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="panel.css?v=20261121-23">
-  <script type="module" src="editor.js?v=20261121-23"></script>
+  <link rel="stylesheet" href="panel.css?v=20261121-24">
+  <script type="module" src="editor.js?v=20261121-24"></script>
 </head>
 <body class="is-simple-mode">
   <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
@@ -375,9 +375,13 @@
           <textarea id="ai-input" class="ai-input" rows="2" placeholder="Napisz, co chcesz zmienić… (możesz też przeciągnąć tu sekcję/kafelek lub kliknąć 🎯 Wskaż fragment)" aria-label="Polecenie dla Asystenta AI"></textarea>
           <div class="ai-foot-bar">
             <div class="ai-foot-left">
-              <button type="button" id="ai-pick-fragment-btn" class="ai-pick-btn" aria-pressed="false" title="Kliknij lub zaznacz ramką fragment strony, nad którym ma pracować AI">
-                🎯 Wskaż fragment
+              <button type="button" id="ai-pick-fragment-btn" class="ai-pick-btn" aria-pressed="false" title="Kliknij element lub przeciągnij prostokąt na ekranie, aby wskazać AI dokładnie którą sekcję zmienić lub gdzie coś dołożyć">
+                🎯 Zaznacz fragment
               </button>
+              <label class="ai-confirm-toggle" title="Gdy włączone, AI przed każdą zmianą najpierw sprawdzi stronę i zapyta Cię CO i GDZIE dokładnie ma zrobić">
+                <input type="checkbox" id="ai-confirm-before-edit">
+                <span>🛡️ Pytaj przed zmianą</span>
+              </label>
             </div>
             <div class="ai-foot-btns">
               <button type="button" id="ai-stop" class="ai-stop-btn" hidden>Zatrzymaj</button>

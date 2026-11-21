@@ -33,7 +33,7 @@ import {
   SECTION_TEMPLATES,
   ITEM_TEMPLATES,
   PAGE_TEMPLATES,
-} from './templates.js?v=20261121-22';
+} from './templates.js?v=20261121-24';
 import {
   AccessError,
   ConflictError,
@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-23';
+} from './canvas.js?v=20261121-24';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-22';
+} from './ai-agent.js?v=20261121-24';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -200,6 +200,7 @@ const state = {
     pinnedTargets: [],
     draggingTarget: null,
     pickMode: false,
+    confirmBeforeEdit: false,
     isRunning: false,
     abortController: null,
   },
@@ -1140,7 +1141,16 @@ function setCanvasFreeLayoutMode(enabled) {
   syncCanvasModeButtons();
 }
 
-async function handleCanvasNavigate({ pagePath = null, hash = null, back = false, externalUrl = null } = {}) {
+async function handleCanvasNavigate({ pagePath = null, hash = null, back = false, externalUrl = null, unlinked = false, label = '' } = {}) {
+  if (unlinked) {
+    showToast(
+      `Kafelek${label ? ` „${label}”` : ''} nie ma jeszcze podpiętej podstrony — zmień jego link w trybie „✏️ Edytuj” lub poproś AI o utworzenie podstrony.`,
+      'info',
+      4200
+    );
+    return;
+  }
+
   if (externalUrl) {
     window.open(sanitizeUrl(externalUrl, { allowRelative: false }), '_blank', 'noopener,noreferrer');
     return;
@@ -1374,11 +1384,22 @@ function handleCanvasSelect(payload) {
     raw = payload.descriptor;
   }
 
-  state.selectedDescriptor = normalizeDescriptor(raw);
+  const prevUid = state.selectedDescriptor?.uid || null;
+  const nextDesc = normalizeDescriptor(raw);
+  const activeEl = document.activeElement;
+  const isTypingInInspector = Boolean(
+    activeEl &&
+    $('inspector-body')?.contains(activeEl) &&
+    activeEl.matches('input, textarea, select')
+  );
+
+  state.selectedDescriptor = nextDesc;
   $('btn-deselect').hidden = !state.selectedDescriptor;
 
   renderStructureTree();
-  renderInspector();
+  if (!(isTypingInInspector && nextDesc && nextDesc.uid === prevUid)) {
+    renderInspector();
+  }
   updateBlocksInsertBanner();
 
   if (state.uiMode === 'simple' && !state.ai.isRunning && !state.ai.open) {
@@ -2877,7 +2898,13 @@ function createPageLinkControl({
   hrefInput.value = stateHref;
   hrefInput.placeholder = 'np. oferta/index.html, #kontakt, tel:+48534091021';
   hrefInput.addEventListener('input', () => {
-    stateHref = hrefInput.value.trim();
+    stateHref = hrefInput.value;
+    emit();
+  });
+  hrefInput.addEventListener('change', () => {
+    const trimmed = hrefInput.value.trim();
+    hrefInput.value = trimmed;
+    stateHref = trimmed;
     emit();
   });
   urlGroup.append(urlLabel, hrefInput);
@@ -5151,12 +5178,19 @@ function buildAiContextSummary() {
     })),
   }));
 
+  const intentLabels = {
+    edit: 'Edytuj ten wskazany element / sekcję',
+    add_inside: 'Dołóż nowy element (kafelek / blok) WEWNĄTRZ tej sekcji / kontenera',
+    insert_after: 'Wstaw nową sekcję ZARAZ POD tą sekcją (użyj afterUid = ten uid)',
+  };
   const pinnedSummary = (state.ai.pinnedTargets || []).map((t) => ({
     uid: t.uid,
     kind: t.kind,
     label: t.label,
     id: t.id || undefined,
     pagePath: t.pagePath,
+    actionIntent: t.intent || 'edit',
+    actionInstruction: intentLabels[t.intent || 'edit'] || intentLabels.edit,
     textSnippet: t.textSnippet || undefined,
   }));
 
@@ -6452,7 +6486,7 @@ async function executeAiTool(name, rawArgs = {}) {
 // AI ASSISTANT: CHAT EXECUTION LOOP
 // ============================================================================
 
-async function sendAiPrompt(rawPrompt) {
+async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
   const userMessage = String(rawPrompt || '').trim();
   if (!userMessage || state.ai.isRunning) return;
 
@@ -6611,6 +6645,8 @@ async function sendAiPrompt(rawPrompt) {
       contextSummary: buildAiContextSummary(),
       settings: state.ai.settings,
       csrfToken: state.auth.csrfToken || '',
+      confirmBeforeEdit: Boolean(state.ai.confirmBeforeEdit),
+      forceExecute: Boolean(forceExecute),
       toolExecutor: executeAiTool,
       onToolCall: (callInfo) => {
         const id = callInfo?.id || `${callInfo?.name || 'tool'}_${toolPillsById.size}`;
@@ -6684,6 +6720,22 @@ async function sendAiPrompt(rawPrompt) {
     const replyText = String(result?.reply || '').trim() || 'Gotowe! Zmiany zostały wprowadzone w szkicu.';
     botBubble.innerHTML = renderSimpleMarkdown(replyText);
     attachAiUndoButtonIfMutated();
+    if (result?.awaitingConfirmation && !aiDidMutate) {
+      const confirmBar = document.createElement('div');
+      confirmBar.className = 'ai-undo-bar';
+      const execBtn = document.createElement('button');
+      execBtn.type = 'button';
+      execBtn.className = 'ai-confirm-plan-btn';
+      execBtn.textContent = '✓ Wykonaj ten plan';
+      execBtn.addEventListener('click', () => {
+        if (state.ai.isRunning) return;
+        execBtn.disabled = true;
+        execBtn.textContent = '⏳ Wykonywanie planu…';
+        sendAiPrompt('Tak, wykonaj ten plan dokładnie tak jak opisałeś.', { forceExecute: true });
+      });
+      confirmBar.append(execBtn);
+      botBubble.append(confirmBar);
+    }
     botBubble.hidden = false;
 
     state.ai.history.push(
@@ -6870,6 +6922,25 @@ function renderAiTargetChips() {
       }
     });
 
+    const intentSelect = document.createElement('select');
+    intentSelect.className = 'ai-target-intent-select';
+    intentSelect.title = 'Określ, co AI ma zrobić z tym wskazanym fragmentem';
+    intentSelect.setAttribute('aria-label', `Zamiar dla ${t.label}`);
+    [
+      { value: 'edit', text: '✏️ Zmień to' },
+      { value: 'add_inside', text: '➕ Dołóż tutaj' },
+      { value: 'insert_after', text: '⬇️ Wstaw pod tym' },
+    ].forEach((optData) => {
+      const opt = document.createElement('option');
+      opt.value = optData.value;
+      opt.textContent = optData.text;
+      if ((t.intent || 'edit') === optData.value) opt.selected = true;
+      intentSelect.append(opt);
+    });
+    intentSelect.addEventListener('change', () => {
+      t.intent = intentSelect.value;
+    });
+
     const rm = document.createElement('button');
     rm.type = 'button';
     rm.className = 'ai-target-chip-remove';
@@ -6880,7 +6951,7 @@ function renderAiTargetChips() {
       renderAiTargetChips();
     });
 
-    chip.append(label, rm);
+    chip.append(label, intentSelect, rm);
     host.append(chip);
   }
 
@@ -6925,7 +6996,7 @@ function setAiPickModeUi(enabled) {
   if (btn) {
     btn.classList.toggle('is-active', state.ai.pickMode);
     btn.setAttribute('aria-pressed', String(state.ai.pickMode));
-    btn.textContent = state.ai.pickMode ? '✕ Anuluj wskazywanie' : '🎯 Wskaż fragment';
+    btn.textContent = state.ai.pickMode ? '✕ Anuluj zaznaczanie' : '🎯 Zaznacz fragment';
   }
 }
 
@@ -7127,6 +7198,31 @@ function bindUIEvents() {
       showToast('Kliknij dowolny element na stronie (lub zaznacz ramką myszką), aby wysłać go do AI.');
     }
   });
+
+  const confirmBeforeEditCb = $('ai-confirm-before-edit');
+  if (confirmBeforeEditCb) {
+    try {
+      state.ai.confirmBeforeEdit = localStorage.getItem('wolbud:cms:ai-confirm-before-edit') === '1';
+    } catch {
+      state.ai.confirmBeforeEdit = false;
+    }
+    confirmBeforeEditCb.checked = Boolean(state.ai.confirmBeforeEdit);
+    confirmBeforeEditCb.addEventListener('change', () => {
+      state.ai.confirmBeforeEdit = Boolean(confirmBeforeEditCb.checked);
+      try {
+        localStorage.setItem('wolbud:cms:ai-confirm-before-edit', state.ai.confirmBeforeEdit ? '1' : '0');
+      } catch {
+        // ignore storage errors
+      }
+      showToast(
+        state.ai.confirmBeforeEdit
+          ? 'Włączono „Pytaj przed zmianą” — AI najpierw przedstawi plan CO i GDZIE zrobi.'
+          : 'Wyłączono „Pytaj przed zmianą” — AI będzie wykonywać jednoznaczne polecenia od razu.',
+        'info',
+        3600
+      );
+    });
+  }
 
   // Przeciąganie fragmentu strony bezpośrednio do panelu czatu AI
   const aiDrawerEl = $('ai-drawer');

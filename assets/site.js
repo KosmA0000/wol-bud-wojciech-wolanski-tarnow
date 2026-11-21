@@ -4,9 +4,11 @@
 
 
 
-  const menu = document.getElementById('menu');
-  const menuButton = document.getElementById('menuButton');
-  const menuPanel = document.querySelector('[data-menu-panel]');
+  const getMenuEls = () => ({
+    menuEl: document.getElementById('menu'),
+    menuBtn: document.getElementById('menuButton'),
+    panelEl: document.querySelector('[data-menu-panel]'),
+  });
   const mobileQuery = window.matchMedia('(max-width: 760px)');
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const syncMobileNavLinks = () => {
@@ -19,12 +21,29 @@
   const isHomePage = Boolean(document.getElementById('start') && document.getElementById('oferta'));
 
   const closeMenu = (returnFocus = false) => {
-    if (!menu || !menuButton) return;
-    menu.classList.remove('open');
-    menuButton.setAttribute('aria-expanded', 'false');
-    menuPanel?.setAttribute('hidden', '');
+    const { menuEl, menuBtn, panelEl } = getMenuEls();
+    if (!menuEl || !menuBtn) return;
+    menuEl.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    panelEl?.setAttribute('hidden', '');
     document.body.classList.remove('menu-open');
-    if (returnFocus) menuButton.focus();
+    if (returnFocus) menuBtn.focus();
+  };
+
+  const toggleMenu = () => {
+    const { menuEl, menuBtn, panelEl } = getMenuEls();
+    if (!menuEl || !menuBtn) return;
+    const isOpen = menuEl.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(isOpen));
+    if (panelEl) {
+      if (isOpen) {
+        panelEl.removeAttribute('hidden');
+        document.body.classList.add('menu-open');
+      } else {
+        panelEl.setAttribute('hidden', '');
+        document.body.classList.remove('menu-open');
+      }
+    }
   };
 
   const scrollToTarget = (target, updateHash = false) => {
@@ -58,51 +77,51 @@
   window.addEventListener('hashchange', revealAnchoredDisclosure);
   if (window.location.hash) requestAnimationFrame(revealAnchoredDisclosure);
 
-  if (menu && menuButton) {
-    const toggleMenu = () => {
-      const isOpen = menu.classList.toggle('open');
-      menuButton.setAttribute('aria-expanded', String(isOpen));
-      if (menuPanel) {
-        if (isOpen) {
-          menuPanel.removeAttribute('hidden');
-          document.body.classList.add('menu-open');
-        } else {
-          menuPanel.setAttribute('hidden', '');
-          document.body.classList.remove('menu-open');
-        }
-      }
-    };
+  // Delegowana obsługa Menu głównego (działa niezawodnie również po Cofnij/Undo i dynamicznej podmianie nagłówka!)
+  document.addEventListener('click', (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (!target) return;
 
-    menuButton.addEventListener('click', (e) => {
+    const toggleBtn = target.closest('#menuButton, [data-menu-toggle]');
+    if (toggleBtn) {
       e.stopPropagation();
       toggleMenu();
-    });
+      return;
+    }
 
-    menu.querySelector('[data-menu-close]')?.addEventListener('click', () => closeMenu(true));
+    const closeBtn = target.closest('[data-menu-close]');
+    if (closeBtn) {
+      e.stopPropagation();
+      closeMenu(true);
+      return;
+    }
 
-    menu.addEventListener('click', (e) => {
-      const link = e.target.closest('[data-mobile-home-href]');
-      if (!link || !mobileQuery.matches || !isHomePage) return;
-      const targetId = new URL(link.href, window.location.href).hash.slice(1);
-      const target = targetId ? document.getElementById(decodeURIComponent(targetId)) : null;
-      if (!target) return;
-      e.preventDefault();
-      closeMenu();
-      scrollToTarget(target, true);
-    });
+    const { menuEl } = getMenuEls();
+    if (!menuEl) return;
 
-    document.addEventListener('click', (e) => {
-      if (menu.classList.contains('open') && !menu.contains(e.target)) {
+    const mobileLink = target.closest('#menu [data-mobile-home-href]');
+    if (mobileLink && mobileQuery.matches && isHomePage) {
+      const targetId = new URL(mobileLink.href, window.location.href).hash.slice(1);
+      const scrollTarget = targetId ? document.getElementById(decodeURIComponent(targetId)) : null;
+      if (scrollTarget) {
+        e.preventDefault();
         closeMenu();
+        scrollToTarget(scrollTarget, true);
+        return;
       }
-    });
+    }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && menu.classList.contains('open')) {
-        closeMenu(true);
-      }
-    });
-  }
+    if (menuEl.classList.contains('open') && !menuEl.contains(target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const { menuEl } = getMenuEls();
+    if (e.key === 'Escape' && menuEl && menuEl.classList.contains('open')) {
+      closeMenu(true);
+    }
+  });
 
 
 

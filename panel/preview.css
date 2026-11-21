@@ -712,3 +712,35 @@ body.wolbud-preview [data-cms-ui="ai-marquee"] {
   border-radius: 8px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
 }
+
+/* Menu główne witryny (header.bar) NIGDY nie znika w podglądzie ani przy przewijaniu */
+body.wolbud-preview header.bar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 95 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Baner trybu wskazywania fragmentu ekranu dla AI */
+body.wolbud-preview [data-cms-ui="ai-pick-banner"] {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+  max-width: min(92vw, 720px);
+  padding: 0.6rem 1.05rem;
+  border-radius: 999px;
+  background: rgba(6, 95, 70, 0.94);
+  color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(6, 95, 70, 0.35);
+  border: 1px solid rgba(167, 243, 208, 0.45);
+}

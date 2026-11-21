@@ -722,7 +722,7 @@ export const ITEM_TEMPLATES = {
     label: 'Kafelek kategorii',
     createHtml(pagePath = 'index.html') {
       const rel = (p) => toRelativeUrl(p, pagePath);
-      return `<a class="home-cat-card" href="${rel('oferta/index.html')}">
+      return `<a class="home-cat-card" href="#">
   <div class="home-cat-thumb">
     <img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async">
   </div>
@@ -736,9 +736,8 @@ export const ITEM_TEMPLATES = {
 
   'extra-category': {
     label: 'Dodatkowa kategoria (link)',
-    createHtml(pagePath = 'index.html') {
-      const rel = (p) => toRelativeUrl(p, pagePath);
-      return `<a class="home-extra-category" href="${rel('oferta/index.html')}">Nowa kategoria <span aria-hidden="true">↗</span></a>`;
+    createHtml() {
+      return `<a class="home-extra-category" href="#">Nowa kategoria <span aria-hidden="true">↗</span></a>`;
     },
   },
 
@@ -746,7 +745,7 @@ export const ITEM_TEMPLATES = {
     label: 'Karta polecanego produktu',
     createHtml(pagePath = 'index.html') {
       const rel = (p) => toRelativeUrl(p, pagePath);
-      return `<a class="home-featured-product" href="${rel('oferta/index.html')}">
+      return `<a class="home-featured-product" href="#">
   <div class="home-featured-media"><img src="${rel('img/placeholder-photo.svg')}" alt="Dodaj własne zdjęcie" loading="lazy" decoding="async"></div>
   <div class="home-featured-copy">
     <h4>Polecany produkt</h4>
