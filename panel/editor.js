@@ -1,7 +1,7 @@
-import { config } from './config.js';
-import { siteProfile } from './site-profile.js';
-import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js';
-import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js';
+import { config } from './config.js?v=20261121-17';
+import { siteProfile } from './site-profile.js?v=20261121-17';
+import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js?v=20261121-17';
+import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
   initStorage,
   savePageDraft,
@@ -24,7 +24,7 @@ import {
   importBackup,
   compressImageToWebP,
   slugifyFilename,
-} from './storage.js';
+} from './storage.js?v=20261121-17';
 import {
   depthPrefix,
   toRelativeUrl,
@@ -33,7 +33,7 @@ import {
   SECTION_TEMPLATES,
   ITEM_TEMPLATES,
   PAGE_TEMPLATES,
-} from './templates.js';
+} from './templates.js?v=20261121-17';
 import {
   AccessError,
   ConflictError,
@@ -48,12 +48,12 @@ import {
   createBackup,
   restoreBackup,
   waitForPublication,
-} from './publish.js';
+} from './publish.js?v=20261121-17';
 import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js';
+} from './canvas.js?v=20261121-17';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js';
+} from './ai-agent.js?v=20261121-17';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
