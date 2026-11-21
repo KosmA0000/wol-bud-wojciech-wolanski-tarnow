@@ -5087,39 +5087,43 @@ body.lightbox-open {
   color: var(--dark, #2c4d19);
 }
 
-/* Zachowaj pełny biały kontrast wewnątrz ciemnego banera CTA niezależnie od tonu zewnętrznej sekcji */
+/* Zachowaj pełny biały kontrast wewnątrz ciemnego banera CTA niezależnie od klas sekcji nadrzędnej (.cms-text-section, .cms-tone-*) */
+.cta-banner-dark,
+.cms-text-section .cta-banner-dark,
 .cms-tone-accent .cta-banner-dark,
 .cms-tone-light .cta-banner-dark {
-  color: #f4f3ec;
+  color: #f4f3ec !important;
 }
 
-.cms-tone-accent .cta-banner-dark h1,
-.cms-tone-accent .cta-banner-dark h2,
-.cms-tone-accent .cta-banner-dark h3,
-.cms-tone-accent .cta-banner-dark h4,
-.cms-tone-light .cta-banner-dark h1,
-.cms-tone-light .cta-banner-dark h2,
-.cms-tone-light .cta-banner-dark h3,
-.cms-tone-light .cta-banner-dark h4 {
-  color: #ffffff;
+.cta-banner-dark h1,
+.cta-banner-dark h2,
+.cta-banner-dark h3,
+.cta-banner-dark h4 {
+  color: #ffffff !important;
 }
 
-.cms-tone-accent .cta-banner-dark p,
-.cms-tone-accent .cta-banner-dark li,
-.cms-tone-light .cta-banner-dark p,
-.cms-tone-light .cta-banner-dark li {
-  color: rgba(244, 243, 236, 0.88);
+.cta-banner-dark p,
+.cta-banner-dark li {
+  color: rgba(244, 243, 236, 0.9) !important;
 }
 
-.cms-tone-accent .cta-banner-dark .eyebrow,
-.cms-tone-light .cta-banner-dark .eyebrow {
-  color: var(--highlight, #d9e7c8);
+.cta-banner-dark .eyebrow {
+  color: var(--highlight, #d9e7c8) !important;
 }
 
-.cms-tone-accent .cta-banner-dark a.tc-mail,
-.cms-tone-light .cta-banner-dark a.tc-mail {
-  color: #ffffff;
-  border-color: rgba(244, 243, 236, 0.55);
+.cta-banner-dark a.tc-mail,
+.cms-text-section .cta-banner-dark a.tc-mail,
+.cms-tone-accent .cta-banner-dark a.tc-mail {
+  color: #ffffff !important;
+  text-decoration: none !important;
+  border-color: rgba(244, 243, 236, 0.55) !important;
+}
+
+.cta-banner-dark a.tc-mail:hover,
+.cms-text-section .cta-banner-dark a.tc-mail:hover,
+.cms-tone-accent .cta-banner-dark a.tc-mail:hover {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
 }
 
 .cms-align-center {

@@ -593,6 +593,15 @@ function updateTopbarAndIndicators() {
   if ($('more-discard')) {
     $('more-discard').disabled = !hasPageChanges || state.isPublishing;
   }
+  if ($('more-clear-all')) {
+    $('more-clear-all').disabled = counts.total === 0 || state.isPublishing;
+  }
+  if ($('btn-simple-discard')) {
+    const showSimpleDiscard = hasPageChanges && !state.isPublishing;
+    $('btn-simple-discard').hidden = !showSimpleDiscard;
+    $('btn-simple-discard').disabled = !showSimpleDiscard;
+    $('btn-simple-discard').textContent = draft?.isNew ? '🗑️ Usuń nową stronę' : '↺ Odrzuć zmiany';
+  }
 
   const badge = $('draft-counter-badge');
   if (counts.total === 0) {
@@ -5882,6 +5891,10 @@ function bindUIEvents() {
     toggleMoreMenu(false);
     handleDiscardCurrentPage();
   });
+  $('more-clear-all')?.addEventListener('click', () => {
+    toggleMoreMenu(false);
+    handleClearAllDrafts();
+  });
   $('more-toggle-mode')?.addEventListener('click', () => {
     setUiMode('advanced');
     updateAiUiStatus();
@@ -5897,6 +5910,7 @@ function bindUIEvents() {
 
   $('btn-undo').addEventListener('click', performUndo);
   $('btn-simple-undo')?.addEventListener('click', performUndo);
+  $('btn-simple-discard')?.addEventListener('click', handleDiscardCurrentPage);
   $('btn-redo').addEventListener('click', performRedo);
 
   document.querySelectorAll('.vp-btn').forEach((btn) => {

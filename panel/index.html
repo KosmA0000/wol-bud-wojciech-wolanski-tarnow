@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="panel.css?v=20261121-5">
-  <script type="module" src="editor.js?v=20261121-5"></script>
+  <link rel="stylesheet" href="panel.css?v=20261121-6">
+  <script type="module" src="editor.js?v=20261121-6"></script>
 </head>
 <body class="is-simple-mode">
   <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
@@ -117,6 +117,10 @@
           ↶ Cofnij
         </button>
 
+        <button type="button" id="btn-simple-discard" class="toolbar-btn toolbar-btn--quiet simple-only" title="Odrzuć niezopublikowane zmiany na tej stronie i wróć do wersji opublikowanej" hidden>
+          ↺ Odrzuć zmiany
+        </button>
+
         <button type="button" id="btn-simple-mode-back" class="toolbar-btn toolbar-btn--quiet advanced-only" title="Wróć do prostego, spokojnego widoku panelu">
           ← Tryb prosty
         </button>
@@ -148,6 +152,7 @@
               <button type="button" id="more-vp-mobile" class="more-menu-item" role="menuitem">📱 Zobacz jak na telefonie</button>
               <button type="button" id="more-vp-desktop" class="more-menu-item" role="menuitem">💻 Wróć do widoku komputera</button>
               <button type="button" id="more-discard" class="more-menu-item more-menu-item--danger" role="menuitem" disabled>🗑️ Cofnij zmiany na tej stronie</button>
+              <button type="button" id="more-clear-all" class="more-menu-item more-menu-item--danger" role="menuitem" disabled>↺ Wyczyść wszystkie szkice</button>
             </div>
             <div class="more-menu-sep"></div>
             <div class="more-menu-group">

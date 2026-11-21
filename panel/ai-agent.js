@@ -1495,7 +1495,12 @@ async function runGeminiLoop({
       } catch (err) {
         lastErr = err;
         const msg = String(err?.message || '');
-        const isTransient = msg.includes('503') || msg.includes('404') || msg.includes('przeciążona');
+        const isTransient =
+          msg.includes('503') ||
+          msg.includes('404') ||
+          msg.includes('429') ||
+          msg.includes('przeciążona') ||
+          msg.includes('limit');
         if (!isTransient || i === fallbackChain.length - 1) throw err;
       }
     }
