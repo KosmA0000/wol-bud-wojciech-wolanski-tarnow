@@ -947,10 +947,9 @@ export const ITEM_TEMPLATES = {
   },
 
   'nav-pill': {
-    label: 'Pigułka szybkiej nawigacji',
-    createHtml(pagePath = 'kategorie/okna-pcv/index.html') {
-      const rel = (p) => toRelativeUrl(p, pagePath);
-      return `<a href="${rel('oferta/index.html')}" class="cat-nav-pill">Nowa kategoria</a>`;
+    label: 'Kafelek paska kategorii',
+    createHtml() {
+      return `<a href="#" class="cat-nav-pill">Nowa kategoria</a>`;
     },
   },
 

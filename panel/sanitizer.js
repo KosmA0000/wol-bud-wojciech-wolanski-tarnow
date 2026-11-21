@@ -108,6 +108,8 @@ const READ_ONLY_AI_TOOLS = new Set([
   'search_elements',
   'find_elements',
   'read_page',
+  'get_section_html',
+  'read_page_summary',
 ]);
 
 const TEXT_MUTATING_AI_TOOLS = new Set([
@@ -116,6 +118,8 @@ const TEXT_MUTATING_AI_TOOLS = new Set([
   'set_page_meta',
   'create_page',
   'update_element_html',
+  'update_section_html',
+  'insert_custom_section',
   'add_section',
   'insert_section',
   'update_page_meta',

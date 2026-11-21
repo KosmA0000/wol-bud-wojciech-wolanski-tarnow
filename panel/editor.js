@@ -1,6 +1,6 @@
 import { config } from './config.js?v=20261121-17';
 import { siteProfile } from './site-profile.js?v=20261121-17';
-import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js?v=20261121-19';
+import { AiGuardrailTracker, sanitizeUrl, assertSafeSerializedHtml } from './sanitizer.js?v=20261121-25';
 import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
   initStorage,
@@ -33,7 +33,7 @@ import {
   SECTION_TEMPLATES,
   ITEM_TEMPLATES,
   PAGE_TEMPLATES,
-} from './templates.js?v=20261121-24';
+} from './templates.js?v=20261121-25';
 import {
   AccessError,
   ConflictError,
@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-24';
+} from './canvas.js?v=20261121-25';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-24';
+} from './ai-agent.js?v=20261121-25';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -915,6 +915,8 @@ function syncInspectorTextFieldsFromDescriptor(desc) {
 const AI_READ_ONLY_TOOLS = new Set([
   'get_page_structure',
   'get_element_details',
+  'get_section_html',
+  'read_page_summary',
   'list_pages',
   'search_images',
   'get_globals',
@@ -4525,6 +4527,10 @@ const AI_TOOL_LABELS = {
   list_site_components: 'Skanuję style i komponenty strony',
   add_styled_button: 'Dodaję przycisk ze stylu strony',
   clone_site_component: 'Klonuję istniejący blok strony',
+  get_section_html: 'Odczytuję kod HTML fragmentu',
+  read_page_summary: 'Podglądam zawartość innej podstrony',
+  update_section_html: 'Aktualizuję kod HTML sekcji',
+  insert_custom_section: 'Wstawiam niestandardowy blok HTML',
 };
 
 const AI_CHIP_ICONS = ['✨', '📄', '❓', '🛠️'];
@@ -6473,6 +6479,177 @@ async function executeAiTool(name, rawArgs = {}) {
         ok: true,
         uid: newUid,
         clonedFrom: { sourcePage, sectionId: matched.sectionId, label: matched.label },
+        details: formatDescriptorForAi(rawDesc),
+      };
+    }
+
+    // 31. get_section_html — czysty produkcyjny HTML dowolnej sekcji / kontenera / kafelka
+    case 'get_section_html': {
+      const uid = String(args.uid || '').trim();
+      if (!uid) {
+        return { ok: false, error: 'Podaj uid sekcji, kontenera lub elementu z get_page_structure.' };
+      }
+      const res = state.canvas?.getElementCleanHtml?.(uid);
+      if (!res) {
+        return { ok: false, error: `Nie znaleziono elementu o uid „${uid}” na bieżącej stronie.` };
+      }
+      const MAX_HTML_LEN = 14000;
+      const truncated = res.html.length > MAX_HTML_LEN;
+      return {
+        ok: true,
+        uid: res.uid,
+        kind: res.kind,
+        label: res.label,
+        tagName: res.tagName,
+        id: res.id,
+        className: res.className,
+        truncated,
+        html: truncated ? `${res.html.slice(0, MAX_HTML_LEN)}\n<!-- ...skrócono (${res.html.length} znaków)... -->` : res.html,
+      };
+    }
+
+    // 32. read_page_summary — podgląd struktury innej podstrony BEZ przełączania widoku użytkownika
+    case 'read_page_summary': {
+      const cleanPath = String(args.pagePath || '').trim().replace(/^\/+/, '');
+      if (!cleanPath || cleanPath.includes('..')) {
+        return { ok: false, error: 'Podaj poprawną ścieżkę podstrony z list_pages (np. "index.html", "oferta/index.html").' };
+      }
+      const isCurrentPage = cleanPath === state.currentPagePath;
+      const draftEntry = state.pageDrafts?.[cleanPath] || null;
+      let rawHtml = '';
+      if (isCurrentPage) {
+        rawHtml = state.canvas?.serializeCleanHtml?.() || '';
+      } else if (draftEntry && !draftEntry.deleted && typeof draftEntry.html === 'string' && draftEntry.html.trim()) {
+        rawHtml = draftEntry.html;
+      } else {
+        try {
+          const resp = await fetch(`../${cleanPath}`, { cache: 'no-store' });
+          if (!resp.ok) {
+            return { ok: false, error: `Nie udało się wczytać podstrony „${cleanPath}” (HTTP ${resp.status}).` };
+          }
+          rawHtml = await resp.text();
+        } catch (err) {
+          return { ok: false, error: `Błąd odczytu podstrony „${cleanPath}”: ${err?.message || err}` };
+        }
+      }
+
+      const parsedDoc = new DOMParser().parseFromString(rawHtml, 'text/html');
+      const main = parsedDoc.querySelector('main#main') || parsedDoc.querySelector('main') || parsedDoc.body;
+      const blocks = [];
+      const seen = new Set();
+
+      const pushBlock = (el) => {
+        if (!el || el.nodeType !== 1 || seen.has(el)) return;
+        const tag = el.tagName.toUpperCase();
+        if (['SCRIPT', 'STYLE', 'HEADER', 'FOOTER', 'NAV'].includes(tag)) return;
+        seen.add(el);
+        const headingEl = el.querySelector('h1, h2, h3, .eyebrow, .cat-quick-nav-label');
+        const heading = (headingEl?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+        const pillsOrCards = el.querySelectorAll(
+          '.cat-nav-pill, .home-cat-card, .home-extra-category, .subcat-card, .cat-prod-card, .home-featured-card, .gallery-card, .service-card, .faq-item, .review-card, a.pill'
+        );
+        const sampleTexts = Array.from(pillsOrCards)
+          .slice(0, 10)
+          .map((n) => (n.querySelector('h2, h3, h4, .home-cat-title, .cat-prod-title')?.textContent || n.textContent || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 60))
+          .filter(Boolean);
+        blocks.push({
+          index: blocks.length,
+          tag: tag.toLowerCase(),
+          id: el.id || '',
+          className: typeof el.className === 'string' ? el.className.trim() : '',
+          heading,
+          itemCount: pillsOrCards.length,
+          sampleTexts,
+        });
+      };
+
+      const quickNav = parsedDoc.querySelector('.cat-quick-nav');
+      if (quickNav) pushBlock(quickNav);
+      if (main) {
+        const subContent = main.querySelector('.subpage-content');
+        const roots = subContent ? Array.from(subContent.children) : Array.from(main.children);
+        for (const child of roots) {
+          if (child.classList?.contains('photo-band')) {
+            Array.from(child.children).forEach(pushBlock);
+          } else {
+            pushBlock(child);
+          }
+        }
+      }
+
+      return {
+        ok: true,
+        pagePath: cleanPath,
+        isCurrentPage,
+        hasDraft: Boolean(draftEntry && !draftEntry.deleted),
+        title: parsedDoc.title || '',
+        description: parsedDoc.querySelector('meta[name="description"]')?.getAttribute('content') || '',
+        h1: (parsedDoc.querySelector('h1')?.textContent || '').replace(/\s+/g, ' ').trim(),
+        sections: blocks.slice(0, 24),
+      };
+    }
+
+    // 33. update_section_html — bezpieczna podmiana czystego HTML wybranego elementu/sekcji
+    case 'update_section_html': {
+      const uid = String(args.uid || '').trim();
+      const rawHtml = typeof args.html === 'string' ? args.html.trim() : '';
+      if (!uid || !rawHtml) {
+        return { ok: false, error: 'Podaj zarówno uid sekcji/elementu, jak i niepusty kod html.' };
+      }
+      const safety = assertSafeSerializedHtml(`<!doctype html><html><body>${rawHtml}</body></html>`);
+      if (!safety.ok) {
+        return {
+          ok: false,
+          error: safety.violations?.join(' ') || 'Zablokowano niebezpieczny kod HTML.',
+        };
+      }
+      const res = state.canvas?.updateElementHtml?.(uid, rawHtml);
+      if (!res) {
+        return {
+          ok: false,
+          error: `Nie udało się podmienić HTML dla uid „${uid}” (sprawdź, czy element istnieje i czy kod zawiera jeden bezpieczny element główny bez <script>/<iframe>/<form>).`,
+        };
+      }
+      syncUiAfterAiMutation();
+      return {
+        ok: true,
+        uid: res.uid,
+        tagName: res.tagName,
+        className: res.className,
+        details: formatDescriptorForAi(state.canvas.getSelectedDescriptor?.()),
+      };
+    }
+
+    // 34. insert_custom_section — wstawia spersonalizowany bezpieczny blok HTML w stylu strony
+    case 'insert_custom_section': {
+      const rawHtml = typeof args.html === 'string' ? args.html.trim() : '';
+      const afterUid = typeof args.afterUid === 'string' && args.afterUid.trim() ? args.afterUid.trim() : null;
+      const position = args.position === 'before' ? 'before' : 'after';
+      if (!rawHtml) {
+        return { ok: false, error: 'Podaj niepusty kod html nowego bloku.' };
+      }
+      const safety = assertSafeSerializedHtml(`<!doctype html><html><body>${rawHtml}</body></html>`);
+      if (!safety.ok) {
+        return {
+          ok: false,
+          error: safety.violations?.join(' ') || 'Zablokowano niebezpieczny kod HTML.',
+        };
+      }
+      const newUid = state.canvas?.insertCustomSectionHtml?.(rawHtml, { afterUid, position });
+      if (!newUid) {
+        return {
+          ok: false,
+          error: 'Nie udało się wstawić niestandardowego bloku HTML (wymagany jeden bezpieczny element główny, np. <section> lub <div>, bez <script>/<iframe>/<form>).',
+        };
+      }
+      syncUiAfterAiMutation();
+      const rawDesc = state.canvas.selectByUid(newUid, { scroll: true });
+      return {
+        ok: true,
+        uid: newUid,
         details: formatDescriptorForAi(rawDesc),
       };
     }

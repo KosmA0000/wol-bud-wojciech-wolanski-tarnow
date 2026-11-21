@@ -4,8 +4,8 @@ import {
   SECTION_TEMPLATES,
   toRelativeUrl,
   toRootPath,
-} from './templates.js';
-import { sanitizeHtmlFragment, sanitizeUrl, sanitizeText } from './sanitizer.js';
+} from './templates.js?v=20261121-25';
+import { sanitizeHtmlFragment, sanitizeUrl, sanitizeText } from './sanitizer.js?v=20261121-25';
 
 const BUTTON_STYLE_LABELS = {
   'tc-tel': 'Ciemny przycisk główny (zaokrąglony)',
@@ -239,7 +239,7 @@ const REPEATER_SPECS = [
   { selector: '.subcat-grid', itemSelector: ':scope > .subcat-card', itemType: 'subcat-card', label: 'Kafelki podkategorii' },
   { selector: '.cat-products-grid, .cat-prod-grid', itemSelector: ':scope > .cat-prod-card', itemType: 'cat-prod-card', label: 'Kafelki produktów' },
   { selector: '.brand-chips', itemSelector: ':scope > li', itemType: 'brand-chip', label: 'Katalogi / linki' },
-  { selector: '.cat-quick-nav-pills', itemSelector: ':scope > .cat-nav-pill', itemType: 'nav-pill', label: 'Przyciski nawigacji' },
+  { selector: '.cat-quick-nav-pills', itemSelector: ':scope > .cat-nav-pill', itemType: 'nav-pill', label: 'Kafelki paska kategorii („Kategorie:” — np. Okna PCV, Drzwi…)' },
   { selector: 'ul.source-list', itemSelector: ':scope > li', itemType: 'list-item', label: 'Punkty listy', vertical: true },
   { selector: '.montage-steps-grid', itemSelector: ':scope > .montage-step-card', itemType: 'montage-step', label: 'Kroki montażu' },
 ];
@@ -649,7 +649,7 @@ function getSectionLabel(el) {
   const id = el.id || '';
   if (id === 'start' || el.classList.contains('hero')) return 'Baner główny (Hero)';
   if (el.matches('header.subpage-head')) return 'Nagłówek podstrony';
-  if (el.classList.contains('cat-quick-nav')) return 'Szybka nawigacja kategorii';
+  if (el.classList.contains('cat-quick-nav')) return 'Pasek kategorii („Kategorie:”)';
   if (el.matches('aside.subpage-sidebar')) return 'Panel boczny';
   if (el.classList.contains('product-gallery')) return 'Galeria produktu';
   if (el.classList.contains('product-nav-bar')) return 'Nawigacja produktów';
@@ -2955,6 +2955,116 @@ export function connectCanvas(doc, options = {}) {
     return newUid;
   }
 
+  const FORBIDDEN_CUSTOM_TAGS = new Set([
+    'HTML', 'HEAD', 'BODY', 'MAIN', 'HEADER', 'FOOTER',
+    'SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'APPLET', 'LINK', 'META', 'BASE', 'FORM',
+  ]);
+
+  function stripEditorArtifactsOnly(nodeRoot) {
+    nodeRoot.querySelectorAll('[data-cms-ui]').forEach((n) => n.remove());
+    const walk = [nodeRoot, ...nodeRoot.querySelectorAll('*')];
+    walk.forEach((node) => {
+      EDITOR_CLASSES.forEach((cls) => node.classList.remove(cls));
+      if (node.hasAttribute('class') && !node.getAttribute('class').trim()) {
+        node.removeAttribute('class');
+      }
+      EDITOR_ATTRS.forEach((attr) => node.removeAttribute(attr));
+    });
+    return nodeRoot;
+  }
+
+  function getElementCleanHtml(uid) {
+    const entry = nodesByUid.get(uid) || repeatersByUid.get(uid);
+    if (!entry || !entry.el || !doc.contains(entry.el)) return null;
+    const clean = stripEditorArtifactsOnly(entry.el.cloneNode(true));
+    return {
+      uid: entry.uid || entry.repeaterUid || uid,
+      kind: entry.kind || 'repeater',
+      label: entry.label || entry.spec?.label || getSectionLabel(clean),
+      tagName: clean.tagName.toLowerCase(),
+      id: clean.id || '',
+      className: typeof clean.className === 'string' ? clean.className.trim() : '',
+      html: clean.outerHTML,
+    };
+  }
+
+  function updateElementHtml(uid, rawHtml) {
+    if (!uid || typeof rawHtml !== 'string' || !rawHtml.trim()) return null;
+    const entry = nodesByUid.get(uid) || repeatersByUid.get(uid);
+    if (!entry || !entry.el || !doc.contains(entry.el)) return null;
+
+    const currentTag = entry.el.tagName?.toUpperCase();
+    if (['HTML', 'HEAD', 'BODY', 'MAIN', 'HEADER', 'FOOTER'].includes(currentTag)) {
+      return null;
+    }
+
+    const safeHtml = sanitizeHtmlFragment(rawHtml);
+    const parsed = parseHtmlFragment(doc, safeHtml, true);
+    if (!parsed || parsed.nodeType !== 1) return null;
+    if (FORBIDDEN_CUSTOM_TAGS.has(parsed.tagName.toUpperCase())) return null;
+
+    const cleanEl = stripEditorArtifactsOnly(parsed);
+    flushPendingTextMutation();
+    entry.el.replaceWith(cleanEl);
+
+    refreshPendingImages(pendingImages);
+    scanStructure();
+    callbacks.onStructureChange(getStructure());
+
+    const resolvedEl =
+      cleanEl.getAttribute('data-cms-uid')
+        ? cleanEl
+        : cleanEl.querySelector?.('[data-cms-uid]') ||
+          cleanEl.closest?.('[data-cms-uid]') ||
+          cleanEl;
+    const newUid = resolvedEl?.getAttribute?.('data-cms-uid') || null;
+    if (newUid) {
+      selectByUid(newUid, { scroll: true });
+    }
+    callbacks.onMutate('update-html');
+    return {
+      uid: newUid,
+      tagName: cleanEl.tagName.toLowerCase(),
+      className: typeof cleanEl.className === 'string' ? cleanEl.className.trim() : '',
+    };
+  }
+
+  function insertCustomSectionHtml(rawHtml, { afterUid = null, position = 'after' } = {}) {
+    if (typeof rawHtml !== 'string' || !rawHtml.trim()) return null;
+    const safeHtml = sanitizeHtmlFragment(rawHtml);
+    const parsed = parseHtmlFragment(doc, safeHtml, true);
+    if (!parsed || parsed.nodeType !== 1) return null;
+    if (FORBIDDEN_CUSTOM_TAGS.has(parsed.tagName.toUpperCase())) return null;
+
+    const cleanEl = stripEditorArtifactsOnly(parsed);
+    if (cleanEl.id && doc.getElementById(cleanEl.id)) {
+      const base = cleanEl.id.replace(/-\d+$/, '');
+      let suffix = 2;
+      while (doc.getElementById(`${base}-${suffix}`)) suffix += 1;
+      cleanEl.id = `${base}-${suffix}`;
+    }
+
+    if (position === 'before' && afterUid) {
+      const refEntry = nodesByUid.get(afterUid);
+      if (refEntry?.el && doc.contains(refEntry.el) && refEntry.el.parentElement) {
+        flushPendingTextMutation();
+        refEntry.el.before(cleanEl);
+        refreshPendingImages(pendingImages);
+        scanStructure();
+        callbacks.onStructureChange(getStructure());
+        const newUid =
+          cleanEl.getAttribute('data-cms-uid') ||
+          cleanEl.querySelector?.('[data-cms-uid]')?.getAttribute('data-cms-uid') ||
+          null;
+        if (newUid) selectByUid(newUid, { scroll: true });
+        callbacks.onMutate('insert-custom-section');
+        return newUid;
+      }
+    }
+
+    return insertSection(cleanEl.outerHTML, afterUid);
+  }
+
   function insertItem(repeaterUid, itemType = null, afterItemUid = null) {
     let rep = repeatersByUid.get(repeaterUid);
 
@@ -4624,6 +4734,9 @@ export function connectCanvas(doc, options = {}) {
     getAvailableButtonStyles,
     insertStyledButton,
     insertClonedSectionHtml,
+    getElementCleanHtml,
+    updateElementHtml,
+    insertCustomSectionHtml,
     applyLiveGlobals,
     getMeta,
     setMeta,
