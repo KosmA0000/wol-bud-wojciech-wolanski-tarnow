@@ -95,6 +95,9 @@ export async function runAiTurn({
   signal,
 }) {
   const s = { ...DEFAULT_AI_SETTINGS, ...(settings || loadAiSettings()) };
+  const isLocalProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
+  const useDirectGemini = !isLocalProxy && s.provider !== 'proxy' && Boolean(s.apiKey);
+
   const messages = [
     ...history.slice(-12).map((m) => ({ role: m.role, content: m.text })),
     { role: 'user', content: userMessage },
@@ -107,7 +110,73 @@ export async function runAiTurn({
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
   if (csrfToken) headers['X-CMS-CSRF-Token'] = csrfToken;
 
-  for (let round = 0; round < 16; round += 1) {
+  const callModel = async () => {
+    if (useDirectGemini) {
+      const model = s.model || 'gemini-4-hydrogen';
+      const geminiContents = [];
+      for (const m of messages) {
+        if (m.role === 'tool') {
+          geminiContents.push({
+            role: 'user',
+            parts: [{ functionResponse: { name: m.name, id: m.tool_call_id, response: JSON.parse(m.content || '{}') } }],
+          });
+        } else if (m.role === 'assistant') {
+          const parts = [];
+          if (m.content) parts.push({ text: m.content });
+          for (const tc of m.tool_calls || []) {
+            const p = { functionCall: { name: tc.function.name, id: tc.id, args: JSON.parse(tc.function.arguments || '{}') } };
+            if (tc.thoughtSignature) p.thoughtSignature = tc.thoughtSignature;
+            parts.push(p);
+          }
+          geminiContents.push({ role: 'model', parts });
+        } else {
+          geminiContents.push({ role: 'user', parts: [{ text: String(m.content || '') }] });
+        }
+      }
+      const gTools = [{
+        functionDeclarations: RAW_TOOLS.map((t) => ({
+          name: t.name,
+          description: t.description,
+          ...(Object.keys(t.parameters.properties || {}).length > 0
+            ? {
+                parameters: {
+                  type: 'OBJECT',
+                  properties: Object.fromEntries(
+                    Object.entries(t.parameters.properties).map(([k, v]) => [k, { type: v.type.toUpperCase(), description: v.description }])
+                  ),
+                  required: t.parameters.required,
+                },
+              }
+            : {}),
+        })),
+      }];
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(s.apiKey)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal,
+          body: JSON.stringify({
+            ...(contextSummary ? { systemInstruction: { parts: [{ text: contextSummary }] } } : {}),
+            contents: geminiContents,
+            tools: gTools,
+            generationConfig: model.includes('hydrogen') ? { thinkingConfig: { thinkingLevel: 'HIGH' } } : {},
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(`Błąd Gemini API (HTTP ${res.status})`);
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      const text = parts.filter((p) => !p.thought && p.text).map((p) => p.text).join('\n').trim();
+      const toolCalls = parts.filter((p) => p.functionCall).map((p, i) => ({
+        id: p.functionCall.id || `g_${Date.now()}_${i}`,
+        name: p.functionCall.name,
+        args: p.functionCall.args || {},
+        ...(p.thoughtSignature ? { thoughtSignature: p.thoughtSignature } : {}),
+      }));
+      return { text, toolCalls };
+    }
+
     const res = await fetch(s.proxyUrl || './ai-proxy.php', {
       method: 'POST',
       headers,
@@ -121,9 +190,17 @@ export async function runAiTurn({
       }),
     });
     if (!res.ok) {
-      throw new Error(`Błąd serwera AI (HTTP ${res.status})`);
+      throw new Error(
+        res.status === 405
+          ? 'HTTP 405 — na GitHub Pages nie działa PHP proxy. Otwórz lokalnie http://127.0.0.1:4180/panel/ albo wpisz klucz Gemini API w ustawieniach AI.'
+          : `Błąd serwera AI (HTTP ${res.status})`
+      );
     }
-    const data = await res.json();
+    return res.json();
+  };
+
+  for (let round = 0; round < 16; round += 1) {
+    const data = await callModel();
     const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : [];
     const text = typeof data?.text === 'string' ? data.text.trim() : '';
 

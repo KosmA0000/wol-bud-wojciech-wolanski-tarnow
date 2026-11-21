@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-29';
+} from './ai-agent.js?v=20261121-30';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
