@@ -2449,11 +2449,24 @@ export function connectCanvas(doc, options = {}) {
         }
       } else if (sectionList.length > 0 && doc.contains(sectionList[sectionList.length - 1].el)) {
         const lastEl = sectionList[sectionList.length - 1].el;
-        const lastBand = lastEl.parentElement?.classList.contains('photo-band')
-          ? lastEl.parentElement
-          : null;
-        if (lastBand) lastBand.after(newEl);
-        else lastEl.after(newEl);
+        const isLastContact =
+          /^kontakt|contact$/i.test(lastEl.id || '') ||
+          lastEl.classList.contains('home-contact') ||
+          lastEl.classList.contains('contact-section');
+        if (isLastContact) {
+          // Nie dokładaj nowych sekcji poniżej sekcji Kontakt — wstaw je naturalnie przed Kontaktem
+          const lastBand = lastEl.parentElement?.classList.contains('photo-band')
+            ? lastEl.parentElement
+            : null;
+          if (lastBand) lastBand.before(newEl);
+          else lastEl.before(newEl);
+        } else {
+          const lastBand = lastEl.parentElement?.classList.contains('photo-band')
+            ? lastEl.parentElement
+            : null;
+          if (lastBand) lastBand.after(newEl);
+          else lastEl.after(newEl);
+        }
       } else {
         const directFooter = main === doc.body ? doc.body.querySelector(':scope > footer') : null;
         if (directFooter) main.insertBefore(newEl, directFooter);

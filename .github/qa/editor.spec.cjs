@@ -494,6 +494,14 @@ test('Asystent AI wykonuje wieloetapowe polecenia narzędziami (nowa strona, gal
     path: 'C:/Users/User/.gemini/antigravity/brain/e1d1ce88-716c-4509-8216-9e610c21d5c5/scratch/panel-ai-drawer.png',
   });
 
+  // 5. Przetestuj 1-klikowe cofnięcie całej zmiany wykonanej przez AI (nowa strona + galeria + menu!)
+  const aiUndoBtn = page.locator('#ai-messages .ai-undo-turn-btn').last();
+  await expect(aiUndoBtn).toBeVisible();
+  await aiUndoBtn.click();
+  await expect(aiUndoBtn).toContainText(/Cofnięto/i);
+  await expect(page.locator('#topbar-page-path')).toHaveText('index.html', { timeout: 10000 });
+  await expect(preview.locator('#site-menu a', { hasText: 'Promocja Wiosna 2027' })).toHaveCount(0);
+
   expect(errors).toEqual([]);
 });
 

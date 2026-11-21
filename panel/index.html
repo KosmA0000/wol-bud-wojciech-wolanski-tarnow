@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="panel.css?v=20261121-3">
-  <script type="module" src="editor.js?v=20261121-3"></script>
+  <link rel="stylesheet" href="panel.css?v=20261121-4">
+  <script type="module" src="editor.js?v=20261121-4"></script>
 </head>
 <body class="is-simple-mode">
   <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
@@ -104,6 +104,10 @@
       </div>
 
       <div class="topbar-group topbar-right">
+        <button type="button" id="btn-simple-undo" class="toolbar-btn toolbar-btn--quiet simple-only" title="Cofnij ostatnią zmianę (Ctrl+Z)" hidden>
+          ↶ Cofnij
+        </button>
+
         <button type="button" id="btn-simple-mode-back" class="toolbar-btn toolbar-btn--quiet advanced-only" title="Wróć do prostego, spokojnego widoku panelu">
           ← Tryb prosty
         </button>

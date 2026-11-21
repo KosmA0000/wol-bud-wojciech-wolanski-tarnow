@@ -148,6 +148,7 @@ const state = {
 
   undoStack: [],
   redoStack: [],
+  aiUndoStack: [],
   lastSnapshot: null,
   lastMutateTime: 0,
   autosaveTimer: null,
@@ -616,11 +617,15 @@ function updateTopbarAndIndicators() {
 }
 
 function updateUndoRedoButtons() {
-  const undoDis = state.isPublishing || state.undoStack.length === 0;
+  const canUndo = !state.isPublishing && (state.undoStack.length > 0 || state.aiUndoStack.length > 0);
   const redoDis = state.isPublishing || state.redoStack.length === 0;
-  $('btn-undo').disabled = undoDis;
+  $('btn-undo').disabled = !canUndo;
   $('btn-redo').disabled = redoDis;
-  if ($('more-undo')) $('more-undo').disabled = undoDis;
+  if ($('more-undo')) $('more-undo').disabled = !canUndo;
+  if ($('btn-simple-undo')) {
+    $('btn-simple-undo').hidden = !canUndo;
+    $('btn-simple-undo').disabled = !canUndo;
+  }
 }
 
 // ============================================================================
@@ -811,8 +816,108 @@ function syncInspectorTextFieldsFromDescriptor(desc) {
   }
 }
 
-function performUndo() {
-  if (!state.canvas || state.undoStack.length === 0 || state.isPublishing) return;
+const AI_READ_ONLY_TOOLS = new Set([
+  'get_page_structure',
+  'get_element_details',
+  'list_pages',
+  'search_images',
+  'get_globals',
+  'list_backups',
+]);
+
+function captureAiTurnCheckpoint() {
+  return {
+    id: `ai-cp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    pagePath: state.currentPagePath,
+    canvasHtml: safeCaptureSnapshot(),
+    pageDrafts: structuredClone(state.pageDrafts || {}),
+    globalsDraft: state.globalsDraft ? structuredClone(state.globalsDraft) : null,
+    restored: false,
+  };
+}
+
+async function restoreAiTurnCheckpoint(checkpoint) {
+  if (!checkpoint || checkpoint.restored || state.isPublishing) return false;
+  checkpoint.restored = true;
+  clearTimeout(state.autosaveTimer);
+  state.autosaveTimer = null;
+
+  // Usuń checkpoint ze stosu aiUndoStack (jeśli tam jest)
+  const idx = state.aiUndoStack.indexOf(checkpoint);
+  if (idx !== -1) state.aiUndoStack.splice(idx, 1);
+
+  try {
+    // 1. Zsynchronizuj szkice stron w IndexedDB do stanu sprzed tury AI
+    const prevDrafts = checkpoint.pageDrafts || {};
+    const currentKeys = new Set(Object.keys(state.pageDrafts || {}));
+    const prevKeys = new Set(Object.keys(prevDrafts));
+
+    for (const p of currentKeys) {
+      if (!prevKeys.has(p)) {
+        await deletePageDraft(p);
+      }
+    }
+    for (const [p, draft] of Object.entries(prevDrafts)) {
+      await savePageDraft(p, draft);
+    }
+    state.pageDrafts = structuredClone(prevDrafts);
+
+    // 2. Zsynchronizuj ustawienia globalne (menu/stopka/dane firmy)
+    if (checkpoint.globalsDraft) {
+      const restoredGlobals = normalizeGlobalsObj(checkpoint.globalsDraft);
+      await saveGlobalsDraft(restoredGlobals);
+      state.globalsDraft = restoredGlobals;
+    } else {
+      await deleteGlobalsDraft();
+      state.globalsDraft = null;
+    }
+
+    // 3. Przywróć podgląd bieżącej strony lub wróć na stronę sprzed tury AI
+    if (state.currentPagePath === checkpoint.pagePath && state.canvas && checkpoint.canvasHtml) {
+      state.isRestoringHistory = true;
+      try {
+        state.canvas.restoreSnapshot(checkpoint.canvasHtml);
+        applyGlobalsPreview(getActiveGlobals());
+        state.lastSnapshot = safeCaptureSnapshot();
+        state.structure = normalizeStructure(state.canvas.getStructure?.());
+        state.selectedDescriptor = normalizeDescriptor(state.canvas.getSelectedDescriptor?.());
+        state.currentPageDirty = false;
+      } finally {
+        state.isRestoringHistory = false;
+      }
+      renderStructureTree();
+      renderPagesList();
+      renderInspector();
+      updateTopbarAndIndicators();
+    } else {
+      state.currentPageDirty = false;
+      await loadPage(checkpoint.pagePath, { skipFlush: true });
+      applyGlobalsPreview(getActiveGlobals());
+      renderPagesList();
+      updateTopbarAndIndicators();
+    }
+
+    showToast('Cofnięto zmianę wykonaną przez Asystenta AI.');
+    return true;
+  } catch (err) {
+    console.error('AI undo failed:', err);
+    checkpoint.restored = false;
+    showToast('Nie udało się cofnąć zmiany AI.', 'error');
+    return false;
+  }
+}
+
+async function performUndo() {
+  if (state.isPublishing) return;
+
+  // Jeśli bieżąca strona ma pusty stos (np. AI utworzyło nową stronę albo zmieniło tylko menu), cofnij całą ostatnią turę AI
+  if ((!state.canvas || state.undoStack.length === 0) && state.aiUndoStack.length > 0) {
+    const cp = state.aiUndoStack[state.aiUndoStack.length - 1];
+    await restoreAiTurnCheckpoint(cp);
+    return;
+  }
+
+  if (!state.canvas || state.undoStack.length === 0) return;
   const previousHtml = state.undoStack.pop();
   const currentSnap = safeCaptureSnapshot();
   if (currentSnap) {
@@ -1003,7 +1108,7 @@ function handleCanvasSelect(payload) {
   renderInspector();
   updateBlocksInsertBanner();
 
-  if (state.uiMode === 'simple') {
+  if (state.uiMode === 'simple' && !state.ai.isRunning) {
     if (state.selectedDescriptor) {
       openSimpleInspector();
     } else {
@@ -5368,6 +5473,35 @@ async function sendAiPrompt(rawPrompt) {
   $('ai-input').disabled = true;
   updateAiUiStatus();
 
+  await flushAutosaveIfNeeded();
+  const turnCheckpoint = captureAiTurnCheckpoint();
+  let aiDidMutate = false;
+
+  const attachAiUndoButtonIfMutated = () => {
+    if (!aiDidMutate) return;
+    state.aiUndoStack.push(turnCheckpoint);
+    if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
+    updateUndoRedoButtons();
+
+    const bar = document.createElement('div');
+    bar.className = 'ai-undo-bar';
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'ai-undo-turn-btn';
+    undoBtn.textContent = '↶ Cofnij tę zmianę AI';
+    undoBtn.addEventListener('click', async () => {
+      undoBtn.disabled = true;
+      const ok = await restoreAiTurnCheckpoint(turnCheckpoint);
+      if (ok) {
+        undoBtn.textContent = '✓ Cofnięto zmianę AI';
+      } else {
+        undoBtn.disabled = false;
+      }
+    });
+    bar.append(undoBtn);
+    botBubble.append(bar);
+  };
+
   try {
     aiGuardrails.reset();
     const historySnapshot = [...state.ai.history];
@@ -5403,8 +5537,11 @@ async function sendAiPrompt(rawPrompt) {
       onToolResult: (resInfo) => {
         const id = resInfo?.id;
         const entry = id ? toolPillsById.get(id) : null;
-        if (!entry) return;
         const ok = resInfo?.ok !== false && resInfo?.result?.ok !== false;
+        if (ok && resInfo?.name && !AI_READ_ONLY_TOOLS.has(resInfo.name)) {
+          aiDidMutate = true;
+        }
+        if (!entry) return;
         entry.pill.classList.remove('is-running');
         entry.pill.classList.add(ok ? 'is-done' : 'is-error');
         entry.icon.textContent = ok ? '✓' : '✕';
@@ -5419,6 +5556,7 @@ async function sendAiPrompt(rawPrompt) {
     thinkingEl.remove();
     const replyText = String(result?.reply || '').trim() || 'Gotowe! Zmiany zostały wprowadzone w szkicu.';
     botBubble.innerHTML = renderSimpleMarkdown(replyText);
+    attachAiUndoButtonIfMutated();
     botBubble.hidden = false;
 
     state.ai.history.push(
@@ -5435,12 +5573,14 @@ async function sendAiPrompt(rawPrompt) {
     const isAbort = err?.name === 'AbortError';
     if (isAbort) {
       botBubble.innerHTML = renderSimpleMarkdown('Zatrzymano wykonywanie polecenia.');
+      attachAiUndoButtonIfMutated();
       botBubble.hidden = false;
     } else {
       botWrap.classList.add('ai-msg--error');
       const errMsg = err?.message || 'Wystąpił błąd podczas komunikacji z Asystentem AI.';
       state.lastError = errMsg;
       botBubble.innerHTML = renderSimpleMarkdown(errMsg);
+      attachAiUndoButtonIfMutated();
       if (/klucz|autoryzac|proxy|konfigurac/i.test(errMsg)) {
         const act = document.createElement('div');
         act.className = 'ai-error-action';
@@ -5580,6 +5720,7 @@ function bindUIEvents() {
   });
 
   $('btn-undo').addEventListener('click', performUndo);
+  $('btn-simple-undo')?.addEventListener('click', performUndo);
   $('btn-redo').addEventListener('click', performRedo);
 
   document.querySelectorAll('.vp-btn').forEach((btn) => {
