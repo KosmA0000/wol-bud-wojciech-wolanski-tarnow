@@ -1,6 +1,7 @@
 import { config } from './config.js';
 import { siteProfile } from './site-profile.js';
 import { AiGuardrailTracker, sanitizeUrl } from './sanitizer.js';
+import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js';
 import {
   initStorage,
   savePageDraft,
@@ -158,6 +159,7 @@ const state = {
   activeTab: 'structure',
   uiMode: 'simple',
   browseMode: false,
+  freeLayoutMode: false,
   pageHistory: [],
   viewport: 'desktop',
   pendingInsertAfterUid: null,
@@ -190,6 +192,10 @@ const state = {
     settings: null,
     proxyStatus: null,
     history: [],
+    chatEntries: [],
+    pinnedTargets: [],
+    draggingTarget: null,
+    pickMode: false,
     isRunning: false,
     abortController: null,
   },
@@ -524,6 +530,7 @@ function normalizeDescriptor(raw) {
     image: raw.image || null,
     stars,
     sectionStyle: raw.sectionStyle || { tone: 'default', align: 'default', spacing: 'default' },
+    freeLayout: raw.freeLayout || { active: false, tx: 0, ty: 0, w: null, h: null, scale: 100, z: 2 },
     supportsTextBlocks: Boolean(
       raw.supportsTextBlocks || raw.canAddParagraph || raw.canAddListItem || isSection
     ),
@@ -722,6 +729,73 @@ function updateBlocksInsertBanner() {
 // HISTORY (UNDO / REDO) & AUTOSAVE
 // ============================================================================
 
+const UNDO_STORAGE_PREFIX = 'wolbud:cms:undo-v1:';
+const AI_CHAT_STORAGE_KEY = 'wolbud:cms:ai-chat-v1';
+
+function extractSnapshotHtml(snap) {
+  if (!snap) return '';
+  return typeof snap === 'string' ? snap : String(snap.html || '');
+}
+
+function persistUndoRedoForPage(pagePath = state.currentPagePath) {
+  if (!pagePath) return;
+  const key = `${UNDO_STORAGE_PREFIX}${pagePath}`;
+  const pack = (limit) =>
+    JSON.stringify({
+      undo: state.undoStack.slice(-limit).map(extractSnapshotHtml).filter(Boolean),
+      redo: state.redoStack.slice(-limit).map(extractSnapshotHtml).filter(Boolean),
+      updatedAt: Date.now(),
+    });
+  try {
+    if (state.undoStack.length === 0 && state.redoStack.length === 0) {
+      localStorage.removeItem(key);
+      return;
+    }
+    try {
+      localStorage.setItem(key, pack(10));
+    } catch {
+      try {
+        localStorage.setItem(key, pack(4));
+      } catch {
+        // Ignore quota errors on very large pages
+      }
+    }
+  } catch {
+    // Ignore storage access errors
+  }
+}
+
+function restoreUndoRedoForPage(pagePath) {
+  if (!pagePath) return { undo: [], redo: [] };
+  try {
+    const raw = localStorage.getItem(`${UNDO_STORAGE_PREFIX}${pagePath}`);
+    if (!raw) return { undo: [], redo: [] };
+    const parsed = JSON.parse(raw);
+    const undo = Array.isArray(parsed?.undo) ? parsed.undo.filter((s) => typeof s === 'string' && s.trim()) : [];
+    const redo = Array.isArray(parsed?.redo) ? parsed.redo.filter((s) => typeof s === 'string' && s.trim()) : [];
+    return { undo, redo };
+  } catch {
+    return { undo: [], redo: [] };
+  }
+}
+
+function clearPersistedUndoRedo(pagePath = null) {
+  try {
+    if (pagePath) {
+      localStorage.removeItem(`${UNDO_STORAGE_PREFIX}${pagePath}`);
+      return;
+    }
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(UNDO_STORAGE_PREFIX)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
+}
+
 function pushUndoSnapshot(coalesce = true) {
   if (state.isRestoringHistory || !state.canvas) return;
   const now = Date.now();
@@ -741,6 +815,7 @@ function pushUndoSnapshot(coalesce = true) {
 
   state.lastSnapshot = nextSnap;
   state.lastMutateTime = now;
+  persistUndoRedoForPage(state.currentPagePath);
   updateUndoRedoButtons();
 }
 
@@ -965,6 +1040,7 @@ async function performUndo() {
     state.currentPageDirty = true;
     renderStructureTree();
     renderInspector();
+    persistUndoRedoForPage(state.currentPagePath);
     scheduleAutosave();
     updateTopbarAndIndicators();
     showToast('Cofnięto ostatnią zmianę.');
@@ -1001,6 +1077,7 @@ async function performRedo() {
     state.currentPageDirty = true;
     renderStructureTree();
     renderInspector();
+    persistUndoRedoForPage(state.currentPagePath);
     scheduleAutosave();
     updateTopbarAndIndicators();
     showToast('Przywrócono zmianę.');
@@ -1016,22 +1093,46 @@ async function performRedo() {
 // PAGE LOADING INTO IFRAME
 // ============================================================================
 
-function setCanvasBrowseMode(enabled) {
-  state.browseMode = Boolean(enabled);
-  state.canvas?.setBrowseMode?.(state.browseMode);
-  if (state.browseMode && state.uiMode === 'simple') {
-    closeSimpleInspector();
-  }
+function syncCanvasModeButtons() {
   const editBtn = $('btn-mode-edit');
+  const freeBtn = $('btn-mode-free');
   const browseBtn = $('btn-mode-browse');
+  const isEdit = !state.browseMode && !state.freeLayoutMode;
   if (editBtn) {
-    editBtn.classList.toggle('is-active', !state.browseMode);
-    editBtn.setAttribute('aria-pressed', String(!state.browseMode));
+    editBtn.classList.toggle('is-active', isEdit);
+    editBtn.setAttribute('aria-pressed', String(isEdit));
+  }
+  if (freeBtn) {
+    freeBtn.classList.toggle('is-active', state.freeLayoutMode && !state.browseMode);
+    freeBtn.setAttribute('aria-pressed', String(state.freeLayoutMode && !state.browseMode));
   }
   if (browseBtn) {
     browseBtn.classList.toggle('is-active', state.browseMode);
     browseBtn.setAttribute('aria-pressed', String(state.browseMode));
   }
+}
+
+function setCanvasBrowseMode(enabled) {
+  state.browseMode = Boolean(enabled);
+  if (state.browseMode) {
+    state.freeLayoutMode = false;
+    setAiPickModeUi(false);
+  }
+  state.canvas?.setBrowseMode?.(state.browseMode);
+  if (state.browseMode && state.uiMode === 'simple') {
+    closeSimpleInspector();
+  }
+  syncCanvasModeButtons();
+}
+
+function setCanvasFreeLayoutMode(enabled) {
+  state.freeLayoutMode = Boolean(enabled);
+  if (state.freeLayoutMode) {
+    state.browseMode = false;
+    setAiPickModeUi(false);
+  }
+  state.canvas?.setFreeLayoutMode?.(state.freeLayoutMode);
+  syncCanvasModeButtons();
 }
 
 async function handleCanvasNavigate({ pagePath = null, hash = null, back = false, externalUrl = null } = {}) {
@@ -1148,6 +1249,7 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
     state.canvas = connectCanvas(doc, {
       pagePath,
       browseMode: state.browseMode,
+      freeLayoutMode: state.freeLayoutMode,
       pendingImages: getPendingImageUrlMap(),
       onSelect: handleCanvasSelect,
       onStructureChange: handleStructureChange,
@@ -1155,6 +1257,22 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
       onRequestImage: handleRequestImage,
       onRequestAddSection: handleRequestAddSection,
       onRequestAddItem: handleRequestAddItem,
+      onRequestGlobals: (opts) => openGlobalsDialog(opts),
+      onSendToAi: (targets) => {
+        setAiPickModeUi(false);
+        pinAiTargets(targets, { openDrawer: true });
+      },
+      onDragTargetStart: (target) => {
+        state.ai.draggingTarget = target || null;
+        if (state.ai.open && target) {
+          $('ai-drawer')?.classList.add('is-drag-ready');
+        }
+      },
+      onDragTargetEnd: () => {
+        state.ai.draggingTarget = null;
+        $('ai-drawer')?.classList.remove('is-drag-ready', 'is-drag-over');
+        if ($('ai-drop-overlay')) $('ai-drop-overlay').hidden = true;
+      },
       onNavigate: handleCanvasNavigate,
     });
 
@@ -1168,6 +1286,32 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
 
     state.structure = normalizeStructure(state.canvas.getStructure?.());
     state.lastSnapshot = safeCaptureSnapshot();
+
+    // Przywróć zapisaną historię Cofnij / Ponów dla tej podstrony (działa także po odświeżeniu F5!)
+    const persisted = restoreUndoRedoForPage(pagePath);
+    state.undoStack = persisted.undo;
+    state.redoStack = persisted.redo;
+    if (state.undoStack.length === 0 && draft && !draft.isNew && !draft.deleted) {
+      const liveBaselineUrl = new URL('../' + pagePath, location.href);
+      liveBaselineUrl.searchParams.set('_cms_base', String(Date.now()));
+      fetch(liveBaselineUrl.href, { cache: 'no-store' })
+        .then((r) => (r.ok ? r.text() : ''))
+        .then((liveHtml) => {
+          if (
+            seq === state.loadSeq &&
+            state.currentPagePath === pagePath &&
+            state.undoStack.length === 0 &&
+            liveHtml &&
+            liveHtml.trim() &&
+            snapshotKey(liveHtml) !== snapshotKey(state.lastSnapshot)
+          ) {
+            state.undoStack.push(liveHtml);
+            persistUndoRedoForPage(pagePath);
+            updateUndoRedoButtons();
+          }
+        })
+        .catch(() => {});
+    }
 
     renderStructureTree();
     renderInspector();
@@ -1212,7 +1356,7 @@ function handleCanvasSelect(payload) {
   renderInspector();
   updateBlocksInsertBanner();
 
-  if (state.uiMode === 'simple' && !state.ai.isRunning) {
+  if (state.uiMode === 'simple' && !state.ai.isRunning && !state.ai.open) {
     if (state.selectedDescriptor) {
       openSimpleInspector();
     } else {
@@ -1327,16 +1471,36 @@ function renderStructureTree() {
     if (sec.uid === selectedUid) card.classList.add('is-selected');
     if (sec.hidden) card.classList.add('is-hidden-node');
 
-    // Drag & Drop handlers for reordering sections
+    // Drag & Drop handlers for reordering sections (also supports dropping onto AI Chat!)
     card.addEventListener('dragstart', (e) => {
       state.dragSectionUid = sec.uid;
       card.classList.add('is-dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', sec.uid);
+      const payload = state.canvas?.getElementTargetPayload?.(sec.uid) || {
+        uid: sec.uid,
+        kind: 'section',
+        label: sec.label,
+        id: sec.id || '',
+        pagePath: state.currentPagePath,
+        textSnippet: '',
+      };
+      state.ai.draggingTarget = payload;
+      try {
+        e.dataTransfer.setData('application/x-wolbud-cms-target', JSON.stringify(payload));
+      } catch {
+        // ignore
+      }
+      if (state.ai.open) {
+        $('ai-drawer')?.classList.add('is-drag-ready');
+      }
     });
 
     card.addEventListener('dragend', () => {
       state.dragSectionUid = null;
+      state.ai.draggingTarget = null;
+      $('ai-drawer')?.classList.remove('is-drag-ready', 'is-drag-over');
+      if ($('ai-drop-overlay')) $('ai-drop-overlay').hidden = true;
       card.classList.remove('is-dragging');
       container.querySelectorAll('.drop-before, .drop-after').forEach((el) => {
         el.classList.remove('drop-before', 'drop-after');
@@ -2196,6 +2360,107 @@ function renderElementInspector(desc) {
     advSec.append(details);
     body.append(advSec);
   }
+
+  // 8. Układ swobodny (klocki — pozycja, rozmiar, skala) + szybkie wysłanie do AI
+  const freeSec = document.createElement('section');
+  freeSec.className = 'inspector-section';
+
+  const freeDet = document.createElement('details');
+  freeDet.className = 'inspector-advanced-details';
+  if (desc.freeLayout?.active || state.freeLayoutMode) freeDet.open = true;
+
+  const freeSum = document.createElement('summary');
+  freeSum.className = 'inspector-advanced-summary';
+  freeSum.textContent = '🧱 Układ swobodny (pozycja, rozmiar, skala)';
+
+  const freeBody = document.createElement('div');
+  freeBody.className = 'inspector-advanced-body';
+
+  const fl = desc.freeLayout || { active: false, tx: 0, ty: 0, w: null, h: null, scale: 100, z: 2 };
+  const freeGrid = document.createElement('div');
+  freeGrid.className = 'free-layout-grid';
+
+  const mkNumField = (labelText, value, placeholder, step, onCommit) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field-group';
+    const lbl = document.createElement('label');
+    lbl.className = 'field-label';
+    lbl.textContent = labelText;
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.className = 'input-field';
+    inp.step = String(step || 1);
+    inp.placeholder = placeholder;
+    inp.value = value === null || value === undefined ? '' : String(value);
+    inp.addEventListener('change', () => onCommit(inp.value));
+    wrap.append(lbl, inp);
+    return wrap;
+  };
+
+  freeGrid.append(
+    mkNumField('Przesunięcie X (px)', fl.tx, '0', 4, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { tx: Number(v) || 0 });
+    }),
+    mkNumField('Przesunięcie Y (px)', fl.ty, '0', 4, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { ty: Number(v) || 0 });
+    }),
+    mkNumField('Szerokość (px)', fl.w, 'auto', 10, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { w: v === '' ? null : Number(v) });
+    }),
+    mkNumField('Wysokość (px)', fl.h, 'auto', 10, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { h: v === '' ? null : Number(v) });
+    }),
+    mkNumField('Skala (%)', fl.scale, '100', 5, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { scale: Number(v) || 100 });
+    }),
+    mkNumField('Warstwa (Z-index)', fl.z, '2', 1, (v) => {
+      state.canvas?.updateFreeLayout?.(desc.uid, { z: Number(v) || 2 });
+    })
+  );
+
+  const freeBtns = document.createElement('div');
+  freeBtns.className = 'btn-row-2';
+
+  const toggleFreeBtn = document.createElement('button');
+  toggleFreeBtn.type = 'button';
+  toggleFreeBtn.className = state.freeLayoutMode ? 'btn-primary mini-btn' : 'btn-secondary mini-btn';
+  toggleFreeBtn.textContent = state.freeLayoutMode ? '✓ Tryb klocków aktywny' : '🧱 Przesuwaj myszką';
+  toggleFreeBtn.addEventListener('click', () => {
+    setCanvasFreeLayoutMode(!state.freeLayoutMode);
+    renderInspector();
+  });
+
+  const resetFreeBtn = document.createElement('button');
+  resetFreeBtn.type = 'button';
+  resetFreeBtn.className = 'btn-secondary mini-btn';
+  resetFreeBtn.textContent = '↺ Resetuj układ';
+  resetFreeBtn.disabled = !fl.active;
+  resetFreeBtn.addEventListener('click', () => {
+    state.canvas?.resetFreeLayout?.(desc.uid);
+    showToast('Przywrócono domyślną pozycję i rozmiar elementu.');
+  });
+
+  freeBtns.append(toggleFreeBtn, resetFreeBtn);
+
+  const sendToAiBtn = document.createElement('button');
+  sendToAiBtn.type = 'button';
+  sendToAiBtn.className = 'btn-secondary mini-btn free-send-ai-btn';
+  sendToAiBtn.textContent = '✨ Wyślij ten fragment do czatu AI';
+  sendToAiBtn.addEventListener('click', () => {
+    const payload = state.canvas?.getElementTargetPayload?.(desc.uid) || {
+      uid: desc.uid,
+      kind: desc.kind,
+      label: desc.label,
+      pagePath: state.currentPagePath,
+      textSnippet: '',
+    };
+    pinAiTargets([payload], { openDrawer: true });
+  });
+
+  freeBody.append(freeGrid, freeBtns, sendToAiBtn);
+  freeDet.append(freeSum, freeBody);
+  freeSec.append(freeDet);
+  body.append(freeSec);
 }
 
 function renderPageSettingsInspector() {
@@ -2612,6 +2877,7 @@ async function handleClearAllDrafts() {
     return;
   }
   await clearAllDrafts();
+  clearPersistedUndoRedo();
   state.pageDrafts = {};
   state.pendingImages = {};
   state.globalsDraft = null;
@@ -2631,6 +2897,7 @@ async function handleDiscardCurrentPage() {
 
   clearTimeout(state.autosaveTimer);
   await deletePageDraft(state.currentPagePath);
+  clearPersistedUndoRedo(state.currentPagePath);
   delete state.pageDrafts[state.currentPagePath];
   state.currentPageDirty = false;
 
@@ -2846,9 +3113,14 @@ async function handleMediaUploadFiles(fileList) {
       renderMediaGrid();
     }
 
+    const uploadedMeta = state.pendingImages[lastUploadedPath];
+    const savedInfo =
+      uploadedMeta?.originalSize && uploadedMeta.originalSize > uploadedMeta.size
+        ? `${formatFileSize(uploadedMeta.originalSize)} → ${formatFileSize(uploadedMeta.size)} WebP`
+        : `${formatFileSize(uploadedMeta?.size)} WebP`;
     showToast(
       uploadedCount === 1
-        ? `Wgrano i zoptymalizowano zdjęcie (${formatFileSize(state.pendingImages[lastUploadedPath]?.size)}).`
+        ? `Zoptymalizowano zdjęcie do WebP (${savedInfo}).`
         : `Wgrano i zoptymalizowano ${uploadedCount} zdjęć do WebP.`
     );
 
@@ -3070,7 +3342,12 @@ async function handleCreateNewPageSubmit(e) {
 
   if ($('np-add-to-menu').checked) {
     const nextGlobals = normalizeGlobalsObj(getActiveGlobals());
-    nextGlobals.menu.push({ label: heading, href: newPath, mobileHref: '' });
+    if (!nextGlobals.menu.some((m) => m.href === newPath)) {
+      nextGlobals.menu.push({ label: heading, href: newPath, mobileHref: '' });
+    }
+    if (!nextGlobals.footerLinks.some((f) => f.href === newPath)) {
+      nextGlobals.footerLinks.push({ label: heading, href: newPath });
+    }
     await saveGlobalsDraft(nextGlobals);
     state.globalsDraft = nextGlobals;
   }
@@ -3085,7 +3362,7 @@ async function handleCreateNewPageSubmit(e) {
 // MODAL 3: GLOBAL SETTINGS (MENU, FOOTER, COMPANY DATA)
 // ============================================================================
 
-function openGlobalsDialog() {
+function openGlobalsDialog(options = {}) {
   state.globalsEditor.working = normalizeGlobalsObj(getActiveGlobals());
   const g = state.globalsEditor.working;
 
@@ -3102,7 +3379,29 @@ function openGlobalsDialog() {
   renderGlobalsLinkList('gl-nav-list', g.menu);
   renderGlobalsLinkList('gl-footer-links-list', g.footerLinks);
 
-  $('globals-dialog').showModal();
+  const dlg = $('globals-dialog');
+  if (!dlg.open) dlg.showModal();
+
+  const focusKey = options && typeof options === 'object' && typeof options.focus === 'string' ? options.focus : '';
+  const focusMap = {
+    phone: 'gl-phone-display',
+    email: 'gl-email',
+    facebook: 'gl-facebook',
+    logo: 'gl-pick-logo',
+    footer: 'gl-footer-copy',
+    menu: 'gl-add-nav',
+  };
+  const targetId = focusMap[focusKey];
+  if (targetId) {
+    const field = $(targetId);
+    if (field) {
+      requestAnimationFrame(() => {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        field.focus();
+        if (typeof field.select === 'function') field.select();
+      });
+    }
+  }
 }
 
 function renderGlobalsLinkList(containerId, items) {
@@ -3511,6 +3810,22 @@ async function handlePublishSubmit(e) {
     encoding: 'utf-8',
   });
 
+  // Deterministyczne, odporne na AI Auto-SEO: zawsze odśwież sitemap.xml i bezpieczny robots.txt przy publikacji
+  const siteBaseUrl = resolveSiteBaseUrl(siteProfile);
+  files.push({
+    path: 'sitemap.xml',
+    content: generateSitemapXml(nextManifest.pages, {
+      siteUrl: siteBaseUrl,
+      lastmod: nextManifest.generatedAt,
+    }),
+    encoding: 'utf-8',
+  });
+  files.push({
+    path: 'robots.txt',
+    content: generateRobotsTxt({ siteUrl: siteBaseUrl }),
+    encoding: 'utf-8',
+  });
+
   const commitMessage =
     $('pub-commit-message').value.trim() ||
     `Aktualizacja strony ${siteProfile.brandName || 'CMS'} (${files.length} plików)`;
@@ -3557,6 +3872,7 @@ async function handlePublishSubmit(e) {
 
     // Clear all local drafts & update state to live
     await clearAllDrafts();
+    clearPersistedUndoRedo();
     await savePendingRevision(null);
 
     state.manifest = liveManifest || nextManifest;
@@ -3907,6 +4223,7 @@ async function handleRestoreBackup(item, triggerBtn) {
     });
 
     await clearAllDrafts();
+    clearPersistedUndoRedo();
     state.pageDrafts = {};
     state.pendingImages = {};
     state.globalsDraft = null;
@@ -4303,16 +4620,16 @@ async function refreshProxyStatusInModal(proxyUrl) {
 }
 
 function openAiSettingsDialog() {
-  const s = state.ai.settings || loadAiSettings(config.mode === 'hosting' ? 'proxy' : 'gemini');
-  $('ai-provider').value = s.provider || 'gemini';
+  const s = state.ai.settings || loadAiSettings(config.mode === 'hosting' ? 'proxy' : 'openrouter');
+  $('ai-provider').value = s.provider || 'openrouter';
   $('ai-model').value = s.model || DEFAULT_AI_SETTINGS.model;
   $('ai-api-key').value = s.apiKey || '';
   $('ai-proxy-url').value = s.proxyUrl || DEFAULT_AI_SETTINGS.proxyUrl;
 
-  syncAiSettingsFormVisibility(s.provider || 'gemini', { updateModelIfDefault: false });
+  syncAiSettingsFormVisibility(s.provider || 'openrouter', { updateModelIfDefault: false });
   $('ai-settings-dialog').showModal();
 
-  if ((s.provider || 'gemini') === 'proxy') {
+  if ((s.provider || 'openrouter') === 'proxy') {
     refreshProxyStatusInModal($('ai-proxy-url').value.trim());
   }
 }
@@ -4535,7 +4852,16 @@ function buildAiContextSummary() {
     })),
   }));
 
-  return JSON.stringify({
+  const pinnedSummary = (state.ai.pinnedTargets || []).map((t) => ({
+    uid: t.uid,
+    kind: t.kind,
+    label: t.label,
+    id: t.id || undefined,
+    pagePath: t.pagePath,
+    textSnippet: t.textSnippet || undefined,
+  }));
+
+  const payload = {
     currentPage: {
       path: state.currentPagePath,
       label: entry.label,
@@ -4545,6 +4871,7 @@ function buildAiContextSummary() {
       isModified: Boolean(entry.isModified || state.currentPageDirty),
     },
     selectedUid: state.selectedDescriptor?.uid || null,
+    pinnedTargetsByUser: pinnedSummary.length > 0 ? pinnedSummary : undefined,
     sections,
     availableSectionTemplates: (SECTION_TEMPLATES || []).map((t) => ({
       id: t.id,
@@ -4560,7 +4887,19 @@ function buildAiContextSummary() {
     totalPagesCount: getAllPagesMerged().filter((p) => !p.deleted).length,
     pendingDraftChanges: counts.total,
     hostingMode: config.mode,
-  });
+  };
+
+  if (pinnedSummary.length > 0) {
+    const targetLines = pinnedSummary
+      .map(
+        (t) =>
+          `- uid="${t.uid}" | typ=${t.kind} | etykieta="${t.label}" | strona="${t.pagePath}"${t.textSnippet ? ` | tekst="${t.textSnippet}"` : ''}`
+      )
+      .join('\n');
+    return `🎯 WSKAZANE PRZEZ UŻYTKOWNIKA FRAGMENTY STRONY (PRACUJ WYŁĄCZNIE W TYM MIEJSCU!):\n${targetLines}\n\n${JSON.stringify(payload)}`;
+  }
+
+  return JSON.stringify(payload);
 }
 
 function formatDescriptorForAi(raw) {
@@ -5252,13 +5591,25 @@ async function executeAiTool(name, rawArgs = {}) {
       state.pageDrafts[newPath] = draft;
 
       let addedToMenu = false;
-      if (args.addToMenu) {
+      let addedToFooter = false;
+      const shouldAddMenu = Boolean(args.addToMenu);
+      const shouldAddFooter = args.addToFooter !== undefined ? Boolean(args.addToFooter) : shouldAddMenu;
+      if (shouldAddMenu || shouldAddFooter) {
         const nextGlobals = normalizeGlobalsObj(getActiveGlobals());
-        if (!nextGlobals.menu.some((m) => m.href === newPath)) {
+        let globalsChanged = false;
+        if (shouldAddMenu && !nextGlobals.menu.some((m) => m.href === newPath)) {
           nextGlobals.menu.push({ label: heading, href: newPath, mobileHref: '' });
+          addedToMenu = true;
+          globalsChanged = true;
+        }
+        if (shouldAddFooter && !nextGlobals.footerLinks.some((f) => f.href === newPath)) {
+          nextGlobals.footerLinks.push({ label: heading, href: newPath });
+          addedToFooter = true;
+          globalsChanged = true;
+        }
+        if (globalsChanged) {
           await saveGlobalsDraft(nextGlobals);
           state.globalsDraft = nextGlobals;
-          addedToMenu = true;
         }
       }
 
@@ -5628,12 +5979,25 @@ async function sendAiPrompt(rawPrompt) {
   const messagesEl = $('ai-messages');
   if (!messagesEl) return;
 
+  const usedPinnedTargets = (state.ai.pinnedTargets || []).map((t) => ({ ...t }));
+
   // Usuń kartę powitalną przy pierwszej wiadomości
   messagesEl.querySelector('.ai-welcome')?.remove();
 
   // Dodaj bąbelek użytkownika
   const userWrap = document.createElement('div');
   userWrap.className = 'ai-msg ai-msg--user';
+  if (usedPinnedTargets.length > 0) {
+    const tagRow = document.createElement('div');
+    tagRow.className = 'ai-msg-targets';
+    for (const t of usedPinnedTargets) {
+      const chip = document.createElement('span');
+      chip.className = 'ai-msg-target-badge';
+      chip.textContent = `🎯 ${t.label}`;
+      tagRow.append(chip);
+    }
+    userWrap.append(tagRow);
+  }
   const userBubble = document.createElement('div');
   userBubble.className = 'ai-msg-bubble';
   userBubble.textContent = userMessage;
@@ -5844,6 +6208,27 @@ async function sendAiPrompt(rawPrompt) {
       state.ai.history = state.ai.history.slice(-24);
     }
 
+    const toolSummaryEntries = Array.from(toolPillsById.values()).map(({ pill, label }) => ({
+      label: label?.textContent || '',
+      ok: !pill?.classList.contains('is-error'),
+    }));
+    state.ai.chatEntries.push(
+      {
+        role: 'user',
+        text: userMessage,
+        targets: usedPinnedTargets.map((t) => ({ uid: t.uid, label: t.label })),
+      },
+      {
+        role: 'assistant',
+        text: replyText,
+        tools: toolSummaryEntries,
+      }
+    );
+    if (state.ai.chatEntries.length > 40) {
+      state.ai.chatEntries = state.ai.chatEntries.slice(-40);
+    }
+    persistAiChat();
+
     await flushAutosaveIfNeeded();
   } catch (err) {
     thinkingEl.remove();
@@ -5886,11 +6271,191 @@ async function sendAiPrompt(rawPrompt) {
   }
 }
 
+function persistAiChat() {
+  try {
+    localStorage.setItem(
+      AI_CHAT_STORAGE_KEY,
+      JSON.stringify({
+        history: (state.ai.history || []).slice(-24),
+        chatEntries: (state.ai.chatEntries || []).slice(-40),
+        updatedAt: Date.now(),
+      })
+    );
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+function restoreAiChat() {
+  try {
+    const raw = localStorage.getItem(AI_CHAT_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    const entries = Array.isArray(parsed?.chatEntries) ? parsed.chatEntries : [];
+    const history = Array.isArray(parsed?.history) ? parsed.history : [];
+    if (entries.length === 0) return;
+
+    state.ai.history = history.slice(-24);
+    state.ai.chatEntries = entries.slice(-40);
+
+    const messagesEl = $('ai-messages');
+    if (!messagesEl) return;
+    messagesEl.replaceChildren();
+
+    for (const item of state.ai.chatEntries) {
+      if (!item || typeof item !== 'object') continue;
+      if (item.role === 'user') {
+        const userWrap = document.createElement('div');
+        userWrap.className = 'ai-msg ai-msg--user';
+        if (Array.isArray(item.targets) && item.targets.length > 0) {
+          const tagRow = document.createElement('div');
+          tagRow.className = 'ai-msg-targets';
+          for (const t of item.targets) {
+            const chip = document.createElement('span');
+            chip.className = 'ai-msg-target-badge';
+            chip.textContent = `🎯 ${t.label || t.uid}`;
+            tagRow.append(chip);
+          }
+          userWrap.append(tagRow);
+        }
+        const bubble = document.createElement('div');
+        bubble.className = 'ai-msg-bubble';
+        bubble.textContent = String(item.text || '');
+        userWrap.append(bubble);
+        messagesEl.append(userWrap);
+      } else if (item.role === 'assistant') {
+        const botWrap = document.createElement('div');
+        botWrap.className = 'ai-msg ai-msg--assistant';
+        if (Array.isArray(item.tools) && item.tools.length > 0) {
+          const det = document.createElement('details');
+          det.className = 'ai-tools-details';
+          const sum = document.createElement('summary');
+          sum.className = 'ai-tools-summary';
+          sum.textContent = `✓ Wykonano ${item.tools.length} ${item.tools.length === 1 ? 'krok' : item.tools.length < 5 ? 'kroki' : 'kroków'} (kliknij, aby rozwinąć)`;
+          const list = document.createElement('div');
+          list.className = 'ai-tools-list';
+          for (const tl of item.tools) {
+            const pill = document.createElement('div');
+            pill.className = `ai-tool-pill ${tl.ok === false ? 'is-error' : 'is-done'}`;
+            const ic = document.createElement('span');
+            ic.className = 'ai-tool-pill-icon';
+            ic.textContent = tl.ok === false ? '✕' : '✓';
+            const lb = document.createElement('span');
+            lb.className = 'ai-tool-pill-label';
+            lb.textContent = String(tl.label || '');
+            pill.append(ic, lb);
+            list.append(pill);
+          }
+          det.append(sum, list);
+          botWrap.append(det);
+        }
+        const bubble = document.createElement('div');
+        bubble.className = 'ai-msg-bubble';
+        bubble.innerHTML = renderSimpleMarkdown(String(item.text || ''));
+        botWrap.append(bubble);
+        messagesEl.append(botWrap);
+      }
+    }
+    scrollAiMessagesToBottom();
+  } catch {
+    // ignore corrupt stored chat
+  }
+}
+
+function renderAiTargetChips() {
+  const host = $('ai-target-chips');
+  if (!host) return;
+  const targets = state.ai.pinnedTargets || [];
+  host.replaceChildren();
+  host.hidden = targets.length === 0;
+  if (targets.length === 0) return;
+
+  for (const t of targets) {
+    const chip = document.createElement('span');
+    chip.className = 'ai-target-chip';
+    chip.title = `${t.label} (${t.pagePath})`;
+
+    const label = document.createElement('span');
+    label.className = 'ai-target-chip-label';
+    label.textContent = `🎯 ${t.label}`;
+    label.addEventListener('click', () => {
+      if (t.pagePath === state.currentPagePath && t.uid) {
+        state.canvas?.selectByUid?.(t.uid, { scroll: true });
+      }
+    });
+
+    const rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'ai-target-chip-remove';
+    rm.textContent = '×';
+    rm.setAttribute('aria-label', `Usuń cel: ${t.label}`);
+    rm.addEventListener('click', () => {
+      state.ai.pinnedTargets = (state.ai.pinnedTargets || []).filter((x) => x.uid !== t.uid);
+      renderAiTargetChips();
+    });
+
+    chip.append(label, rm);
+    host.append(chip);
+  }
+
+  if (targets.length > 1) {
+    const clearAll = document.createElement('button');
+    clearAll.type = 'button';
+    clearAll.className = 'ai-target-clear-btn';
+    clearAll.textContent = 'Wyczyść cele';
+    clearAll.addEventListener('click', () => {
+      state.ai.pinnedTargets = [];
+      renderAiTargetChips();
+    });
+    host.append(clearAll);
+  }
+}
+
+function pinAiTargets(targets = [], { openDrawer = true } = {}) {
+  const list = Array.isArray(targets) ? targets.filter((t) => t && t.uid) : [];
+  if (list.length === 0) return;
+
+  const existing = [...(state.ai.pinnedTargets || [])];
+  for (const t of list) {
+    const idx = existing.findIndex((x) => x.uid === t.uid && x.pagePath === t.pagePath);
+    if (idx !== -1) existing[idx] = t;
+    else existing.push(t);
+  }
+  state.ai.pinnedTargets = existing.slice(-6);
+  renderAiTargetChips();
+
+  if (openDrawer && !state.ai.open) {
+    setAiDrawerOpen(true);
+  }
+  const names = list.map((t) => `„${t.label}”`).join(', ');
+  showToast(`Wskazano fragment dla AI: ${names}. Napisz, co tam zmienić!`);
+  requestAnimationFrame(() => $('ai-input')?.focus());
+}
+
+function setAiPickModeUi(enabled) {
+  state.ai.pickMode = Boolean(enabled);
+  state.canvas?.setAiPickMode?.(state.ai.pickMode);
+  const btn = $('ai-pick-fragment-btn');
+  if (btn) {
+    btn.classList.toggle('is-active', state.ai.pickMode);
+    btn.setAttribute('aria-pressed', String(state.ai.pickMode));
+    btn.textContent = state.ai.pickMode ? '✕ Anuluj wskazywanie' : '🎯 Wskaż fragment';
+  }
+}
+
 function clearAiChat() {
   if (state.ai.isRunning) {
     state.ai.abortController?.abort();
   }
   state.ai.history = [];
+  state.ai.chatEntries = [];
+  state.ai.pinnedTargets = [];
+  renderAiTargetChips();
+  try {
+    localStorage.removeItem(AI_CHAT_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
   renderAiWelcomeCard();
   showToast('Wyczyszczono historię czatu AI.');
 }
@@ -5917,8 +6482,13 @@ function bindUIEvents() {
   });
 
   $('btn-mode-edit')?.addEventListener('click', () => {
+    setCanvasFreeLayoutMode(false);
     setCanvasBrowseMode(false);
     showToast('Tryb edycji: kliknij tekst lub zdjęcie na stronie, żeby je zmienić.');
+  });
+  $('btn-mode-free')?.addEventListener('click', () => {
+    setCanvasFreeLayoutMode(true);
+    showToast('Tryb klocków: chwytaj i przesuwaj dowolny element bez reguł oraz zmieniaj rozmiar uchwytami.');
   });
   $('btn-mode-browse')?.addEventListener('click', () => {
     setCanvasBrowseMode(true);
@@ -6055,10 +6625,66 @@ function bindUIEvents() {
   });
 
   // AI Assistant drawer & settings modal events
-  $('ai-close-drawer').addEventListener('click', () => setAiDrawerOpen(false));
+  $('ai-close-drawer').addEventListener('click', () => {
+    setAiPickModeUi(false);
+    setAiDrawerOpen(false);
+  });
   $('ai-open-settings').addEventListener('click', openAiSettingsDialog);
   $('ai-setup-btn').addEventListener('click', openAiSettingsDialog);
   $('ai-clear-chat').addEventListener('click', clearAiChat);
+
+  $('ai-pick-fragment-btn')?.addEventListener('click', () => {
+    if (state.browseMode) setCanvasBrowseMode(false);
+    const next = !state.ai.pickMode;
+    setAiPickModeUi(next);
+    if (next) {
+      showToast('Kliknij dowolny element na stronie (lub zaznacz ramką myszką), aby wysłać go do AI.');
+    }
+  });
+
+  // Przeciąganie fragmentu strony bezpośrednio do panelu czatu AI
+  const aiDrawerEl = $('ai-drawer');
+  const aiDropOverlay = $('ai-drop-overlay');
+  if (aiDrawerEl) {
+    aiDrawerEl.addEventListener('dragover', (e) => {
+      const hasTarget =
+        Boolean(state.ai.draggingTarget) ||
+        Array.from(e.dataTransfer?.types || []).includes('application/x-wolbud-cms-target');
+      if (!hasTarget) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      aiDrawerEl.classList.add('is-drag-over');
+      if (aiDropOverlay) aiDropOverlay.hidden = false;
+    });
+    aiDrawerEl.addEventListener('dragleave', (e) => {
+      if (!aiDrawerEl.contains(e.relatedTarget)) {
+        aiDrawerEl.classList.remove('is-drag-over');
+        if (aiDropOverlay) aiDropOverlay.hidden = true;
+      }
+    });
+    aiDrawerEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      aiDrawerEl.classList.remove('is-drag-over', 'is-drag-ready');
+      if (aiDropOverlay) aiDropOverlay.hidden = true;
+      let target = state.ai.draggingTarget || null;
+      if (!target) {
+        try {
+          const raw = e.dataTransfer?.getData('application/x-wolbud-cms-target');
+          if (raw) target = JSON.parse(raw);
+        } catch {
+          // ignore
+        }
+      }
+      if (!target) {
+        const uid = e.dataTransfer?.getData('text/plain');
+        if (uid) target = state.canvas?.getElementTargetPayload?.(uid) || null;
+      }
+      state.ai.draggingTarget = null;
+      if (target) {
+        pinAiTargets([target], { openDrawer: true });
+      }
+    });
+  }
 
   $('ai-messages').addEventListener('click', (e) => {
     const chip = e.target.closest('.ai-suggestion-chip');
@@ -6310,7 +6936,8 @@ async function bootstrap() {
 
   // Initialize AI Assistant settings & check PHP / local dev proxy availability
   const hasLocalDevProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
-  state.ai.settings = loadAiSettings(config.mode === 'hosting' || hasLocalDevProxy ? 'proxy' : 'gemini');
+  state.ai.settings = loadAiSettings(config.mode === 'hosting' || hasLocalDevProxy ? 'proxy' : 'openrouter');
+  restoreAiChat();
   updateAiUiStatus();
   if (config.mode === 'hosting' || hasLocalDevProxy || state.ai.settings.provider === 'proxy') {
     checkProxyStatus(state.ai.settings.proxyUrl || DEFAULT_AI_SETTINGS.proxyUrl)

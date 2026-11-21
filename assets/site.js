@@ -596,29 +596,47 @@
   });
 
 
-  document.querySelectorAll('[data-scroll-gallery]').forEach((strip) => {
-    const track = strip.querySelector('[data-scroll-track]');
-    const previous = strip.querySelector('[data-scroll-prev]');
-    const next = strip.querySelector('[data-scroll-next]');
+  const refreshScrollGallery = (strip) => {
+    const track = strip?.querySelector('[data-scroll-track]');
+    const previous = strip?.querySelector('[data-scroll-prev]');
+    const next = strip?.querySelector('[data-scroll-next]');
     if (!track || !previous || !next) return;
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    const canScroll = maxScroll > 2;
+    previous.hidden = !canScroll;
+    next.hidden = !canScroll;
+    previous.disabled = track.scrollLeft <= 2;
+    next.disabled = track.scrollLeft >= maxScroll - 2;
+    previous.setAttribute('aria-disabled', String(previous.disabled));
+    next.setAttribute('aria-disabled', String(next.disabled));
+  };
 
-    const refreshControls = () => {
-      const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-      const canScroll = maxScroll > 2;
-      previous.hidden = !canScroll;
-      next.hidden = !canScroll;
-      previous.disabled = track.scrollLeft <= 2;
-      next.disabled = track.scrollLeft >= maxScroll - 2;
-      previous.setAttribute('aria-disabled', String(previous.disabled));
-      next.setAttribute('aria-disabled', String(next.disabled));
-    };
-    const scrollStep = () => Math.max(track.clientWidth * 0.8, track.querySelector(':scope > *')?.getBoundingClientRect().width || 0);
+  const boundScrollTracks = new WeakSet();
+  const bindScrollGallery = (strip) => {
+    const track = strip?.querySelector('[data-scroll-track]');
+    if (!track || boundScrollTracks.has(track)) return;
+    boundScrollTracks.add(track);
+    track.addEventListener('scroll', () => refreshScrollGallery(strip), { passive: true });
+    refreshScrollGallery(strip);
+  };
 
-    previous.addEventListener('click', () => track.scrollBy({ left: -scrollStep(), behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' }));
-    next.addEventListener('click', () => track.scrollBy({ left: scrollStep(), behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' }));
-    track.addEventListener('scroll', refreshControls, { passive: true });
-    window.addEventListener('resize', refreshControls, { passive: true });
-    refreshControls();
+  document.querySelectorAll('[data-scroll-gallery]').forEach(bindScrollGallery);
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('[data-scroll-gallery]').forEach(refreshScrollGallery);
+  }, { passive: true });
+
+  document.addEventListener('click', (event) => {
+    const btn = event.target?.closest?.('[data-scroll-prev], [data-scroll-next]');
+    if (!btn) return;
+    const strip = btn.closest('[data-scroll-gallery]');
+    const track = strip?.querySelector('[data-scroll-track]');
+    if (!strip || !track) return;
+    bindScrollGallery(strip);
+    const dir = btn.hasAttribute('data-scroll-prev') ? -1 : 1;
+    const firstItem = track.querySelector(':scope > *');
+    const step = Math.max(track.clientWidth * 0.8, firstItem?.getBoundingClientRect().width || 280);
+    track.scrollBy({ left: dir * step, behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' });
+    window.setTimeout(() => refreshScrollGallery(strip), 350);
   });
 
 

@@ -69,6 +69,8 @@ const ALLOWED_REPO_EXTENSIONS = new Set([
   '.svg',
 ]);
 
+const ALLOWED_ROOT_SEO_FILES = new Set(['sitemap.xml', 'robots.txt']);
+
 const FORBIDDEN_REPO_PREFIXES = ['panel/', '.github/', '.git/', 'backups/'];
 const FORBIDDEN_REPO_EXACT = new Set(['panel', '.github', '.git', 'backups']);
 const FORBIDDEN_REPO_EXTENSIONS = new Set([
@@ -746,6 +748,14 @@ export function assertSafeSerializedHtml(fullHtml) {
     }
   }
 
+  // Ochrona SEO: na stronach publicznych blokuj przypadkowe / złośliwe <meta name="robots" content="...noindex...">
+  if (/<meta\b[^>]*\bname\s*=\s*["']?robots["']?[^>]*\bcontent\s*=\s*["'][^"']*\bnoindex\b/i.test(fullHtml) ||
+      /<meta\b[^>]*\bcontent\s*=\s*["'][^"']*\bnoindex\b[^>]*\bname\s*=\s*["']?robots["']?/i.test(fullHtml)) {
+    violations.push(
+      'Zablokowano dyrektywę „noindex” w znaczniku <meta name="robots"> — chroni to stronę przed wyindeksowaniem z Google.'
+    );
+  }
+
   return {
     ok: violations.length === 0,
     violations,
@@ -835,10 +845,12 @@ export function validateRepoPath(
     };
   }
 
-  if (!ALLOWED_REPO_EXTENSIONS.has(ext)) {
+  const isRootSeoFile = ALLOWED_ROOT_SEO_FILES.has(lower);
+
+  if (!isRootSeoFile && !ALLOWED_REPO_EXTENSIONS.has(ext)) {
     return {
       ok: false,
-      reason: `Niedozwolone rozszerzenie pliku "${ext || '(brak)'}". Dozwolone: .html, .json, .webp, .png, .jpg, .jpeg, .svg.`,
+      reason: `Niedozwolone rozszerzenie pliku "${ext || '(brak)'}". Dozwolone: .html, .json, .webp, .png, .jpg, .jpeg, .svg oraz sitemap.xml / robots.txt.`,
     };
   }
 
@@ -847,6 +859,8 @@ export function validateRepoPath(
       (Array.isArray(protectedPages) ? protectedPages : []).map(normalizeComparablePath)
     );
     protectedSet.add('index.html');
+    protectedSet.add('sitemap.xml');
+    protectedSet.add('robots.txt');
 
     if (protectedSet.has(lower)) {
       return {

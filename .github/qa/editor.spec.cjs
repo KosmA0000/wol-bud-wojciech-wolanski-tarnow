@@ -249,7 +249,7 @@ test('edycja tekstu, dodawanie kafelków, podłączanie linku, nowe sekcje, Undo
   const orderAfterMove = await preview.locator('main > section').evaluateAll((els) => els.map((e) => e.id).filter(Boolean));
   expect(orderAfterMove.indexOf('oferta')).toBeLessThan(orderAfterMove.indexOf('ofirmie'));
 
-  // 8. Zapisz szkic i przeładuj stronę — sprawdź trwałość w IndexedDB
+  // 8. Zapisz szkic i przeładuj stronę — sprawdź trwałość w IndexedDB ORAZ trwałość Cofnij/Ponów po F5!
   await page.locator('#btn-save-draft').click();
   await expect(page.locator('#draft-counter-badge')).toContainText(/1 zmian|Zapisano|szkic/i);
   await page.reload();
@@ -257,6 +257,14 @@ test('edycja tekstu, dodawanie kafelków, podłączanie linku, nowe sekcje, Undo
   await expect(preview.locator('.home-catalog-grid .home-cat-card')).toHaveCount(initialCards + 1);
   await expect(preview.locator('.home-catalog-grid .home-cat-card').last().locator('h3')).toHaveText('Pergole i zadaszenia');
   await expect(preview.locator('.home-catalog-grid .home-cat-card').last()).toHaveAttribute('href', 'uslugi/index.html');
+  await expect(page.locator('#btn-undo')).toBeEnabled();
+
+  // 9. Tryb klocków (swobodne przesuwanie / skalowanie) i uchwyty rozmiaru
+  await page.locator('#btn-mode-free').click();
+  await expect(preview.locator('body')).toHaveClass(/cms-free-mode/);
+  await preview.locator('.home-catalog-grid .home-cat-card').first().click();
+  await expect(preview.locator('[data-cms-ui="free-handle"]')).toHaveCount(3);
+  await page.locator('#btn-mode-edit').click();
 
   expect(errors).toEqual([]);
 });
@@ -285,6 +293,16 @@ test('przełączanie podstron, tworzenie nowej podstrony, upload WebP, ustawieni
   await waitForPreviewReady(page);
   await expect(page.locator('#topbar-page-path')).toHaveText('uslugi/index.html');
   await expect(preview.locator('h1')).toContainText('Usługi');
+
+  // Panel boczny musi być rozdzielony na 3 osobno edytowalne karty (.sidebar-box.cms-item)
+  await expect(preview.locator('aside.subpage-sidebar > .sidebar-box.cms-item')).toHaveCount(3);
+
+  // Kliknięcie numeru telefonu w górnym pasku strony w trybie Edycji otwiera Ustawienia globalne i fokusuje pole telefonu
+  await preview.locator('header.bar a.phone').click();
+  await expect(page.locator('#globals-dialog')).toBeVisible();
+  await expect(page.locator('#gl-phone-display')).toBeFocused();
+  await page.locator('#globals-dialog [data-close-dialog]').first().click();
+  await expect(page.locator('#globals-dialog')).toBeHidden();
 
   // Dodaj nową usługę lub zduplikuj pierwszą kartę usługi
   const serviceCardsBefore = await preview.locator('.service-card').count();
@@ -350,6 +368,22 @@ test('przełączanie podstron, tworzenie nowej podstrony, upload WebP, ustawieni
   expect(treePaths.some((p) => p.startsWith('img/uploads/') && p.endsWith('.webp'))).toBe(true);
   expect(treePaths).toContain('assets/site-globals.json');
   expect(treePaths).toContain('assets/cms-manifest.json');
+  expect(treePaths).toContain('sitemap.xml');
+  expect(treePaths).toContain('robots.txt');
+
+  // Auto-SEO: sprawdź sitemap.xml, robots.txt oraz canonical / Open Graph na nowej podstronie!
+  const publishedSitemap = gh.getPublishedFile('sitemap.xml')?.content || '';
+  expect(publishedSitemap).toContain('promocja-jesien-2026/');
+  expect(publishedSitemap).not.toContain('/panel/');
+  const publishedRobots = gh.getPublishedFile('robots.txt')?.content || '';
+  expect(publishedRobots).toContain('Disallow: /panel/');
+  expect(publishedRobots).toContain('Sitemap:');
+
+  const promoPath = treePaths.find((p) => p.endsWith('promocja-jesien-2026/index.html'));
+  const publishedPromo = gh.getPublishedFile(promoPath)?.content || '';
+  expect(publishedPromo).toContain('<meta name="robots" content="index, follow">');
+  expect(publishedPromo).toContain('<link rel="canonical"');
+  expect(publishedPromo).toContain('property="og:title"');
 
   // KRYTYCZNE: opublikowany HTML musi być w 100% czysty (zero artefaktów edytora!)
   const publishedUslugi = gh.getPublishedFile('uslugi/index.html');
@@ -500,15 +534,22 @@ test('Asystent AI wykonuje wieloetapowe polecenia narzędziami (nowa strona, gal
   // 4. Zweryfikuj realne zmiany na stronie w podglądzie!
   await expect(page.locator('#topbar-page-path')).toHaveText('promocje/promocja-wiosna-2027/index.html');
   await expect(preview.locator('h1')).toHaveText('Promocja Wiosna 2027');
-  await expect(preview.locator('.realization-grid .realization-photo')).toHaveCount(3);
+  await expect(preview.locator('.cms-carousel-track .realization-photo')).toHaveCount(4);
+  await expect(preview.locator('.cms-carousel-track .realization-photo img').first()).toHaveAttribute('src', /placeholder-photo\.svg$/);
   await expect(preview.locator('#site-menu a', { hasText: 'Promocja Wiosna 2027' })).toHaveCount(1);
+
+  // 5. Wskazanie fragmentu strony do czatu AI (🎯 Wskaż fragment -> kliknięcie sekcji)
+  await page.locator('#ai-pick-fragment-btn').click();
+  await expect(preview.locator('body')).toHaveClass(/cms-ai-pick-mode/);
+  await preview.locator('.cms-section').first().click({ position: { x: 40, y: 40 } });
+  await expect(page.locator('#ai-target-chips .ai-target-chip')).toHaveCount(1);
 
   // Zapisz zrzut ekranu z otwartym Asystentem AI do weryfikacji wizualnej
   await page.screenshot({
     path: 'C:/Users/User/.gemini/antigravity/brain/e1d1ce88-716c-4509-8216-9e610c21d5c5/scratch/panel-ai-drawer.png',
   });
 
-  // 5. Przetestuj 1-klikowe cofnięcie ORAZ przywrócenie całej zmiany wykonanej przez AI!
+  // 6. Przetestuj 1-klikowe cofnięcie ORAZ przywrócenie całej zmiany wykonanej przez AI!
   const aiUndoBtn = page.locator('#ai-messages .ai-undo-turn-btn').last();
   await expect(aiUndoBtn).toBeVisible();
   await aiUndoBtn.click();
@@ -521,6 +562,12 @@ test('Asystent AI wykonuje wieloetapowe polecenia narzędziami (nowa strona, gal
   await expect(aiUndoBtn).toContainText(/Cofnij/i);
   await expect(page.locator('#topbar-page-path')).toHaveText('promocje/promocja-wiosna-2027/index.html', { timeout: 10000 });
   await expect(preview.locator('#site-menu a', { hasText: 'Promocja Wiosna 2027' })).toHaveCount(1);
+
+  // 7. Trwałość historii czatu AI po odświeżeniu strony (F5)
+  await page.reload();
+  await waitForPreviewReady(page);
+  await page.locator('#btn-ai').click();
+  await expect(page.locator('#ai-messages .ai-msg--assistant .ai-msg-bubble').last()).toContainText('Gotowe!');
 
   expect(errors).toEqual([]);
 });
@@ -712,25 +759,33 @@ test('Bezpieczeństwo, kopie zapasowe (oryginał), Pomoc/telefon, guardrails AI,
   await expect(preview.locator('#test-kotwica')).toHaveClass(/cms-align-center/);
   await expect(preview.locator('#test-kotwica')).toHaveClass(/cms-space-spacious/);
 
-  // 5. Zweryfikuj pre-publish SecurityError w przeglądarce dla HTML zawierającego <script>
+  // 5. Zweryfikuj pre-publish SecurityError w przeglądarce dla HTML ze <script>, noindex oraz złośliwego robots.txt (Disallow: /)
   const prePublishBlocked = await page.evaluate(async () => {
     const mod = await import('/panel/publish.js');
-    try {
-      await mod.publishChanges({
-        files: [{ path: 'index.html', content: '<!doctype html><html><body><script>alert(1)</script></body></html>', encoding: 'utf-8' }],
-        deletions: [],
-        expectedRevision: 'x',
-        nextRevision: 'y',
-        commitMessage: 'test',
-        credential: 'dummy',
-      });
-      return { blocked: false };
-    } catch (err) {
-      return { blocked: true, name: err.name, message: err.message };
-    }
+    const tryPub = async (files) => {
+      try {
+        await mod.publishChanges({
+          files,
+          deletions: [],
+          expectedRevision: 'x',
+          nextRevision: 'y',
+          commitMessage: 'test',
+          credential: 'dummy',
+        });
+        return { blocked: false };
+      } catch (err) {
+        return { blocked: true, name: err.name };
+      }
+    };
+    return {
+      xss: await tryPub([{ path: 'index.html', content: '<!doctype html><html><body><script>alert(1)</script></body></html>', encoding: 'utf-8' }]),
+      noindex: await tryPub([{ path: 'index.html', content: '<!doctype html><html><head><meta name="robots" content="noindex"></head><body>Hi</body></html>', encoding: 'utf-8' }]),
+      badRobots: await tryPub([{ path: 'robots.txt', content: 'User-agent: *\nDisallow: /\n', encoding: 'utf-8' }]),
+    };
   });
-  expect(prePublishBlocked.blocked).toBe(true);
-  expect(prePublishBlocked.name).toBe('SecurityError');
+  expect(prePublishBlocked.xss).toEqual({ blocked: true, name: 'SecurityError' });
+  expect(prePublishBlocked.noindex).toEqual({ blocked: true, name: 'SecurityError' });
+  expect(prePublishBlocked.badRobots).toEqual({ blocked: true, name: 'SecurityError' });
 
   expect(errors).toEqual([]);
 });

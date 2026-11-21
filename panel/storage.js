@@ -1171,7 +1171,7 @@ export async function compressImageToWebP(
     let ext = 'webp';
 
     if (!dataUrl.startsWith('data:image/webp')) {
-      // Fallback do JPEG: białe tło dla obrazów z kanałem alfa
+      // Fallback do JPEG wyłącznie dla bardzo starych przeglądarek bez WebP
       ctx.save();
       ctx.globalCompositeOperation = 'destination-over';
       ctx.fillStyle = '#ffffff';
@@ -1181,6 +1181,15 @@ export async function compressImageToWebP(
       dataUrl = canvas.toDataURL('image/jpeg', safeQuality);
       mimeType = 'image/jpeg';
       ext = 'jpg';
+    } else {
+      // Adaptacyjna kompresja WebP dla dużych zdjęć (> 350 KB) — szybsze ładowanie i lepsze SEO (Core Web Vitals)
+      const firstBytes = base64ByteLength(extractBase64FromDataUrl(dataUrl));
+      if (firstBytes > 350 * 1024 && safeQuality > 0.72) {
+        const tighter = canvas.toDataURL('image/webp', 0.74);
+        if (tighter.startsWith('data:image/webp')) {
+          dataUrl = tighter;
+        }
+      }
     }
 
     const base64 = extractBase64FromDataUrl(dataUrl);
@@ -1189,6 +1198,7 @@ export async function compressImageToWebP(
     }
 
     const size = base64ByteLength(base64);
+    const originalSize = Number.isFinite(Number(file.size)) ? Number(file.size) : size;
 
     return {
       base64,
@@ -1197,6 +1207,7 @@ export async function compressImageToWebP(
       width,
       height,
       size,
+      originalSize,
       ext,
       suggestedName: buildSuggestedImageName(fileName, ext)
     };

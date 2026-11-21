@@ -1,6 +1,7 @@
 import { config } from './config.js';
 import { siteProfile } from './site-profile.js';
 import { validateRepoPath, assertSafeSerializedHtml } from './sanitizer.js';
+import { validateSafeSitemapXml, validateSafeRobotsTxt } from './seo.js';
 
 export class AccessError extends Error {
   name = 'AccessError';
@@ -150,6 +151,16 @@ function prepareAndValidateChanges(files, deletions) {
         throw new SecurityError(
           `Zablokowano publikację ze względów bezpieczeństwa: ${scan.violations.join('; ')}`
         );
+      }
+    } else if (rawPath.toLowerCase() === 'sitemap.xml') {
+      const scan = validateSafeSitemapXml(content);
+      if (!scan.ok) {
+        throw new SecurityError(`Zablokowano publikację sitemap.xml: ${scan.reason}`);
+      }
+    } else if (rawPath.toLowerCase() === 'robots.txt') {
+      const scan = validateSafeRobotsTxt(content);
+      if (!scan.ok) {
+        throw new SecurityError(`Zablokowano publikację robots.txt: ${scan.reason}`);
       }
     }
 

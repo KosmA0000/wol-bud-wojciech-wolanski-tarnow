@@ -1,4 +1,6 @@
 // Biblioteka szablonów i narzędzi ścieżek CMS dla witryny WOL-BUD Tarnów
+import { siteProfile } from './site-profile.js';
+import { buildCanonicalUrl, resolveSiteBaseUrl } from './seo.js';
 
 const DEFAULT_GLOBALS = {
   siteName: 'WOL-BUD Tarnów',
@@ -668,23 +670,25 @@ export const SECTION_TEMPLATES = [
 
   makeSectionTemplate({
     id: 'photo-gallery',
-    name: 'Galeria zdjęć (z powiększaniem)',
+    name: 'Przewijana galeria zdjęć (karuzela)',
     category: 'Zdjęcia',
-    description: 'Siatka samych zdjęć otwieranych na pełny ekran (Lightbox). Dodawaj dowolną liczbę zdjęć przyciskiem „+ Dodaj”.',
+    description: 'Pozioma przewijana karuzela zdjęć ze strzałkami i powiększaniem (Lightbox). Kliknij zdjęcie, aby wgrać własne (WebP), lub dodawaj kolejne przyciskiem „+ Zdjęcie”.',
     icon: '📷',
     render(pagePath, inSubpage) {
       const rel = (p) => toRelativeUrl(p, pagePath);
       const secId = uniqueSectionId('galeria');
-      const photos = [
-        ['img/realizacje/dom-nowoczesna-stodola-04.webp', 'img/realizacje/miniatury/dom-nowoczesna-stodola-04.webp', 'Zdjęcie 1 – WOL-BUD'],
-        ['img/realizacje/dom-nowoczesna-stodola-06.webp', 'img/realizacje/miniatury/dom-nowoczesna-stodola-06.webp', 'Zdjęcie 2 – WOL-BUD'],
-        ['img/realizacje/dom-pietrowy-duze-przeszklenia-01.webp', 'img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-01.webp', 'Zdjęcie 3 – WOL-BUD'],
+      const placeholder = rel('img/placeholder-photo.svg');
+      const slides = [
+        'Dodaj własne zdjęcie 1',
+        'Dodaj własne zdjęcie 2',
+        'Dodaj własne zdjęcie 3',
+        'Dodaj własne zdjęcie 4',
       ];
-      const itemsHtml = photos
+      const itemsHtml = slides
         .map(
-          ([full, thumb, alt]) => `<figure class="realization-photo" style="--ar: 1.3333">
-        <a href="${rel(full)}" data-lightbox-trigger data-lightbox-src="${rel(full)}" data-lightbox-group="${secId}" aria-label="Powiększ zdjęcie: ${alt}">
-          <img src="${rel(thumb)}" alt="${alt}" width="640" height="480" loading="lazy" decoding="async">
+          (alt) => `<figure class="realization-photo" style="--ar: 1.3333">
+        <a href="${placeholder}" data-lightbox-trigger data-lightbox-src="${placeholder}" data-lightbox-group="${secId}" aria-label="Powiększ zdjęcie: ${alt}">
+          <img src="${placeholder}" alt="${alt}" width="640" height="480" loading="lazy" decoding="async">
         </a>
       </figure>`
         )
@@ -692,13 +696,13 @@ export const SECTION_TEMPLATES = [
       const galleryHtml = `<section class="realization-group" id="${secId}" aria-labelledby="${secId}-title">
   <div class="realization-group-head">
     <h2 id="${secId}-title">Galeria zdjęć</h2>
-    <span class="realization-count">3 zdjęcia</span>
+    <span class="realization-count">4 zdjęcia</span>
   </div>
-  <div class="photo-strip" data-scroll-gallery aria-label="Galeria zdjęć">
+  <div class="photo-strip" data-scroll-gallery aria-label="Przewijana galeria zdjęć">
     <button type="button" class="photo-strip-arrow" data-scroll-prev aria-label="Poprzednie zdjęcie" aria-disabled="true">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
-    <div class="realization-grid" data-scroll-track tabindex="0" role="region" aria-label="Galeria zdjęć">${itemsHtml}</div>
+    <div class="cms-carousel-track" data-scroll-track tabindex="0" role="region" aria-label="Przewijana galeria zdjęć">${itemsHtml}</div>
     <button type="button" class="photo-strip-arrow" data-scroll-next aria-label="Następne zdjęcie" aria-disabled="false">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
@@ -797,16 +801,27 @@ export const ITEM_TEMPLATES = {
   },
 
   'realization-photo': {
-    label: 'Zdjęcie w galerii realizacji',
+    label: 'Zdjęcie w galerii',
     createHtml(pagePath = 'realizacje/index.html') {
       const rel = (p) => toRelativeUrl(p, pagePath);
-      const fullImg = rel('img/realizacje/dom-nowoczesna-stodola-04.webp');
-      const thumbImg = rel('img/realizacje/miniatury/dom-nowoczesna-stodola-04.webp');
-      return `<figure class="realization-photo" style="--ar: 0.7500">
-  <a href="${fullImg}" data-lightbox-trigger data-lightbox-src="${fullImg}" data-lightbox-group="realizacja-okna" aria-label="Powiększ zdjęcie: Realizacja WOL-BUD">
-    <img src="${thumbImg}" alt="Realizacja WOL-BUD" width="480" height="640" loading="lazy" decoding="async">
+      const placeholder = rel('img/placeholder-photo.svg');
+      return `<figure class="realization-photo" style="--ar: 1.3333">
+  <a href="${placeholder}" data-lightbox-trigger data-lightbox-src="${placeholder}" data-lightbox-group="galeria" aria-label="Powiększ zdjęcie: Dodaj własne zdjęcie">
+    <img src="${placeholder}" alt="Dodaj własne zdjęcie" width="640" height="480" loading="lazy" decoding="async">
   </a>
 </figure>`;
+    },
+  },
+
+  'sidebar-box': {
+    label: 'Karta panelu bocznego',
+    createHtml(pagePath = 'uslugi/index.html') {
+      const rel = (p) => toRelativeUrl(p, pagePath);
+      return `<div class="sidebar-box">
+  <span class="eyebrow">Nowa karta informacyjna</span>
+  <p>Kliknij ten tekst, aby wpisać krótką informację, dane kontaktowe lub godziny otwarcia.</p>
+  <a class="sidebar-link" href="${rel('kontakt/index.html')}">Dowiedz się więcej ↗</a>
+</div>`;
     },
   },
 
@@ -1102,10 +1117,20 @@ function buildSubpageDocument({
     ? `\n      <p class="subpage-lead">${escapeHtml(lead)}</p>`
     : '';
 
+  const siteBase = resolveSiteBaseUrl(siteProfile);
+  const canonicalUrl = escapeHtml(buildCanonicalUrl(path, siteBase));
+  const ogImagePath = String(siteProfile.ogImageSrc || siteProfile.logoSrc || 'img/wolbud-logo.webp').replace(/^\/+/, '');
+  const ogImageUrl = escapeHtml(`${siteBase}/${ogImagePath}`);
+  const safeSiteName = escapeHtml(siteProfile.brandName || g.siteName);
+
   return `<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#2c4d19"><meta name="description" content="${safeDescription}">
+<meta name="theme-color" content="${escapeHtml(siteProfile.accentColor || '#2c4d19')}"><meta name="robots" content="index, follow"><meta name="description" content="${safeDescription}">
 <title>${safeTitle}</title>
+<link rel="canonical" href="${canonicalUrl}">
+<meta property="og:type" content="website"><meta property="og:locale" content="pl_PL"><meta property="og:site_name" content="${safeSiteName}">
+<meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:url" content="${canonicalUrl}"><meta property="og:image" content="${ogImageUrl}">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="${rel('img/favicon.png')}"><link rel="apple-touch-icon" href="${rel('img/favicon.png')}"><link rel="stylesheet" href="${rel(g.siteCss)}"><script defer src="${rel(g.siteJs)}"></script></head>

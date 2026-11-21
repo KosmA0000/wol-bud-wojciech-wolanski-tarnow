@@ -7,6 +7,8 @@ export const siteProfile = Object.freeze({
   brandName: 'WOL-BUD',
   studioTitle: 'WOL-BUD Studio',
   companyFullName: 'WOL-BUD Wojciech Wolański',
+  siteUrl: 'https://wol-bud.com.pl',
+  ogImageSrc: 'img/wolbud-logo.webp',
   industry:
     'okna PCV i aluminiowe, drzwi zewnętrzne i wewnętrzne, bramy garażowe, rolety, parapety oraz ciepły montaż warstwowy',
   locations: 'Tarnów (ul. Giełdowa 10) i Radłów (ul. Kolejowa 5)',

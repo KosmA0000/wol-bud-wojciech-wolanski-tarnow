@@ -583,12 +583,24 @@ body.wolbud-preview .cms-item.cms-drag-over-after {
   box-shadow: 5px 0 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
 }
 
-body.wolbud-preview :is(.profile-row, .service-card, .source-list > li).cms-drag-over-before {
+body.wolbud-preview :is(.profile-row, .service-card, .sidebar-box, .source-list > li).cms-drag-over-before {
   box-shadow: 0 -5px 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
 }
 
-body.wolbud-preview :is(.profile-row, .service-card, .source-list > li).cms-drag-over-after {
+body.wolbud-preview :is(.profile-row, .service-card, .sidebar-box, .source-list > li).cms-drag-over-after {
   box-shadow: 0 5px 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
+}
+
+/* Globalne elementy witryny klikalne do edycji w trybie Edycji (telefon, logo, dymki kontaktu, stopka) */
+body.wolbud-preview:not(.cms-browse-mode) :is(header.bar a.phone, header.bar a.brand, nav.menu-panel a.menu-phone, a.contact-bubble, footer .footer-copy, footer .footer-social a) {
+  cursor: pointer;
+  transition: outline-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+body.wolbud-preview:not(.cms-browse-mode) :is(header.bar a.phone, header.bar a.brand, nav.menu-panel a.menu-phone, a.contact-bubble, footer .footer-copy, footer .footer-social a):hover {
+  outline: 2px dashed var(--cms-gold);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(217, 155, 38, 0.22);
 }
 
 /* Puste kontenery repeaterów — zachowaj widoczną przestrzeń */
@@ -596,4 +608,107 @@ body.wolbud-preview .cms-repeater:empty {
   min-height: 72px;
   border: 2px dashed rgba(66, 103, 40, 0.45);
   border-radius: 12px;
+}
+
+/* Przycisk ✨ AI na paskach narzędzi sekcji i kafelków */
+body.wolbud-preview .cms-tb-btn--ai {
+  background: rgba(16, 185, 129, 0.22);
+  color: #ecfdf5;
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body.wolbud-preview .cms-tb-btn--ai:hover {
+  background: #10b981;
+  color: #ffffff;
+}
+
+/* Tryb układu swobodnego (klocki — przesuwanie i zmiana rozmiaru bez reguł) */
+body.wolbud-preview.cms-free-mode .cms-item,
+body.wolbud-preview.cms-free-mode .cms-section {
+  cursor: move;
+  user-select: none;
+}
+
+body.wolbud-preview [data-cms-ui="free-handle"] {
+  position: absolute;
+  z-index: 62;
+  background: #ffffff;
+  border: 2px solid var(--cms-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  padding: 0;
+}
+
+body.wolbud-preview [data-cms-ui="free-handle"][data-free-dir="e"] {
+  top: 50%;
+  right: -7px;
+  width: 12px;
+  height: 36px;
+  transform: translateY(-50%);
+  border-radius: 6px;
+  cursor: ew-resize;
+}
+
+body.wolbud-preview [data-cms-ui="free-handle"][data-free-dir="s"] {
+  left: 50%;
+  bottom: -7px;
+  width: 36px;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 6px;
+  cursor: ns-resize;
+}
+
+body.wolbud-preview [data-cms-ui="free-handle"][data-free-dir="se"] {
+  right: -8px;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cms-gold);
+  border-color: #ffffff;
+  cursor: nwse-resize;
+}
+
+body.wolbud-preview [data-cms-ui="free-hud"] {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 70;
+  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(24, 34, 18, 0.92);
+  color: #ffffff;
+  border: 1px solid var(--cms-gold);
+  font-family: var(--cms-ui-font);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Tryb wskazywania fragmentu strony dla AI (klik lub zaznaczenie ramką) */
+body.wolbud-preview.cms-ai-pick-mode,
+body.wolbud-preview.cms-ai-pick-mode * {
+  cursor: crosshair !important;
+  user-select: none !important;
+}
+
+body.wolbud-preview.cms-ai-pick-mode .cms-ai-pick-hover {
+  outline: 3px solid #10b981 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.25) !important;
+}
+
+body.wolbud-preview [data-cms-ui="ai-marquee"] {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  border: 2px dashed #10b981;
+  background: rgba(16, 185, 129, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
 }

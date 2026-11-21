@@ -29,6 +29,7 @@ const PANEL_ENGINE_FILES = Object.freeze([
   'publish.js',
   'ai-agent.js',
   'sanitizer.js',
+  'seo.js',
 ]);
 
 const HOSTING_SECURITY_FILES = Object.freeze([

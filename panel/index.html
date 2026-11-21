@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="panel.css?v=20261121-9">
-  <script type="module" src="editor.js?v=20261121-9"></script>
+  <link rel="stylesheet" href="panel.css?v=20261121-12">
+  <script type="module" src="editor.js?v=20261121-12"></script>
 </head>
 <body class="is-simple-mode">
   <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
@@ -95,6 +95,9 @@
         <div class="mode-switch-pill" role="group" aria-label="Tryb interakcji ze stroną">
           <button type="button" id="btn-mode-edit" class="mode-switch-btn is-active" aria-pressed="true" title="Tryb edycji — klikaj teksty i zdjęcia, aby je zmieniać">
             ✏️ Edytuj
+          </button>
+          <button type="button" id="btn-mode-free" class="mode-switch-btn" aria-pressed="false" title="Układ swobodny (klocki) — przesuwaj dowolny element bez reguł i zmieniaj jego rozmiar rogami">
+            🧱 Klocki
           </button>
           <button type="button" id="btn-mode-browse" class="mode-switch-btn" aria-pressed="false" title="Tryb przeglądania — wszystkie linki, karty i przyciski działają jak na normalnej stronie">
             🧭 Przeglądaj
@@ -327,7 +330,7 @@
       <div id="ai-setup-banner" class="ai-setup-banner">
         <div class="ai-setup-copy">
           <strong>Asystent wymaga konfiguracji połączenia</strong>
-          <p>Dodaj darmowy klucz Google Gemini API (lub połącz z proxy PHP na hostingu), aby edytować stronę rozmową po polsku.</p>
+          <p>Dodaj darmowy klucz OpenRouter (Nemotron 3.5 Super VL), Google Gemini API lub połącz z proxy PHP na hostingu, aby edytować stronę rozmową po polsku.</p>
         </div>
         <button type="button" id="ai-setup-btn" class="btn-primary mini-btn">Skonfiguruj klucz AI</button>
       </div>
@@ -358,11 +361,24 @@
         </div>
       </div>
 
+      <div id="ai-drop-overlay" class="ai-drop-overlay" hidden>
+        <div class="ai-drop-overlay-box">
+          <span class="ai-drop-overlay-icon" aria-hidden="true">🎯</span>
+          <strong>Upuść fragment tutaj</strong>
+          <small>Asystent AI otrzyma dokładną lokalizację tego elementu i będzie pracował tylko w tym miejscu</small>
+        </div>
+      </div>
+
       <div class="ai-drawer-foot">
+        <div id="ai-target-chips" class="ai-target-chips" hidden aria-label="Wskazane fragmenty strony dla AI"></div>
         <form id="ai-chat-form" class="ai-input-form">
-          <textarea id="ai-input" class="ai-input" rows="2" placeholder="Napisz, co chcesz zmienić na stronie… (Enter wysyła, Shift+Enter nowa linia)" aria-label="Polecenie dla Asystenta AI"></textarea>
+          <textarea id="ai-input" class="ai-input" rows="2" placeholder="Napisz, co chcesz zmienić… (możesz też przeciągnąć tu sekcję/kafelek lub kliknąć 🎯 Wskaż fragment)" aria-label="Polecenie dla Asystenta AI"></textarea>
           <div class="ai-foot-bar">
-            <span class="ai-foot-hint">Zmiany zapisują się w szkicu — możesz je cofnąć (Ctrl+Z).</span>
+            <div class="ai-foot-left">
+              <button type="button" id="ai-pick-fragment-btn" class="ai-pick-btn" aria-pressed="false" title="Kliknij lub zaznacz ramką fragment strony, nad którym ma pracować AI">
+                🎯 Wskaż fragment
+              </button>
+            </div>
             <div class="ai-foot-btns">
               <button type="button" id="ai-stop" class="ai-stop-btn" hidden>Zatrzymaj</button>
               <button type="submit" id="ai-send" class="btn-primary ai-send-btn">Wyślij</button>
@@ -494,7 +510,7 @@
 
         <label class="checkbox-row">
           <input type="checkbox" id="np-add-to-menu">
-          <span>Dodaj link do tej podstrony od razu w <strong>Menu głównym</strong></span>
+          <span>Dodaj link do tej podstrony od razu w <strong>Menu głównym i Stopce</strong></span>
         </label>
       </div>
 
@@ -662,7 +678,7 @@
 
         <div class="field-group">
           <label for="ai-model" class="field-label">Model AI</label>
-          <input type="text" id="ai-model" class="input-field" list="ai-model-list" autocomplete="off" spellcheck="false" placeholder="np. gemini-2.5-flash">
+          <input type="text" id="ai-model" class="input-field" list="ai-model-list" autocomplete="off" spellcheck="false" placeholder="np. nvidia/nemotron-3.5-super-vl:free">
           <datalist id="ai-model-list"></datalist>
           <p class="field-help">Możesz wybrać polecany model z listy lub wpisać własny identyfikator modelu.</p>
         </div>

@@ -18,6 +18,7 @@ const MAX_FILES_COUNT = 200;
 const MAX_DELETIONS_COUNT = 100;
 
 const ALLOWED_EXTENSIONS = ['html', 'json', 'webp', 'png', 'jpg', 'jpeg', 'gif', 'svg'];
+const ALLOWED_ROOT_SEO_FILES = ['sitemap.xml', 'robots.txt'];
 const FORBIDDEN_TOP_DIRS = ['panel', '.github', '.git', 'cgi-bin', 'backups', 'cms-backups'];
 const FORBIDDEN_EXACT_PATHS = [
     'assets/site.js',
@@ -131,13 +132,14 @@ function validateSafePath(mixed $path, bool $isDeletion = false): string {
     }
 
     $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    if ($ext === '' || !in_array($ext, ALLOWED_EXTENSIONS, true)) {
+    $isRootSeoFile = in_array($lowerPath, ALLOWED_ROOT_SEO_FILES, true);
+    if (!$isRootSeoFile && ($ext === '' || !in_array($ext, ALLOWED_EXTENSIONS, true))) {
         reply(403, ['error' => 'Niedozwolone rozszerzenie pliku: ' . $path]);
     }
 
     if ($isDeletion) {
-        if ($lowerPath === 'index.html') {
-            reply(403, ['error' => 'Nie można usunąć głównego pliku index.html.']);
+        if ($lowerPath === 'index.html' || $isRootSeoFile) {
+            reply(403, ['error' => 'Nie można usunąć chronionego pliku głównego: ' . $path]);
         }
         foreach (PROTECTED_DELETE_PREFIXES as $prefix) {
             if (str_starts_with($lowerPath, $prefix)) {
@@ -232,6 +234,31 @@ function decodeFilePayload(array $item, string $privateDir): array {
             json_decode($bytes, true, 128, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             reply(400, ['error' => 'Plik JSON ma niepoprawną składnię: ' . $path]);
+        }
+    } elseif (strtolower($path) === 'sitemap.xml') {
+        if (
+            preg_match('/<\?(?:php|=)|<script\b|<!ENTITY\b|<!DOCTYPE\b|javascript:/i', $bytes) === 1 ||
+            !str_starts_with(ltrim($bytes), '<?xml') ||
+            !str_contains($bytes, '<urlset') ||
+            preg_match('/<loc>[^<]*\/panel(?:\/|<)/i', $bytes) === 1
+        ) {
+            auditLog($privateDir, 'publish_rejected_security', [
+                'path' => $path,
+                'reason' => 'Nieprawidłowa lub niebezpieczna zawartość sitemap.xml',
+            ]);
+            reply(400, ['error' => 'Publikacja odrzucona: nieprawidłowy plik sitemap.xml.']);
+        }
+    } elseif (strtolower($path) === 'robots.txt') {
+        if (
+            preg_match('/<\?(?:php|=)|<script\b/i', $bytes) === 1 ||
+            preg_match('/^\s*Disallow\s*:\s*\/\s*$/im', $bytes) === 1 ||
+            preg_match('/^\s*Disallow\s*:\s*\/panel\/?\s*$/im', $bytes) !== 1
+        ) {
+            auditLog($privateDir, 'publish_rejected_security', [
+                'path' => $path,
+                'reason' => 'Nieprawidłowa lub niebezpieczna zawartość robots.txt',
+            ]);
+            reply(400, ['error' => 'Publikacja odrzucona: robots.txt musi blokować /panel/ i nie może blokować całej witryny.']);
         }
     }
 

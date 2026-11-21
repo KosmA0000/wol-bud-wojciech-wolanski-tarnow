@@ -44,6 +44,10 @@ const GENERIC_REPEATER_ITEM_TAGS = new Set(['ARTICLE', 'A', 'DIV', 'LI']);
 
 const EDITOR_CLASSES = [
   'wolbud-preview',
+  'cms-browse-mode',
+  'cms-free-mode',
+  'cms-ai-pick-mode',
+  'cms-ai-pick-hover',
   'cms-selected',
   'cms-hovered',
   'cms-section',
@@ -78,7 +82,9 @@ const REPEATER_SPECS = [
   { selector: '.home-services-grid', itemSelector: ':scope > .home-service-item', itemType: 'home-service', label: 'Kafelki usług' },
   { selector: '.reviews-track', itemSelector: ':scope > .review', itemType: 'review-card', label: 'Opinie' },
   { selector: '.realization-cards', itemSelector: ':scope > .realization-card', itemType: 'realization-card', label: 'Kafelki realizacji' },
+  { selector: '.cms-carousel-track', itemSelector: ':scope > .realization-photo', itemType: 'realization-photo', label: 'Zdjęcia w galerii' },
   { selector: '.realization-grid', itemSelector: ':scope > .realization-photo', itemType: 'realization-photo', label: 'Zdjęcia realizacji' },
+  { selector: 'aside.subpage-sidebar', itemSelector: ':scope > .sidebar-box', itemType: 'sidebar-box', label: 'Karty panelu bocznego', vertical: true },
   { selector: '.product-gallery-row', itemSelector: ':scope > .product-gallery-thumb', itemType: 'gallery-thumb', label: 'Zdjęcia produktu' },
   { selector: '.partner-row', itemSelector: ':scope > .partner-logo', itemType: 'partner-logo', label: 'Logotypy partnerów' },
   { selector: '.kt-adres', itemSelector: ':scope > .kt-store-item', itemType: 'store-item', label: 'Salony sprzedaży', insertBeforeSelector: ':scope > .store-full-copy-link' },
@@ -107,7 +113,10 @@ const INLINE_TEXT_SELECTOR = [
   'a.store-full-copy-link', 'a.service-feature-btn',
   'a.home-extra-category', 'a.cat-nav-pill',
   '.home-services-head > a', '.reviews-link',
-  '.source-list > li',
+  '.source-list > li', '.mobile-details-body li',
+  '.kt-lista li > span', '.kt-lista li > a',
+  '.sidebar-links a', 'a.sidebar-link', 'a.sidebar-map-link',
+  '.brand-chips a',
   'a.btn', 'a.button',
 ].join(', ');
 
@@ -380,6 +389,33 @@ function readSectionStyle(el) {
   return { tone, align, spacing };
 }
 
+function readFreeLayout(el) {
+  if (!el || !el.style) {
+    return { active: false, tx: 0, ty: 0, w: null, h: null, scale: 100, z: 2 };
+  }
+  const parsePx = (v) => {
+    const n = Number.parseFloat(String(v || ''));
+    return Number.isFinite(n) ? Math.round(n) : null;
+  };
+  const tx = parsePx(el.style.getPropertyValue('--cms-tx')) || 0;
+  const ty = parsePx(el.style.getPropertyValue('--cms-ty')) || 0;
+  const w = el.getAttribute('data-cms-has-w') === '1' ? parsePx(el.style.getPropertyValue('--cms-w')) : null;
+  const h = el.getAttribute('data-cms-has-h') === '1' ? parsePx(el.style.getPropertyValue('--cms-h')) : null;
+  const rawScale = Number.parseFloat(String(el.style.getPropertyValue('--cms-scale') || '1'));
+  const scale = Number.isFinite(rawScale) ? Math.round(rawScale * 100) : 100;
+  const rawZ = Number.parseInt(String(el.style.getPropertyValue('--cms-z') || '2'), 10);
+  const z = Number.isFinite(rawZ) ? rawZ : 2;
+  const active =
+    el.classList.contains('cms-free-block') ||
+    tx !== 0 ||
+    ty !== 0 ||
+    w !== null ||
+    h !== null ||
+    scale !== 100 ||
+    z !== 2;
+  return { active, tx, ty, w, h, scale, z };
+}
+
 function getGenericRepeaterLabel(repEl) {
   if (!repEl) return 'Elementy siatki';
   const explicit = trimText(
@@ -477,7 +513,13 @@ function getSectionLabel(el) {
   }
   if (el.classList.contains('realization-group')) {
     const h = el.querySelector('h2, h3');
-    return h ? `Realizacje: ${truncate(getPreservedText(h), 26)}` : 'Grupa realizacji';
+    const isCarousel = Boolean(el.querySelector('.cms-carousel-track'));
+    if (h) {
+      const txt = truncate(getPreservedText(h), 32);
+      if (isCarousel || /galeria|promocj|zdjęc|zdjec/i.test(txt)) return txt;
+      return `Realizacje: ${truncate(txt, 26)}`;
+    }
+    return isCarousel ? 'Przewijana galeria zdjęć' : 'Galeria zdjęć';
   }
   if (el.classList.contains('reviews')) {
     const h = el.querySelector('h2, h3');
@@ -536,6 +578,10 @@ function getItemLabel(el, itemType) {
     const t = el.querySelector('.kt-store-title');
     return t ? truncate(getPreservedText(t), 32) : 'Salon sprzedaży';
   }
+  if (itemType === 'sidebar-box') {
+    const eb = el.querySelector('.eyebrow, h2, h3, h4');
+    return eb ? truncate(getPreservedText(eb), 34) : 'Karta boczna';
+  }
   const heading = el.querySelector('h2, h3, h4, .cat-prod-title, .montage-step-title, summary');
   if (heading) {
     const txt = truncate(getPreservedText(heading), 34);
@@ -575,15 +621,24 @@ export function connectCanvas(doc, options = {}) {
     onRequestImage: typeof options.onRequestImage === 'function' ? options.onRequestImage : () => {},
     onRequestAddSection: typeof options.onRequestAddSection === 'function' ? options.onRequestAddSection : () => {},
     onRequestAddItem: typeof options.onRequestAddItem === 'function' ? options.onRequestAddItem : () => {},
+    onRequestGlobals: typeof options.onRequestGlobals === 'function' ? options.onRequestGlobals : () => {},
+    onSendToAi: typeof options.onSendToAi === 'function' ? options.onSendToAi : () => {},
+    onDragTargetStart: typeof options.onDragTargetStart === 'function' ? options.onDragTargetStart : () => {},
+    onDragTargetEnd: typeof options.onDragTargetEnd === 'function' ? options.onDragTargetEnd : () => {},
     onNavigate: typeof options.onNavigate === 'function' ? options.onNavigate : () => {},
   };
 
   let browseMode = Boolean(options.browseMode);
+  let freeLayoutMode = Boolean(options.freeLayoutMode);
+  let aiPickMode = false;
   let uidCounter = { sec: 0, rep: 0, item: 0, el: 0 };
   let selectedUid = null;
   let hoveredSectionEl = null;
   let hoveredItemEl = null;
+  let aiPickHoverEl = null;
   let dragState = null;
+  let freeInteract = null;
+  let marqueeState = null;
   let textMutateTimer = 0;
   let textDirty = false;
   let destroyed = false;
@@ -972,7 +1027,14 @@ export function connectCanvas(doc, options = {}) {
 
     if (childRepeaters.length > 0) {
       const primary = childRepeaters[0];
-      const addLabel = primary.itemType === 'subpage-service' ? '+ Usługa' : '+ Kafelek';
+      const addLabel =
+        primary.itemType === 'subpage-service'
+          ? '+ Usługa'
+          : primary.itemType === 'realization-photo'
+          ? '+ Zdjęcie'
+          : primary.itemType === 'sidebar-box'
+          ? '+ Karta'
+          : '+ Kafelek';
       const btnAddItem = createEl(
         doc,
         'button',
@@ -989,6 +1051,19 @@ export function connectCanvas(doc, options = {}) {
       bar.appendChild(btnAddItem);
     }
 
+    const btnAi = createEl(
+      doc,
+      'button',
+      {
+        type: 'button',
+        class: 'cms-tb-btn cms-tb-btn--ai',
+        'data-cms-action': 'send-to-ai',
+        'data-cms-target': uid,
+        title: 'Wyślij ten fragment do Asystenta AI (wskaż dokładnie miejsce pracy)',
+      },
+      '✨ AI'
+    );
+
     const btnDel = createEl(
       doc,
       'button',
@@ -1001,7 +1076,7 @@ export function connectCanvas(doc, options = {}) {
       },
       '🗑'
     );
-    bar.appendChild(btnDel);
+    bar.append(btnAi, btnDel);
 
     el.appendChild(bar);
 
@@ -1094,6 +1169,18 @@ export function connectCanvas(doc, options = {}) {
       },
       '⧉'
     );
+    const btnAi = createEl(
+      doc,
+      'button',
+      {
+        type: 'button',
+        class: 'cms-tb-btn cms-tb-btn--ai',
+        'data-cms-action': 'send-to-ai',
+        'data-cms-target': itemUid,
+        title: 'Wyślij ten element do Asystenta AI',
+      },
+      '✨ AI'
+    );
     const btnDel = createEl(
       doc,
       'button',
@@ -1107,7 +1194,7 @@ export function connectCanvas(doc, options = {}) {
       '🗑'
     );
 
-    bar.append(handle, btnPrev, btnNext, btnDup, btnDel);
+    bar.append(handle, btnPrev, btnNext, btnDup, btnAi, btnDel);
     itemEl.appendChild(bar);
 
     // Nakładka zmiany zdjęcia jeśli kafelek zawiera <img>
@@ -1317,6 +1404,7 @@ export function connectCanvas(doc, options = {}) {
       const entry = nodesByUid.get(selectedUid);
       if (entry && doc.contains(entry.el)) {
         applySelectedVisual(entry);
+        syncFreeHandles();
       } else {
         selectedUid = null;
       }
@@ -1489,6 +1577,21 @@ export function connectCanvas(doc, options = {}) {
       add('title', 'Podpis zdjęcia', el.querySelector('.montage-step-title, h3'));
       return specs;
     }
+    if (itemType === 'sidebar-box' || el.classList.contains('sidebar-box')) {
+      add('eyebrow', 'Nagłówek karty', el.querySelector('.eyebrow, h2, h3, h4'));
+      add('tel', 'Numer telefonu', el.querySelector('a.sidebar-tel'));
+      const storePs = el.querySelectorAll('.sidebar-store p');
+      if (storePs.length > 0) {
+        storePs.forEach((p, idx) => add(`store${idx}`, `Salon ${idx + 1}`, p));
+      } else {
+        el.querySelectorAll(':scope > p').forEach((p, idx) => {
+          add(idx === 0 ? 'text' : `text${idx}`, idx === 0 ? 'Opis karty' : `Akapit ${idx + 1}`, p, true);
+        });
+      }
+      add('cta', 'Przycisk telefonu', el.querySelector('a.tc-tel'));
+      add('bottomLink', 'Link na dole karty', el.querySelector('a.sidebar-link'));
+      return specs;
+    }
     if (itemType === 'partner-logo' || itemType === 'realization-photo' || itemType === 'gallery-thumb') {
       return specs; // Głównie obrazek (alt edytowane w sekcji Obraz)
     }
@@ -1552,6 +1655,14 @@ export function connectCanvas(doc, options = {}) {
       add('lead', 'Opis sekcji', el.querySelector('.contact-head p'), true);
       add('telLabel', 'Etykieta telefonu', el.querySelector('.kt-tel > .kt-lab'));
       add('telNum', 'Główny numer telefonu', el.querySelector('.kt-num'));
+      el.querySelectorAll('.kt-lista > li').forEach((li, i) => {
+        const labelSpan = li.querySelector(':scope > span:first-child');
+        const valEl = li.querySelector(':scope > a, :scope > span:nth-child(2)');
+        const lbl = trimText(labelSpan?.textContent || '').replace(/:$/, '') || `Wiersz ${i + 1}`;
+        if (valEl) add(`ktRow${i}`, lbl, valEl);
+      });
+      add('companyBold', 'Nazwa firmy (stopka kontaktu)', el.querySelector('.kt-oferta > b'));
+      add('companyDesc', 'Opis firmy (kontakt)', el.querySelector('.kt-oferta'), true);
       add('storesLabel', 'Nagłówek salonów', el.querySelector('.kt-adres > .kt-lab'));
       add('storesLink', 'Link do opisu salonów', el.querySelector('.store-full-copy-link'));
       return specs;
@@ -1709,6 +1820,25 @@ export function connectCanvas(doc, options = {}) {
       return links;
     }
 
+    if (itemType === 'sidebar-box' || el.classList.contains('sidebar-box')) {
+      const boxLinks = el.querySelectorAll('a[href]');
+      let added = 0;
+      for (const a of boxLinks) {
+        if (added >= 15) break;
+        if (a.closest('[data-cms-ui]')) continue;
+        const href = a.getAttribute('href') || '';
+        const lbl =
+          a.classList.contains('sidebar-tel') || a.classList.contains('tc-tel') || href.startsWith('tel:')
+            ? 'Link telefonu'
+            : a.classList.contains('sidebar-map-link')
+            ? `Google Maps (${added + 1})`
+            : truncate(getPreservedText(a), 28) || `Link ${added + 1}`;
+        pushLink(a, lbl);
+        added += 1;
+      }
+      return links;
+    }
+
     // Sekcje: zbierz przyciski CTA (poza kafelkami .cms-item)
     const ctaLinks = el.querySelectorAll(
       'a.hero-btn, a.hero-mail, a.trust-about-link, a.tc-tel, a.tc-mail, a.realizations-more, a.reviews-link, a.store-full-copy-link, a.service-feature-btn, .home-services-head > a, a.kt-num, a.sidebar-tel, a.sidebar-link'
@@ -1852,9 +1982,152 @@ export function connectCanvas(doc, options = {}) {
       image: imageDesc,
       stars,
       sectionStyle: kind === 'section' ? readSectionStyle(el) : null,
+      freeLayout: readFreeLayout(el),
       repeaterContext,
       childRepeaters,
     };
+  }
+
+  function buildTargetPayload(entry) {
+    if (!entry || !entry.el || !doc.contains(entry.el)) return null;
+    const el = entry.el;
+    const label = entry.kind === 'section' ? getSectionLabel(el) : getItemLabel(el, entry.itemType);
+    const textSnippet = truncate(getPreservedText(el), 140);
+    return {
+      uid: entry.uid,
+      kind: entry.kind,
+      itemType: entry.itemType || '',
+      label,
+      id: el.id || '',
+      pagePath,
+      textSnippet,
+    };
+  }
+
+  function getElementTargetPayload(uid) {
+    const entry = nodesByUid.get(uid);
+    return buildTargetPayload(entry);
+  }
+
+  function removeFreeHandles() {
+    doc.querySelectorAll('[data-cms-ui="free-handle"], [data-cms-ui="free-hud"]').forEach((n) => n.remove());
+  }
+
+  function syncFreeHandles() {
+    removeFreeHandles();
+    if (!freeLayoutMode || browseMode || aiPickMode || !selectedUid) return;
+    const entry = nodesByUid.get(selectedUid);
+    if (!entry || !doc.contains(entry.el)) return;
+    if (entry.kind !== 'section' && entry.kind !== 'item') return;
+
+    const el = entry.el;
+    const handles = [
+      { dir: 'e', title: 'Przeciągnij, aby zmienić szerokość' },
+      { dir: 's', title: 'Przeciągnij, aby zmienić wysokość' },
+      { dir: 'se', title: 'Przeciągnij róg, aby zmienić szerokość i wysokość' },
+    ];
+    for (const h of handles) {
+      el.appendChild(
+        createEl(doc, 'button', {
+          type: 'button',
+          'data-cms-ui': 'free-handle',
+          'data-free-dir': h.dir,
+          'data-free-uid': entry.uid,
+          contenteditable: 'false',
+          title: h.title,
+          'aria-label': h.title,
+        })
+      );
+    }
+  }
+
+  function applyFreeLayoutToEl(el, patch = {}) {
+    if (!el || !el.style) return false;
+    const curr = readFreeLayout(el);
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, Math.round(n)));
+
+    const nextTx = patch.tx !== undefined ? clamp(Number(patch.tx) || 0, -1200, 1200) : curr.tx;
+    const nextTy = patch.ty !== undefined ? clamp(Number(patch.ty) || 0, -1200, 1200) : curr.ty;
+    const nextW =
+      patch.w === null || patch.w === ''
+        ? null
+        : patch.w !== undefined
+        ? clamp(Number(patch.w) || 0, 80, 1600)
+        : curr.w;
+    const nextH =
+      patch.h === null || patch.h === ''
+        ? null
+        : patch.h !== undefined
+        ? clamp(Number(patch.h) || 0, 40, 1800)
+        : curr.h;
+    const nextScale =
+      patch.scale !== undefined ? clamp(Number(patch.scale) || 100, 30, 200) : curr.scale;
+    const nextZ = patch.z !== undefined ? clamp(Number(patch.z) || 2, 1, 40) : curr.z;
+
+    const isDefault =
+      nextTx === 0 && nextTy === 0 && nextW === null && nextH === null && nextScale === 100 && nextZ === 2;
+
+    if (isDefault) {
+      el.classList.remove('cms-free-block');
+      el.removeAttribute('data-cms-has-w');
+      el.removeAttribute('data-cms-has-h');
+      el.style.removeProperty('--cms-tx');
+      el.style.removeProperty('--cms-ty');
+      el.style.removeProperty('--cms-w');
+      el.style.removeProperty('--cms-h');
+      el.style.removeProperty('--cms-scale');
+      el.style.removeProperty('--cms-z');
+      if (!el.getAttribute('style')?.trim()) el.removeAttribute('style');
+      return true;
+    }
+
+    el.classList.add('cms-free-block');
+    if (nextTx !== 0) el.style.setProperty('--cms-tx', `${nextTx}px`);
+    else el.style.removeProperty('--cms-tx');
+
+    if (nextTy !== 0) el.style.setProperty('--cms-ty', `${nextTy}px`);
+    else el.style.removeProperty('--cms-ty');
+
+    if (nextW !== null) {
+      el.setAttribute('data-cms-has-w', '1');
+      el.style.setProperty('--cms-w', `${nextW}px`);
+    } else {
+      el.removeAttribute('data-cms-has-w');
+      el.style.removeProperty('--cms-w');
+    }
+
+    if (nextH !== null) {
+      el.setAttribute('data-cms-has-h', '1');
+      el.style.setProperty('--cms-h', `${nextH}px`);
+    } else {
+      el.removeAttribute('data-cms-has-h');
+      el.style.removeProperty('--cms-h');
+    }
+
+    if (nextScale !== 100) el.style.setProperty('--cms-scale', String((nextScale / 100).toFixed(2)));
+    else el.style.removeProperty('--cms-scale');
+
+    if (nextZ !== 2) el.style.setProperty('--cms-z', String(nextZ));
+    else el.style.removeProperty('--cms-z');
+
+    return true;
+  }
+
+  function updateFreeLayout(uid, patch = {}, { silent = false } = {}) {
+    const resolvedUid = uid || selectedUid;
+    if (!resolvedUid) return false;
+    const entry = nodesByUid.get(resolvedUid);
+    if (!entry || !doc.contains(entry.el)) return false;
+    applyFreeLayoutToEl(entry.el, patch);
+    if (!silent) {
+      callbacks.onSelect(getSelectedDescriptor());
+      callbacks.onMutate('layout');
+    }
+    return true;
+  }
+
+  function resetFreeLayout(uid) {
+    return updateFreeLayout(uid, { tx: 0, ty: 0, w: null, h: null, scale: 100, z: 2 });
   }
 
   function selectByUid(uid, { scroll = false } = {}) {
@@ -1881,6 +2154,7 @@ export function connectCanvas(doc, options = {}) {
 
     selectedUid = uid;
     applySelectedVisual(entry);
+    syncFreeHandles();
     if (scroll) {
       entry.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -1892,6 +2166,7 @@ export function connectCanvas(doc, options = {}) {
   function clearSelection() {
     selectedUid = null;
     applySelectedVisual(null);
+    removeFreeHandles();
     callbacks.onSelect(null);
   }
 
@@ -2274,11 +2549,11 @@ export function connectCanvas(doc, options = {}) {
 
   function syncGalleryMeta(containerEl) {
     if (!containerEl) return;
-    // Licznik realizacji w .realization-group
+    // Licznik realizacji / zdjęć w .realization-group
     const group = containerEl.closest('.realization-group');
     if (group) {
       const countEl = group.querySelector('.realization-count');
-      const photos = group.querySelectorAll('.realization-grid > .realization-photo');
+      const photos = group.querySelectorAll('.cms-carousel-track > .realization-photo, .realization-grid > .realization-photo');
       if (countEl) {
         countEl.textContent = pluralizePhotos(photos.length);
       }
@@ -2734,15 +3009,21 @@ export function connectCanvas(doc, options = {}) {
 
   function setMeta({ title, description } = {}) {
     if (title !== undefined) {
-      doc.title = sanitizeText(String(title));
+      const cleanTitle = sanitizeText(String(title));
+      doc.title = cleanTitle;
+      const ogTitle = doc.head.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', cleanTitle);
     }
     if (description !== undefined) {
+      const cleanDesc = sanitizeText(String(description));
       let descEl = doc.head.querySelector('meta[name="description"]');
       if (!descEl) {
         descEl = createEl(doc, 'meta', { name: 'description', content: '' });
         doc.head.appendChild(descEl);
       }
-      descEl.setAttribute('content', sanitizeText(String(description)));
+      descEl.setAttribute('content', cleanDesc);
+      const ogDesc = doc.head.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', cleanDesc);
     }
     callbacks.onMutate('meta');
   }
@@ -3024,12 +3305,24 @@ export function connectCanvas(doc, options = {}) {
       const repUid = btn.getAttribute('data-cms-repeater');
       const itemType = btn.getAttribute('data-cms-item-type');
       callbacks.onRequestAddItem(repUid, itemType);
+    } else if (action === 'send-to-ai') {
+      const entry = nodesByUid.get(targetUid);
+      const payload = buildTargetPayload(entry);
+      if (payload) {
+        selectByUid(targetUid);
+        callbacks.onSendToAi([payload]);
+      }
     }
   }
 
   function setBrowseMode(enabled) {
     browseMode = Boolean(enabled);
+    if (browseMode) {
+      freeLayoutMode = false;
+      setAiPickMode(false);
+    }
     doc.body?.classList.toggle('cms-browse-mode', browseMode);
+    doc.body?.classList.toggle('cms-free-mode', freeLayoutMode);
     if (browseMode) {
       clearSelection();
       if (hoveredSectionEl) hoveredSectionEl.classList.remove('cms-hovered');
@@ -3039,17 +3332,63 @@ export function connectCanvas(doc, options = {}) {
       doc.querySelectorAll('.cms-editable-text').forEach((el) => {
         el.removeAttribute('contenteditable');
       });
-    } else {
+    } else if (!freeLayoutMode) {
       doc.querySelectorAll('.cms-editable-text').forEach((el) => {
         if (!el.closest('[data-cms-ui]')) {
           el.setAttribute('contenteditable', 'plaintext-only');
         }
       });
     }
+    syncFreeHandles();
   }
 
   function getBrowseMode() {
     return browseMode;
+  }
+
+  function setFreeLayoutMode(enabled) {
+    freeLayoutMode = Boolean(enabled);
+    if (freeLayoutMode) {
+      browseMode = false;
+      setAiPickMode(false);
+    }
+    doc.body?.classList.toggle('cms-browse-mode', browseMode);
+    doc.body?.classList.toggle('cms-free-mode', freeLayoutMode);
+    doc.querySelectorAll('.cms-editable-text').forEach((el) => {
+      if (freeLayoutMode || browseMode) {
+        el.removeAttribute('contenteditable');
+      } else if (!el.closest('[data-cms-ui]')) {
+        el.setAttribute('contenteditable', 'plaintext-only');
+      }
+    });
+    syncFreeHandles();
+  }
+
+  function getFreeLayoutMode() {
+    return freeLayoutMode;
+  }
+
+  function clearAiPickVisuals() {
+    if (aiPickHoverEl) {
+      aiPickHoverEl.classList.remove('cms-ai-pick-hover');
+      aiPickHoverEl = null;
+    }
+    doc.querySelectorAll('[data-cms-ui="ai-marquee"]').forEach((n) => n.remove());
+    marqueeState = null;
+  }
+
+  function setAiPickMode(enabled) {
+    aiPickMode = Boolean(enabled);
+    doc.body?.classList.toggle('cms-ai-pick-mode', aiPickMode);
+    if (!aiPickMode) {
+      clearAiPickVisuals();
+    } else {
+      removeFreeHandles();
+    }
+  }
+
+  function getAiPickMode() {
+    return aiPickMode;
   }
 
   function closeOpenSiteMenus() {
@@ -3111,6 +3450,13 @@ export function connectCanvas(doc, options = {}) {
     const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
     if (!target) return;
 
+    // -1. Tryb wskazywania fragmentu dla AI (obsługiwany przez pointerdown/pointerup)
+    if (aiPickMode) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+
     // 0. Przycisk Wstecz strony działa jak normalna nawigacja w panelu
     const backBtn = target.closest('[data-history-back]');
     if (backBtn) {
@@ -3120,9 +3466,9 @@ export function connectCanvas(doc, options = {}) {
       return;
     }
 
-    // 0b. Natywne kontrolki strony (MENU, zamknij menu, Do góry, miniaturki/strzałki galerii, próbnik) działają normalnie!
+    // 0b. Natywne kontrolki strony (MENU, zamknij menu, Do góry, miniaturki/strzałki galerii i karuzel, próbnik) działają normalnie!
     const nativeSiteControl = target.closest(
-      '[data-menu-toggle], [data-menu-close], .scroll-top-btn, .product-gallery-thumb, [data-gallery-prev], [data-gallery-next], [data-palette-src]'
+      '[data-menu-toggle], [data-menu-close], .scroll-top-btn, .product-gallery-thumb, [data-gallery-prev], [data-gallery-next], [data-scroll-prev], [data-scroll-next], [data-palette-src]'
     );
     if (nativeSiteControl) {
       return;
@@ -3174,6 +3520,50 @@ export function connectCanvas(doc, options = {}) {
       e.stopPropagation();
       const ownerUid = toolbar.getAttribute('data-cms-for');
       if (ownerUid) selectByUid(ownerUid);
+      return;
+    }
+
+    // 2b. Elementy globalne witryny (telefon w nagłówku/menu, logo, dymki kontaktu, stopka) — w trybie Edycji otwierają od razu edycję globalną z fokusem na klikniętym polu!
+    const globalPhoneTarget = target.closest(
+      'header.bar a.phone, nav.menu-panel a.menu-phone, a.contact-bubble--tel, footer .footer-copy a[href^="tel:"]'
+    );
+    if (globalPhoneTarget) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeOpenSiteMenus();
+      callbacks.onRequestGlobals({ focus: 'phone' });
+      return;
+    }
+
+    const globalMailTarget = target.closest('a.contact-bubble--mail');
+    if (globalMailTarget) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      callbacks.onRequestGlobals({ focus: 'email' });
+      return;
+    }
+
+    const globalFbTarget = target.closest('a.contact-bubble--fb, footer .footer-social a');
+    if (globalFbTarget) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      callbacks.onRequestGlobals({ focus: 'facebook' });
+      return;
+    }
+
+    const globalLogoTarget = target.closest('header.bar a.brand');
+    if (globalLogoTarget && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      callbacks.onRequestGlobals({ focus: 'logo' });
+      return;
+    }
+
+    const globalFooterCopyTarget = target.closest('footer .footer-copy');
+    if (globalFooterCopyTarget) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      callbacks.onRequestGlobals({ focus: 'footer' });
       return;
     }
 
@@ -3289,9 +3679,19 @@ export function connectCanvas(doc, options = {}) {
   }
 
   function onMouseMove(e) {
-    if (dragState || browseMode) return;
+    if (dragState || browseMode || freeInteract) return;
     const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
     if (!target) return;
+
+    if (aiPickMode) {
+      const pickEl = target.closest('.cms-item') || target.closest('.cms-section');
+      if (pickEl !== aiPickHoverEl) {
+        aiPickHoverEl?.classList.remove('cms-ai-pick-hover');
+        aiPickHoverEl = pickEl;
+        aiPickHoverEl?.classList.add('cms-ai-pick-hover');
+      }
+      return;
+    }
 
     const itemEl = target.closest('.cms-item');
     const secEl = target.closest('.cms-section');
@@ -3432,6 +3832,15 @@ export function connectCanvas(doc, options = {}) {
     e.stopPropagation();
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', uid);
+    const dragPayload = buildTargetPayload(entry);
+    if (dragPayload) {
+      try {
+        e.dataTransfer.setData('application/x-wolbud-cms-target', JSON.stringify(dragPayload));
+      } catch {
+        // Ignoruj ewentualne ograniczenia MIME przeglądarki
+      }
+      callbacks.onDragTargetStart(dragPayload);
+    }
 
     const toolbar = handle.closest('[data-cms-ui="section-toolbar"], [data-cms-ui="item-toolbar"]');
     if (toolbar && e.dataTransfer.setDragImage) {
@@ -3551,11 +3960,215 @@ export function connectCanvas(doc, options = {}) {
 
   function onDragEnd() {
     clearDragVisuals();
+    callbacks.onDragTargetEnd();
+  }
+
+  function updateFreeHud(el, text) {
+    if (!el) return;
+    let hud = el.querySelector(':scope > [data-cms-ui="free-hud"]');
+    if (!hud) {
+      hud = createEl(doc, 'div', { 'data-cms-ui': 'free-hud', contenteditable: 'false' });
+      el.appendChild(hud);
+    }
+    hud.textContent = text;
+  }
+
+  function removeFreeHud() {
+    doc.querySelectorAll('[data-cms-ui="free-hud"]').forEach((n) => n.remove());
+  }
+
+  function onPointerDown(e) {
+    if (e.button !== 0 || browseMode) return;
+    const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
+    if (!target) return;
+
+    // 1. Tryb wskazywania fragmentu dla AI (klik lub zaznaczenie ramką)
+    if (aiPickMode) {
+      if (target.closest('[data-cms-ui]')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      marqueeState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        currX: e.clientX,
+        currY: e.clientY,
+        target,
+        boxEl: null,
+        dragging: false,
+      };
+      return;
+    }
+
+    // 2. Tryb układu swobodnego (klocki): skalowanie uchwytami lub swobodne przesuwanie
+    if (!freeLayoutMode) return;
+
+    const resizeHandle = target.closest('[data-cms-ui="free-handle"]');
+    if (resizeHandle) {
+      const uid = resizeHandle.getAttribute('data-free-uid');
+      const dir = resizeHandle.getAttribute('data-free-dir') || 'se';
+      const entry = nodesByUid.get(uid);
+      if (!entry || !doc.contains(entry.el)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = entry.el.getBoundingClientRect();
+      const fl = readFreeLayout(entry.el);
+      freeInteract = {
+        mode: 'resize',
+        dir,
+        uid,
+        el: entry.el,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: fl.w || Math.round(rect.width),
+        startH: fl.h || Math.round(rect.height),
+        moved: false,
+      };
+      return;
+    }
+
+    if (target.closest('[data-cms-ui]')) return;
+    const blockEl = target.closest('.cms-item') || target.closest('.cms-section');
+    if (!blockEl) return;
+    const uid = blockEl.getAttribute('data-cms-uid');
+    const entry = nodesByUid.get(uid);
+    if (!entry) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (uid !== selectedUid) {
+      selectByUid(uid);
+    } else {
+      syncFreeHandles();
+    }
+    const fl = readFreeLayout(entry.el);
+    freeInteract = {
+      mode: 'move',
+      uid,
+      el: entry.el,
+      startX: e.clientX,
+      startY: e.clientY,
+      startTx: fl.tx,
+      startTy: fl.ty,
+      moved: false,
+    };
+  }
+
+  function onPointerMove(e) {
+    if (marqueeState) {
+      marqueeState.currX = e.clientX;
+      marqueeState.currY = e.clientY;
+      const dx = Math.abs(e.clientX - marqueeState.startX);
+      const dy = Math.abs(e.clientY - marqueeState.startY);
+      if (dx > 12 || dy > 12) {
+        marqueeState.dragging = true;
+        if (!marqueeState.boxEl) {
+          marqueeState.boxEl = createEl(doc, 'div', {
+            'data-cms-ui': 'ai-marquee',
+            contenteditable: 'false',
+          });
+          doc.body.appendChild(marqueeState.boxEl);
+        }
+        const left = Math.min(marqueeState.startX, marqueeState.currX);
+        const top = Math.min(marqueeState.startY, marqueeState.currY);
+        const width = Math.abs(marqueeState.currX - marqueeState.startX);
+        const height = Math.abs(marqueeState.currY - marqueeState.startY);
+        marqueeState.boxEl.style.left = `${left}px`;
+        marqueeState.boxEl.style.top = `${top}px`;
+        marqueeState.boxEl.style.width = `${width}px`;
+        marqueeState.boxEl.style.height = `${height}px`;
+      }
+      return;
+    }
+
+    if (!freeInteract) return;
+    const dx = e.clientX - freeInteract.startX;
+    const dy = e.clientY - freeInteract.startY;
+    if (!freeInteract.moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+    freeInteract.moved = true;
+
+    if (freeInteract.mode === 'move') {
+      const nextTx = Math.round(freeInteract.startTx + dx);
+      const nextTy = Math.round(freeInteract.startTy + dy);
+      applyFreeLayoutToEl(freeInteract.el, { tx: nextTx, ty: nextTy });
+      const signX = nextTx >= 0 ? `+${nextTx}` : String(nextTx);
+      const signY = nextTy >= 0 ? `+${nextTy}` : String(nextTy);
+      updateFreeHud(freeInteract.el, `X: ${signX}px · Y: ${signY}px`);
+    } else if (freeInteract.mode === 'resize') {
+      const patch = {};
+      if (freeInteract.dir === 'e' || freeInteract.dir === 'se') {
+        patch.w = Math.max(80, Math.round(freeInteract.startW + dx));
+      }
+      if (freeInteract.dir === 's' || freeInteract.dir === 'se') {
+        patch.h = Math.max(40, Math.round(freeInteract.startH + dy));
+      }
+      applyFreeLayoutToEl(freeInteract.el, patch);
+      const fl = readFreeLayout(freeInteract.el);
+      const rect = freeInteract.el.getBoundingClientRect();
+      updateFreeHud(freeInteract.el, `${fl.w || Math.round(rect.width)} × ${fl.h || Math.round(rect.height)} px`);
+    }
+  }
+
+  function onPointerUp(e) {
+    if (marqueeState) {
+      const st = marqueeState;
+      const payloads = [];
+      const seenUids = new Set();
+
+      if (st.dragging) {
+        const left = Math.min(st.startX, st.currX);
+        const right = Math.max(st.startX, st.currX);
+        const top = Math.min(st.startY, st.currY);
+        const bottom = Math.max(st.startY, st.currY);
+        const intersects = (el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0 && r.right >= left && r.left <= right && r.bottom >= top && r.top <= bottom;
+        };
+
+        const matchedItems = Array.from(doc.querySelectorAll('.cms-item')).filter(intersects);
+        const candidates = matchedItems.length > 0
+          ? matchedItems
+          : Array.from(doc.querySelectorAll('.cms-section')).filter(intersects);
+
+        for (const el of candidates) {
+          const uid = el.getAttribute('data-cms-uid');
+          if (!uid || seenUids.has(uid)) continue;
+          seenUids.add(uid);
+          const p = buildTargetPayload(nodesByUid.get(uid));
+          if (p) payloads.push(p);
+        }
+      } else {
+        const el = st.target.closest('.cms-item') || st.target.closest('.cms-section');
+        const uid = el?.getAttribute('data-cms-uid');
+        if (uid) {
+          const p = buildTargetPayload(nodesByUid.get(uid));
+          if (p) payloads.push(p);
+        }
+      }
+
+      setAiPickMode(false);
+      if (payloads.length > 0) {
+        selectByUid(payloads[0].uid);
+        callbacks.onSendToAi(payloads);
+      }
+      return;
+    }
+
+    if (!freeInteract) return;
+    const finished = freeInteract;
+    freeInteract = null;
+    removeFreeHud();
+    if (finished.moved) {
+      callbacks.onSelect(getSelectedDescriptor());
+      callbacks.onMutate('layout');
+    }
   }
 
   // Podepnij listenery
   doc.addEventListener('click', onClickCapture, true);
   doc.addEventListener('dblclick', onDblClickCapture, true);
+  doc.addEventListener('pointerdown', onPointerDown, true);
+  doc.addEventListener('pointermove', onPointerMove, { passive: true });
+  doc.addEventListener('pointerup', onPointerUp, true);
   doc.addEventListener('mousemove', onMouseMove, { passive: true });
   doc.documentElement.addEventListener('mouseleave', onMouseLeave);
   doc.addEventListener('input', onInput);
@@ -3573,6 +4186,8 @@ export function connectCanvas(doc, options = {}) {
   scanStructure();
   if (browseMode) {
     setBrowseMode(true);
+  } else if (freeLayoutMode) {
+    setFreeLayoutMode(true);
   }
   callbacks.onStructureChange(getStructure());
 
@@ -3581,9 +4196,15 @@ export function connectCanvas(doc, options = {}) {
     destroyed = true;
     flushPendingTextMutation();
     clearDragVisuals();
+    clearAiPickVisuals();
+    removeFreeHandles();
+    freeInteract = null;
 
     doc.removeEventListener('click', onClickCapture, true);
     doc.removeEventListener('dblclick', onDblClickCapture, true);
+    doc.removeEventListener('pointerdown', onPointerDown, true);
+    doc.removeEventListener('pointermove', onPointerMove);
+    doc.removeEventListener('pointerup', onPointerUp, true);
     doc.removeEventListener('mousemove', onMouseMove);
     doc.documentElement.removeEventListener('mouseleave', onMouseLeave);
     doc.removeEventListener('input', onInput);
@@ -3597,7 +4218,7 @@ export function connectCanvas(doc, options = {}) {
     doc.removeEventListener('dragend', onDragEnd);
 
     doc.querySelectorAll('[data-cms-ui]').forEach((el) => el.remove());
-    doc.body?.classList.remove('wolbud-preview', 'cms-browse-mode');
+    doc.body?.classList.remove('wolbud-preview', 'cms-browse-mode', 'cms-free-mode', 'cms-ai-pick-mode');
     doc.querySelectorAll('*').forEach((el) => {
       EDITOR_CLASSES.forEach((cls) => el.classList.remove(cls));
       EDITOR_ATTRS.forEach((attr) => el.removeAttribute(attr));
@@ -3614,12 +4235,15 @@ export function connectCanvas(doc, options = {}) {
     selectByUid,
     clearSelection,
     getSelectedDescriptor,
+    getElementTargetPayload,
     updateField,
     updateLink,
     updateImage,
     updateStars,
     updateSectionId,
     updateSectionStyle,
+    updateFreeLayout,
+    resetFreeLayout,
     toggleHidden,
     moveNode,
     moveNodeToIndex,
@@ -3637,6 +4261,10 @@ export function connectCanvas(doc, options = {}) {
     refreshPendingImages,
     setBrowseMode,
     getBrowseMode,
+    setFreeLayoutMode,
+    getFreeLayoutMode,
+    setAiPickMode,
+    getAiPickMode,
     destroy,
   };
 }
