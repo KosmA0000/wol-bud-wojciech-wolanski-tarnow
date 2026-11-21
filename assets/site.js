@@ -9,10 +9,8 @@
   const menuPanel = document.querySelector('[data-menu-panel]');
   const mobileQuery = window.matchMedia('(max-width: 760px)');
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const mobileNavLinks = document.querySelectorAll('[data-mobile-home-href]');
-
   const syncMobileNavLinks = () => {
-    mobileNavLinks.forEach((link) => {
+    document.querySelectorAll('[data-mobile-home-href]').forEach((link) => {
       link.setAttribute('href', mobileQuery.matches ? link.dataset.mobileHomeHref : link.dataset.desktopHref);
     });
   };
@@ -82,16 +80,15 @@
 
     menu.querySelector('[data-menu-close]')?.addEventListener('click', () => closeMenu(true));
 
-    mobileNavLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
-        if (!mobileQuery.matches || !isHomePage) return;
-        const targetId = new URL(link.href, window.location.href).hash.slice(1);
-        const target = targetId ? document.getElementById(decodeURIComponent(targetId)) : null;
-        if (!target) return;
-        e.preventDefault();
-        closeMenu();
-        scrollToTarget(target, true);
-      });
+    menu.addEventListener('click', (e) => {
+      const link = e.target.closest('[data-mobile-home-href]');
+      if (!link || !mobileQuery.matches || !isHomePage) return;
+      const targetId = new URL(link.href, window.location.href).hash.slice(1);
+      const target = targetId ? document.getElementById(decodeURIComponent(targetId)) : null;
+      if (!target) return;
+      e.preventDefault();
+      closeMenu();
+      scrollToTarget(target, true);
     });
 
     document.addEventListener('click', (e) => {
@@ -729,5 +726,225 @@
         if (desktopPointerQuery.matches) e.preventDefault();
       });
     });
+  }
+
+  const currentSiteScript = document.currentScript || document.querySelector('script[src*="assets/site.js"]');
+  const siteScriptSrc = currentSiteScript ? currentSiteScript.src : '';
+
+  const detectSitePrefix = (targetDoc) => {
+    const assetEl = targetDoc.querySelector('script[src*="assets/site.js"], link[href*="assets/site.css"]');
+    const rawAttr = assetEl ? (assetEl.getAttribute('src') || assetEl.getAttribute('href') || '') : '';
+    const match = rawAttr.match(/^((?:\.\.\/)*)(?:\.\/)?assets\/site\.(?:js|css)/i);
+    if (match) return match[1] || '';
+    const brandHref = targetDoc.querySelector('header.bar .brand')?.getAttribute('href') || '';
+    const brandMatch = brandHref.match(/^((?:\.\.\/)*)/);
+    return brandMatch ? brandMatch[1] : '';
+  };
+
+  const resolveSiteHref = (rawHref, prefix) => {
+    const value = String(rawHref || '').trim();
+    if (!value) return '';
+    if (/^(?:https?:|mailto:|tel:|#|\/\/|data:|\/)/i.test(value)) return value;
+    const clean = value.replace(/^\.\//, '');
+    return `${prefix}${clean}`;
+  };
+
+  const setPhoneAnchor = (anchor, phoneHref, phoneDisplay, targetDoc) => {
+    if (!anchor) return;
+    if (phoneHref) anchor.setAttribute('href', phoneHref);
+    if (phoneDisplay) {
+      let dot = anchor.querySelector('i');
+      if (!dot) dot = targetDoc.createElement('i');
+      anchor.textContent = '';
+      anchor.appendChild(dot);
+      anchor.appendChild(targetDoc.createTextNode(phoneDisplay));
+    }
+  };
+
+  window.wolbudApplyGlobals = function wolbudApplyGlobals(globals, targetDoc = document, prefix = '') {
+    if (!globals || typeof globals !== 'object' || !targetDoc) return;
+
+    const rawPrefix = arguments.length >= 3 && typeof prefix === 'string'
+      ? prefix
+      : detectSitePrefix(targetDoc);
+    const resolvedPrefix = rawPrefix && !rawPrefix.endsWith('/') ? `${rawPrefix}/` : rawPrefix;
+
+    const docView = targetDoc.defaultView || window;
+    const isMobileViewport = Boolean(docView?.matchMedia?.('(max-width: 760px)')?.matches);
+    const docIsHome = Boolean(targetDoc.getElementById('start') && targetDoc.getElementById('oferta'));
+
+    const logoImg = targetDoc.querySelector('header.bar .brand img');
+    if (logoImg) {
+      if (globals.logoSrc) logoImg.setAttribute('src', resolveSiteHref(globals.logoSrc, resolvedPrefix));
+      if (typeof globals.logoAlt === 'string') logoImg.setAttribute('alt', globals.logoAlt);
+    }
+
+    const phoneDisplay = typeof globals.phoneDisplay === 'string' ? globals.phoneDisplay.trim() : '';
+    const phoneHref = typeof globals.phoneHref === 'string' && globals.phoneHref.trim()
+      ? globals.phoneHref.trim()
+      : (phoneDisplay ? `tel:+48${phoneDisplay.replace(/\D+/g, '')}` : '');
+
+    if (Array.isArray(globals.menu)) {
+      const siteMenu = targetDoc.getElementById('site-menu');
+      if (siteMenu) {
+        const closeBtn = siteMenu.querySelector('.menu-close');
+        const menuPhoneLink = siteMenu.querySelector('a.menu-phone');
+        Array.from(siteMenu.children).forEach((child) => {
+          if (child !== closeBtn && child !== menuPhoneLink) child.remove();
+        });
+
+        const frag = targetDoc.createDocumentFragment();
+        globals.menu.forEach((item) => {
+          if (!item || typeof item !== 'object') return;
+          const desktopHref = resolveSiteHref(item.href || 'index.html', resolvedPrefix);
+          const rawMobile = String(item.mobileHref || item.href || 'index.html').trim();
+          let mobileHref = '';
+          if (docIsHome) {
+            if (/^(?:\.\/)?index\.html(#.*)$/i.test(rawMobile)) {
+              mobileHref = rawMobile.replace(/^(?:\.\/)?index\.html/i, '');
+            } else if (/^(?:\.\/)?index\.html$/i.test(rawMobile) || !rawMobile) {
+              mobileHref = '#start';
+            } else if (rawMobile.startsWith('#')) {
+              mobileHref = rawMobile;
+            } else {
+              mobileHref = resolveSiteHref(rawMobile, resolvedPrefix);
+            }
+          } else if (rawMobile.startsWith('#')) {
+            mobileHref = `${resolvedPrefix}index.html${rawMobile}`;
+          } else {
+            mobileHref = resolveSiteHref(rawMobile, resolvedPrefix);
+          }
+
+          const a = targetDoc.createElement('a');
+          a.setAttribute('href', isMobileViewport ? mobileHref : desktopHref);
+          a.setAttribute('data-desktop-href', desktopHref);
+          a.setAttribute('data-mobile-home-href', mobileHref);
+          a.textContent = item.label || '';
+          frag.appendChild(a);
+        });
+
+        if (menuPhoneLink) {
+          siteMenu.insertBefore(frag, menuPhoneLink);
+        } else {
+          siteMenu.appendChild(frag);
+        }
+      }
+    }
+
+    if (phoneDisplay || phoneHref) {
+      setPhoneAnchor(targetDoc.querySelector('header.bar a.phone'), phoneHref, phoneDisplay, targetDoc);
+      setPhoneAnchor(targetDoc.querySelector('nav.menu-panel a.menu-phone'), phoneHref, phoneDisplay, targetDoc);
+
+      targetDoc.querySelectorAll('.contact-bubble--tel').forEach((bubble) => {
+        if (phoneHref) bubble.setAttribute('href', phoneHref);
+        if (phoneDisplay) {
+          bubble.setAttribute('aria-label', `Zadzwoń: ${phoneDisplay}`);
+          const textEl = bubble.querySelector('.contact-bubble__text');
+          if (textEl) textEl.textContent = phoneDisplay;
+        }
+      });
+    }
+
+    if (typeof globals.email === 'string' && globals.email.trim()) {
+      const email = globals.email.trim();
+      targetDoc.querySelectorAll('.contact-bubble--mail').forEach((bubble) => {
+        bubble.setAttribute('href', `mailto:${email}`);
+        bubble.setAttribute('aria-label', `E-mail: ${email}`);
+        const textEl = bubble.querySelector('.contact-bubble__text');
+        if (textEl) textEl.textContent = email;
+      });
+    }
+
+    const facebookUrl = typeof globals.facebookUrl === 'string' ? globals.facebookUrl.trim() : '';
+    const facebookLabel = typeof globals.facebookLabel === 'string' && globals.facebookLabel.trim()
+      ? globals.facebookLabel.trim()
+      : facebookUrl.replace(/^https?:\/\/(www\.)?/i, '');
+
+    if (facebookUrl || facebookLabel) {
+      targetDoc.querySelectorAll('.contact-bubble--fb').forEach((bubble) => {
+        if (facebookUrl) bubble.setAttribute('href', facebookUrl);
+        if (facebookLabel) {
+          bubble.setAttribute('aria-label', `Facebook: ${facebookLabel} (otwiera się w nowej karcie)`);
+          const textEl = bubble.querySelector('.contact-bubble__text');
+          if (textEl) textEl.textContent = facebookLabel;
+        }
+      });
+      if (facebookUrl) {
+        targetDoc.querySelectorAll('footer .footer-social a').forEach((link) => {
+          link.setAttribute('href', facebookUrl);
+        });
+      }
+    }
+
+    if (Array.isArray(globals.footerLinks)) {
+      const footerLinksEl = targetDoc.querySelector('footer .footer-links');
+      if (footerLinksEl) {
+        footerLinksEl.textContent = '';
+        globals.footerLinks.forEach((item) => {
+          if (!item || typeof item !== 'object') return;
+          const a = targetDoc.createElement('a');
+          a.setAttribute('href', resolveSiteHref(item.href || 'index.html', resolvedPrefix));
+          a.textContent = item.label || '';
+          footerLinksEl.appendChild(a);
+        });
+      }
+    }
+
+    const footerCopyEl = targetDoc.querySelector('footer .footer-copy');
+    if (footerCopyEl) {
+      if (typeof globals.footerCopy === 'string') {
+        footerCopyEl.textContent = '';
+        const copyText = globals.footerCopy;
+        const needsSpace = Boolean(copyText && (phoneDisplay || phoneHref) && !/\s$/.test(copyText));
+        footerCopyEl.appendChild(targetDoc.createTextNode(needsSpace ? `${copyText} ` : copyText));
+        if (phoneDisplay || phoneHref) {
+          const telLink = targetDoc.createElement('a');
+          if (phoneHref) telLink.setAttribute('href', phoneHref);
+          telLink.textContent = phoneDisplay || phoneHref.replace(/^tel:/i, '');
+          footerCopyEl.appendChild(telLink);
+        }
+      } else if (phoneDisplay || phoneHref) {
+        const existingTel = footerCopyEl.querySelector('a[href^="tel:"]');
+        if (existingTel) {
+          if (phoneHref) existingTel.setAttribute('href', phoneHref);
+          if (phoneDisplay) existingTel.textContent = phoneDisplay;
+        }
+      }
+    }
+  };
+
+  let isCmsPreviewFrame = false;
+  try {
+    isCmsPreviewFrame = Boolean(window.__WOLBUD_CMS_PREVIEW__ || window.frameElement?.id === 'preview');
+  } catch (_) {
+    isCmsPreviewFrame = Boolean(window.__WOLBUD_CMS_PREVIEW__);
+  }
+
+  if (!isCmsPreviewFrame) {
+    const loadSiteGlobals = () => {
+      let globalsUrl = '';
+      try {
+        globalsUrl = siteScriptSrc
+          ? new URL('site-globals.json', siteScriptSrc).href
+          : `${detectSitePrefix(document)}assets/site-globals.json`;
+      } catch (_) {
+        globalsUrl = `${detectSitePrefix(document)}assets/site-globals.json`;
+      }
+      if (!globalsUrl) return;
+      fetch(globalsUrl, { cache: 'no-cache' })
+        .then((res) => (res && res.ok ? res.json() : null))
+        .then((globals) => {
+          if (globals && typeof globals === 'object') {
+            window.wolbudApplyGlobals(globals, document);
+          }
+        })
+        .catch(() => {});
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadSiteGlobals, { once: true });
+    } else {
+      loadSiteGlobals();
+    }
   }
 })();

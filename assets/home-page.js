@@ -1,14 +1,8 @@
-import { connectHome, readPublished } from './home-content.js';
+// Deprecated legacy home-content.json loader replaced by static HTML publishing from CMS.
+export const ready = Promise.resolve(null);
 
-const home = connectHome(document);
-const ready = readPublished(home.original, { signal: AbortSignal.timeout(8000) }).then((state) => {
-  home.renderOrder(state.order);
-  home.renderFields(state.fields);
-  if (location.hash && state.order.join() !== home.original.order.join()) {
-    document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'instant' });
-  }
-  return state;
-});
+if (typeof window !== 'undefined') {
+  window.wolbudHome = { ready };
+}
 
-window.wolbudHome = { home, ready };
-ready.catch(console.warn);
+export default { ready };

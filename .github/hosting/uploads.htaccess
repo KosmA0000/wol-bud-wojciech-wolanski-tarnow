@@ -1,0 +1,39 @@
+# ==============================================================================
+# Plik konfiguracyjny .htaccess dla katalogu: public_html/img/uploads/.htaccess
+# CAŁKOWICIE WYŁĄCZA wykonywanie PHP, CGI i skryptów w katalogu wgrywanych zdjęć!
+# Zgodny z LiteSpeed (cyber_Folks), Apache 2.4 (LH, Home, dHosting).
+# ==============================================================================
+
+Options -Indexes -ExecCGI
+
+# 1. Wyłączenie silnika PHP i handlerów skryptowych (Apache + LiteSpeed)
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht .cgi .pl .py .rb .sh
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht
+
+# 2. Twarda blokada dostępu do wszelkich plików wykonywalnych, HTML, JS i ukrytych
+# Bezpieczne obrazy (.webp, .png, .jpg, .jpeg, .gif, .avif) są serwowane normalnie.
+<FilesMatch "(?:\.(?:php\d*|phtml|phar|pht|shtml|cgi|pl|py|rb|sh|bash|exe|bat|cmd|html|htm|xhtml|js|mjs|cjs|htaccess|htpasswd|ini|env)$|^\.)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. Dodatkowe nagłówki chroniące przed MIME-sniffingiem i wykonaniem skryptów z SVG
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'; sandbox"
+</IfModule>

@@ -1,0 +1,3947 @@
+{
+  "version": 2,
+  "revision": "707ec2c7-27c6-4049-8deb-368eab4b8c59",
+  "generatedAt": "2026-11-20T17:57:23.506Z",
+  "pages": [
+    {
+      "path": "index.html",
+      "label": "Strona główna",
+      "title": "Okna i drzwi w szerokim wyborze | WOL-BUD Tarnów",
+      "description": "WOL-BUD to firma Wojciecha Wolańskiego, założona w 1995 roku. Oferuje okna PCV i aluminiowe, drzwi, bramy garażowe, rolety, parapety, doradztwo i montaż.",
+      "group": "home"
+    },
+    {
+      "path": "oferta/index.html",
+      "label": "Oferta",
+      "title": "Pełna oferta produktów | WOL-BUD Tarnów",
+      "description": "Okna, drzwi, bramy garażowe, rolety i parapety w ofercie firmy WOL-BUD Tarnów.",
+      "group": "glowne"
+    },
+    {
+      "path": "uslugi/index.html",
+      "label": "Usługi",
+      "title": "Usługi WOL-BUD",
+      "description": "Usługi wymienione na stronie WOL-BUD: pomiar i wycena, prawidłowy – szczelny montaż, serwis, prace wykończeniowe i murarskie, daszki poliwęglanowe.",
+      "group": "glowne"
+    },
+    {
+      "path": "realizacje/index.html",
+      "label": "Realizacje",
+      "title": "Realizacje | WOL-BUD Tarnów",
+      "description": "Realizacje WOL-BUD: zdjęcia okien, bram i drzwi zamontowanych w domach jednorodzinnych.",
+      "group": "glowne"
+    },
+    {
+      "path": "o-firmie/index.html",
+      "label": "O firmie",
+      "title": "O firmie | WOL-BUD Wojciech Wolański Tarnów",
+      "description": "WOL-BUD — sprzedaż i montaż stolarki okiennej i drzwiowej od 1995 roku.",
+      "group": "glowne"
+    },
+    {
+      "path": "nasze-sklepy/index.html",
+      "label": "Nasze sklepy",
+      "title": "Nasze sklepy i salony | WOL-BUD Tarnów, Radłów",
+      "description": "Adresy salonów sprzedaży WOL-BUD w Tarnowie i Radłowie. Godziny otwarcia, telefony i wskazówki dojazdu.",
+      "group": "glowne"
+    },
+    {
+      "path": "kontakt/index.html",
+      "label": "Kontakt",
+      "title": "Kontakt | WOL-BUD Wojciech Wolański Tarnów",
+      "description": "Dane kontaktowe WOL-BUD. Salony w Tarnowie i Radłowie, telefony, godziny otwarcia i formularz.",
+      "group": "glowne"
+    },
+    {
+      "path": "promocje/cieply-montaz-warstwowy-okien-drzwi/index.html",
+      "label": "Ciepły montaż warstwowy okien i drzwi",
+      "title": "Ciepły montaż warstwowy okien i drzwi | WOL-BUD Tarnów",
+      "description": "Ciepły montaż warstwowy okien i drzwi — opis technologii i zdjęcia z montażu.",
+      "group": "promocje"
+    },
+    {
+      "path": "promocje/index.html",
+      "label": "Promocje",
+      "title": "Promocje | WOL-BUD",
+      "description": "Promocje",
+      "group": "promocje"
+    },
+    {
+      "path": "kategorie/bramy-garazowe/index.html",
+      "label": "Bramy garażowe",
+      "title": "Bramy garażowe | WOL-BUD Tarnów",
+      "description": "Bramy garażowe — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/drzwi-zewnetrzne/index.html",
+      "label": "Drzwi wejściowe",
+      "title": "Drzwi wejściowe | WOL-BUD Tarnów",
+      "description": "Drzwi wejściowe — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/drzwi-wewnetrzne/index.html",
+      "label": "Drzwi wewnętrzne",
+      "title": "Drzwi wewnętrzne | WOL-BUD Tarnów",
+      "description": "Drzwi wewnętrzne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/moskitiery/index.html",
+      "label": "Moskitiery",
+      "title": "Moskitiery | WOL-BUD Tarnów",
+      "description": "Moskitiery — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/okna-pcv/index.html",
+      "label": "Okna PCV",
+      "title": "Okna PCV | WOL-BUD Tarnów",
+      "description": "Okna PCV na profilach Gealan, Veka, Deceuninck, Schüco i Salamander – sprzedaż i montaż WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/rolety/index.html",
+      "label": "Osłony okienne",
+      "title": "Osłony okienne | WOL-BUD Tarnów",
+      "description": "Osłony okienne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/drewniane/index.html",
+      "label": "Parapety drewniane",
+      "title": "Parapety drewniane | WOL-BUD",
+      "description": "Parapety drewniane",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/parapety-blaty/index.html",
+      "label": "Parapety i blaty",
+      "title": "Parapety i blaty | WOL-BUD Tarnów",
+      "description": "Parapety i blaty — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/parapety-wewnetrzne/index.html",
+      "label": "Parapety wewnętrzne",
+      "title": "Parapety wewnętrzne | WOL-BUD Tarnów",
+      "description": "Parapety wewnętrzne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/parapety-zewnetrzne/index.html",
+      "label": "Parapety zewnętrzne",
+      "title": "Parapety zewnętrzne | WOL-BUD Tarnów",
+      "description": "Parapety zewnętrzne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/wewnetrzne/index.html",
+      "label": "Rolety wewnętrzne",
+      "title": "Rolety wewnętrzne | WOL-BUD Tarnów",
+      "description": "Rolety wewnętrzne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/zewnetrzne/index.html",
+      "label": "Rolety zewnętrzne",
+      "title": "Rolety zewnętrzne | WOL-BUD Tarnów",
+      "description": "Rolety zewnętrzne — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/stolarka-aluminiowa/index.html",
+      "label": "Stolarka aluminiowa",
+      "title": "Stolarka aluminiowa | WOL-BUD Tarnów",
+      "description": "Stolarka aluminiowa — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/zaluzje-plisy/index.html",
+      "label": "Żaluzje i plisy",
+      "title": "Żaluzje i plisy | WOL-BUD Tarnów",
+      "description": "Żaluzje i plisy — sprzedaż i montaż w WOL-BUD Tarnów.",
+      "group": "kategorie"
+    },
+    {
+      "path": "kategorie/aglomarmur/index.html",
+      "label": "Aglomarmur (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/aglomarmur/page/2/index.html",
+      "label": "Aglomarmur / page / 2 (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/granit/index.html",
+      "label": "Granit (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/marmur/index.html",
+      "label": "Marmur (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/okna-pcv-domel/index.html",
+      "label": "Okna pcv domel (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/pcv-wewnetrzne/index.html",
+      "label": "Pcv wewnetrzne (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "kategorie/stalowe-aluminiowe-zewnetrzne/index.html",
+      "label": "Stalowe aluminiowe zewnetrzne (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "kategorie",
+      "redirect": true
+    },
+    {
+      "path": "produkty/adaptacyjne/index.html",
+      "label": "Aluprof – system adaptacyjny",
+      "title": "Aluprof – system adaptacyjny | WOL-BUD Tarnów",
+      "description": "Rolety zewnętrzne w systemie adaptacyjnym przeznaczone są do stosowania w istniejących budynkach. Dzięki bogatej gamie kolorów są doskonałym elementem dekoracyjnym, dopasowanym do wyglądu budynku.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/podtynkowe-integro/index.html",
+      "label": "Aluprof – system podtynkowy INTEGRO",
+      "title": "Aluprof – system podtynkowy INTEGRO | WOL-BUD Tarnów",
+      "description": "Rolety zewnętrzne w systemie podtynkowym INTEGRO przeznaczone są do zastosowania przede wszystkim w nowo wznoszonych budynkach, ale także w obiektach już istniejących. Rolety wkomponowują się w elewację budynku stanowiąc",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/rolowane/index.html",
+      "label": "Bramy rolowane",
+      "title": "Bramy rolowane | WOL-BUD Tarnów",
+      "description": "Bramy garażowe rolowane (roletowe) – charakterystyka",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/segmentowe/index.html",
+      "label": "Bramy segmentowe",
+      "title": "Bramy segmentowe | WOL-BUD Tarnów",
+      "description": "Bramy garażowe segmentowe – charakterystyka",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/uchylne/index.html",
+      "label": "Bramy uchylne",
+      "title": "Bramy uchylne | WOL-BUD Tarnów",
+      "description": "Wjazd do garażu powinien charakteryzować się łatwą obsługą, bezpieczeństwem oraz estetyką właściwą do architektury budynku. I takie właśnie zalety posiadają uchylne bramy garażowe oferowane Państwu przez naszą firmę z Ta",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/do-okien-dachowych-dekolux/index.html",
+      "label": "DO OKIEN DACHOWYCH DEKOLUX",
+      "title": "DO OKIEN DACHOWYCH DEKOLUX | WOL-BUD Tarnów",
+      "description": "Szczelne zakrycie dzięki zastosowaniu kasety oraz szerokich prowadnic bocznych, elegancja dzięki materiałom najwyższej jakości, łatwa obsługa dzięki mechanizmom najwyższej klasy.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/dzien-noc-2/index.html",
+      "label": "DZIEŃ / NOC",
+      "title": "DZIEŃ / NOC | WOL-BUD Tarnów",
+      "description": "W dzień – elegancka ozdoba okna, w noc – szczelne zakrycie i dyskrecja.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/fasady/index.html",
+      "label": "Fasady Aluminiowe",
+      "title": "Fasady Aluminiowe | WOL-BUD Tarnów",
+      "description": "Fasady aluminiowe – nowoczesne ściany osłonowe o kształtach prostych i złożonych wykonywane są z oryginalnych systemów profili aluminiowych (fasada słupowo – ryglowa, „pozioma linia”, fasada półstrukturalna lub struktura",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-granit/index.html",
+      "label": "Granit",
+      "title": "Granit | WOL-BUD Tarnów",
+      "description": "Granit jest twardą skałą o budowie jawnokrystalicznej, zbudowaną z kwarcu, skalenia potasowego i plagioklazu oraz biotytu. Materiał w 100% naturalny, wysoko ceniony przez miłośników surowej prostoty połączonej z wyjątkow",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-konglomerat-kwarcowy/index.html",
+      "label": "Konglomerat kwarcowy",
+      "title": "Konglomerat kwarcowy | WOL-BUD Tarnów",
+      "description": "Najszlachetniejszy rodzaj konglomeratu, zawierający powyżej 90% naturalnego kwarcu w postaci zmielonych kamieni lub piasku oraz spoiwa – zwykle żywicy epoksydowej. Do jego produkcji stosuje się rozmaite dodatki np. fragm",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-konglomerat-marmurowy/index.html",
+      "label": "Konglomerat marmurowy",
+      "title": "Konglomerat marmurowy | WOL-BUD Tarnów",
+      "description": "Konglomerat marmurowy jest cenionym w budownictwie produktem, będącym mieszanką wyselekcjonowanych odłamków naturalnego marmuru (95%) i żywicy polimerowej pełniącej rolę spoiwa.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/mini-slim/index.html",
+      "label": "MINI SLIM",
+      "title": "MINI SLIM | WOL-BUD Tarnów",
+      "description": "Roleta zawieszana na skrzydle okiennym urzekająca swoją lekkością i prostotą.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/mini-vegas/index.html",
+      "label": "MINI VEGAS",
+      "title": "MINI VEGAS | WOL-BUD Tarnów",
+      "description": "Roleta zawieszana na skrzydle okiennym wyposażona w prowadnice żyłkowe.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/drzwiowe/index.html",
+      "label": "Moskitiery drzwiowe",
+      "title": "Moskitiery drzwiowe | WOL-BUD Tarnów",
+      "description": "Drzwi siatkowe wykonane są z profilu walcowanego z aluminium o doskonałych cechach wytrzymałościowych, a kurtyna wykonana jest z szklanego włókna. Drzwi montowane są na zawiasach ze sprężyną, która domyka je samoczynnie.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/moskitiery-okienne/index.html",
+      "label": "Moskitiery okienne",
+      "title": "Moskitiery okienne | WOL-BUD Tarnów",
+      "description": "Moskitiery ramkowe okienne nadają się do wszystkich typów okien, które otwierane lub uchylane są wyłącznie w celu przewietrzenia pomieszczenia. Nie ma tu znaczenia, czy okno jest drewniane, PCV, czy aluminiowe. Zastosowa",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/moskitiery-plisowane/index.html",
+      "label": "Moskitiery plisowane",
+      "title": "Moskitiery plisowane | WOL-BUD Tarnów",
+      "description": "Moskitiera plisowana to najnowocześniejsze i najbardziej komfortowe rozwiązanie, które skutecznie chroni Twój dom przed komarami, muchami oraz innymi insektami. Dzięki unikalnej konstrukcji, w której siatka układa się w",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/index.html",
+      "label": "Nasze produkty",
+      "title": "Nasze produkty | WOL-BUD",
+      "description": "WOL-BUD — pełna lista oferowanych produktów: okna, drzwi, bramy, rolety, parapety.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/okna-drzwi-alu/index.html",
+      "label": "Okna i drzwi ALU",
+      "title": "Okna i drzwi ALU | WOL-BUD Tarnów",
+      "description": "Szukasz stolarki okiennej, która połączy bezkompromisową wytrzymałość z minimalistycznym designem? Wybierz okna aluminiowe – rozwiązanie stworzone z myślą o nowoczesnej architekturze, domach energooszczędnych oraz spekta",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-aluminiowy/index.html",
+      "label": "Parapet aluminiowy",
+      "title": "Parapet aluminiowy | WOL-BUD Tarnów",
+      "description": "Aluminium łączy w sobie unikalną kombinację pożądanych własności takich jak: niewielka masa, wysoka wytrzymałość, plastyczność, podatność na obróbkę czy wysoka odporność na korozję. W odróżnieniu od większości gatunków s",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-mdf-laminowany/index.html",
+      "label": "Parapet MDF laminowany",
+      "title": "Parapet MDF laminowany | WOL-BUD Tarnów",
+      "description": "Parapet MDF jest produktem drewnopodobnym, powstałym w wyniku sprasowania włókien drzewnych z dodatkiem związków organicznych, łączonych i utwardzonych w warunkach wysokiego ciśnienia i temperatury. Płyta MDF jest wilgoc",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-pvc/index.html",
+      "label": "Parapet PVC",
+      "title": "Parapet PVC | WOL-BUD Tarnów",
+      "description": "Parapety wykonane z PVC od wielu lat pokrywają zapotrzebowanie rynków budowlanych na całym świecie. Są przykładem zachowania idealnego balansu między ceną a jakością produktu. Właściwości materiału gwarantują odporność n",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/parapet-stalowy/index.html",
+      "label": "Parapet stalowy",
+      "title": "Parapet stalowy | WOL-BUD Tarnów",
+      "description": "Parapety wykonane z wysokiej klasy blachy ocynkowanej ogniowo powlekanej lakierem poliestrowym. Połączenie powłok ochronnych: ogniowo ocynkowanych i powłok organicznych w jednym wyrobie, ma za zadanie zapewnienie wysokic",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/plisy/index.html",
+      "label": "PLISY",
+      "title": "PLISY | WOL-BUD Tarnów",
+      "description": "To niezawodny system do zadań specjalnych. Różne kształty, różne warianty, rożne sposoby zasłaniania, każdy znajdzie coś dla siebie.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/rolety-nadstawne/index.html",
+      "label": "Rolety nadstawne",
+      "title": "Rolety nadstawne | WOL-BUD Tarnów",
+      "description": "Rolety nadstawne to niezwykle uniwersalne rozwiązanie, które umożliwia różnorodne metody montażu: bez zabudowy, z zabudową częściową lub całkowitą. Czoło skrzynki rolety służy jako podkład pod dowolny materiał wykończeni",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/w-kasecie-alu-klaudia/index.html",
+      "label": "W KASECIE ALU KLAUDIA",
+      "title": "W KASECIE ALU KLAUDIA | WOL-BUD Tarnów",
+      "description": "Lekka zabudowa, nietuzinkowe wykończenie i smukły kształt wyróżnia roletę Klaudia spośród innych.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/w-kasecie-alu-vegas-classic/index.html",
+      "label": "W KASECIE ALU VEGAS CLASSIC",
+      "title": "W KASECIE ALU VEGAS CLASSIC | WOL-BUD Tarnów",
+      "description": "Zabudowa w trwałym aluminium, elegancja opływowa kaseta i prowadnice boczne gwarantują komfort i niezawodność użytkowania.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/w-kasecie-alu-vegas-profil/index.html",
+      "label": "W KASECIE ALU VEGAS PROFIL",
+      "title": "W KASECIE ALU VEGAS PROFIL | WOL-BUD Tarnów",
+      "description": "Roleta zabudowana w powiększoną kasetę i prowadnice przestrzenne, pozwoli sprostać nawet najtrudniejszym wyzwaniom.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/w-kasecie-pcv-vegas-classic/index.html",
+      "label": "W KASECIE PCV VEGAS CLASSIC",
+      "title": "W KASECIE PCV VEGAS CLASSIC | WOL-BUD Tarnów",
+      "description": "Roleta zabudowana w opływowej i eleganckiej kasecie z PCV, wyposażona w szczelnie zakrywające prowadnice zapewni przyjemne zaciemnienie i dyskrecję.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/zaluzje-drewniane/index.html",
+      "label": "ŻALUZJE DREWNIANE",
+      "title": "ŻALUZJE DREWNIANE | WOL-BUD Tarnów",
+      "description": "Tradycyjny system w zupełnie nowej odsłonie! Żaluzje poziome drewniane nadają wnętrzu styl, charakter oraz ciepło.",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/zaluzje-fasadowe/index.html",
+      "label": "Żaluzje fasadowe",
+      "title": "Żaluzje fasadowe | WOL-BUD Tarnów",
+      "description": "Żaluzje fasadowe to nowoczesne systemy osłon zewnętrznych, które stanowią idealne dopełnienie współczesnej architektury. W przeciwieństwie do tradycyjnych rolet pozwalają na płynną regulację kąta nachylenia lameli, co da",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/zaluzje-poziome-aluminiowe/index.html",
+      "label": "ŻALUZJE POZIOME ALUMINIOWE",
+      "title": "ŻALUZJE POZIOME ALUMINIOWE | WOL-BUD Tarnów",
+      "description": "Nadal modne, nadal cieszące się wielkim powodzeniem – żaluzje poziome aluminiowe. Teraz wzbogacone o nowe szerokości lameli i warianty zabudowy!",
+      "group": "produkty"
+    },
+    {
+      "path": "produkty/aglomarmur/index.html",
+      "label": "Aglomarmur (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/aluminiowe-linia-standard/index.html",
+      "label": "Aluminiowe linia standard (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/aluminiowe-linia-zaokraglona/index.html",
+      "label": "Aluminiowe linia zaokraglona (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/baltic-brown/index.html",
+      "label": "Baltic brown (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/botticino/index.html",
+      "label": "Botticino (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/breccia-aurora/index.html",
+      "label": "Breccia aurora (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/breccia-oniciata/index.html",
+      "label": "Breccia oniciata (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/calacata/index.html",
+      "label": "Calacata (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/carrara-micro/index.html",
+      "label": "Carrara micro (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/crema-marphil/index.html",
+      "label": "Crema marphil (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/drzwi-wewnetrzne-intenso/index.html",
+      "label": "Drzwi wewnetrzne intenso (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/effectline/index.html",
+      "label": "Effectline (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/emperador-dark/index.html",
+      "label": "Emperador dark (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/energetic-83md/index.html",
+      "label": "Energetic 83md (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/espaniola/index.html",
+      "label": "Espaniola (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/forest-brown/index.html",
+      "label": "Forest brown (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/forest-green/index.html",
+      "label": "Forest green (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/fusion/index.html",
+      "label": "Fusion (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/giallo-reale/index.html",
+      "label": "Giallo reale (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/granit/index.html",
+      "label": "Granit (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/infinity-passive-83md/index.html",
+      "label": "Infinity passive 83md (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/kashmir-gold/index.html",
+      "label": "Kashmir gold (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/marmur/index.html",
+      "label": "Marmur (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/multicolor-red/index.html",
+      "label": "Multicolor red (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/nero-marquina/index.html",
+      "label": "Nero marquina (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/nero-portoro/index.html",
+      "label": "Nero portoro (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/nero-zimbabwe/index.html",
+      "label": "Nero zimbabwe (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/new-bianco-cristal/index.html",
+      "label": "New bianco cristal (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/new-impala/index.html",
+      "label": "New impala (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/new-marfil/index.html",
+      "label": "New marfil (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/ogrody-zimowe/index.html",
+      "label": "Ogrody zimowe (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/olimpo/index.html",
+      "label": "Olimpo (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/pcv-nakladka/index.html",
+      "label": "Pcv nakladka (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/pcv-wewnetrzne/index.html",
+      "label": "Pcv wewnetrzne (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/perlato/index.html",
+      "label": "Perlato (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/polare/index.html",
+      "label": "Polare (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/rosa-del-garda/index.html",
+      "label": "Rosa del garda (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/rosso-asiago/index.html",
+      "label": "Rosso asiago (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/santiago-red/index.html",
+      "label": "Santiago red (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/stalowe-linia-standard/index.html",
+      "label": "Stalowe linia standard (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/stalowe-linia-zaokraglona/index.html",
+      "label": "Stalowe linia zaokraglona (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/star-galaxy/index.html",
+      "label": "Star galaxy (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/synergic/index.html",
+      "label": "Synergic (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/travertino/index.html",
+      "label": "Travertino (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/vector-82md/index.html",
+      "label": "Vector 82md (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/venus/index.html",
+      "label": "Venus (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/wiked-drzwi-zewnetrzne-stalowe/index.html",
+      "label": "Wiked drzwi zewnetrzne stalowe (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    },
+    {
+      "path": "produkty/yellow-pink/index.html",
+      "label": "Yellow pink (przekierowanie)",
+      "title": "Strona przeniesiona | WOL-BUD",
+      "description": "",
+      "group": "produkty",
+      "redirect": true
+    }
+  ],
+  "images": [
+    {
+      "path": "img/dom-szablon.webp",
+      "folder": "root",
+      "name": "dom-szablon.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/favicon.png",
+      "folder": "root",
+      "name": "favicon.png",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/klinaryt-drzwi-HST.webp",
+      "folder": "montage",
+      "name": "klinaryt-drzwi-HST.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/termoparapet-balkonowy.webp",
+      "folder": "montage",
+      "name": "termoparapet-balkonowy.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/termoparapet-okienny.webp",
+      "folder": "montage",
+      "name": "termoparapet-okienny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/wyklejanie-folii-1.webp",
+      "folder": "montage",
+      "name": "wyklejanie-folii-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/wyklejanie-folii.webp",
+      "folder": "montage",
+      "name": "wyklejanie-folii.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/wyr_wnanie-otwor_w-1.webp",
+      "folder": "montage",
+      "name": "wyr_wnanie-otwor_w-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/wyr_wnanie-otwor_w-2.webp",
+      "folder": "montage",
+      "name": "wyr_wnanie-otwor_w-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/zabezpieczenie-folii-2.webp",
+      "folder": "montage",
+      "name": "zabezpieczenie-folii-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/zabezpieczenie-folii-od-zewn_trz-1.webp",
+      "folder": "montage",
+      "name": "zabezpieczenie-folii-od-zewn_trz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/zabezpieczenie-folii-od-zewn_trz-2.webp",
+      "folder": "montage",
+      "name": "zabezpieczenie-folii-od-zewn_trz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/montage/zabezpieczenie-folii.webp",
+      "folder": "montage",
+      "name": "zabezpieczenie-folii.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-aluminiowy-antracytral7016.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-antracytral7016.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-aluminiowy-bialyral9016.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-bialyral9016.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-aluminiowy-brazral8019.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-brazral8019.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-aluminiowy-czarnyral9005.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-czarnyral9005.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-aluminiowy-ral7021mat.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-ral7021mat.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-absoluteblack.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-absoluteblack.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-absoluteblacklapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-absoluteblacklapatura.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-blackantracite.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-blackantracite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-blackantracitelapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-blackantracitelapatura.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-brazkrolewski.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-brazkrolewski.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-cambodia.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-cambodia.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-cambodialapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-cambodialapatura.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-coffeebrown.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-coffeebrown.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-coffeebrownlapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-coffeebrownlapatura.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-galaxystar.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-galaxystar.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-galaxystarlapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-galaxystarlapatura.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-goldendream.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-goldendream.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-grey.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-grey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-neroimpala.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-neroimpala.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-steelgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-steelgrey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-granit-steelgreymat.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-steelgreymat.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-agnolo.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-agnolo.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-ancientbeige.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-ancientbeige.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-ashenwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-ashenwhite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-blackforest.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-blackforest.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-blackoro.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-blackoro.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-casablanca.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-casablanca.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-concretetan.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-concretetan.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-corfu.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-corfu.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-grantgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-grantgrey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-lagoonwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-lagoonwhite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-marcuspearl.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-marcuspearl.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-naxos.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-naxos.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-newcarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-newcarrara.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-pietregrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-pietregrey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-santorini.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-santorini.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-semolina.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-semolina.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-tinfoil.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-tinfoil.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-kwarcowy-winterhaze.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-winterhaze.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-balticgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-balticgrey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-beigemarfil.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-beigemarfil.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-biancoambra.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancoambra.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-biancocarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancocarrara.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-biancomandorla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancomandorla.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-biancomicro.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancomicro.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-botticino.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-botticino.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-calacatta.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-calacatta.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-crystalwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-crystalwhite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-finnishblack.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-finnishblack.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-grigioperla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-grigioperla.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-grigiotorun.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-grigiotorun.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-kalawhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-kalawhite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-lino.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-lino.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-madreperla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-madreperla.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-mistycarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-mistycarrara.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-perlato.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-perlato.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-polare.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-polare.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-silvergrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-silvergrey.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-superwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-superwhite.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-venus.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-venus.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-konglomerat-marmurowy-whiteperl.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-whiteperl.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-aluminium58.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-aluminium58.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-antracytmat.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-antracytmat.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-beton.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-beton.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-bialedrewno.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialedrewno.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-bialymat.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialymat.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-bialypolysk.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialypolysk.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-calacatta.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-calacatta.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-ciemnyorzech.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-ciemnyorzech.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-czarny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-czarny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabantyczny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabantyczny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabartisan.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabartisan.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabbielony.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabbielony.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabhalifaxbialy.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxbialy.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabhalifaxnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxnaturalny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabhalifaxtabac.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxtabac.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabnaturalny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabribbeck.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabribbeck.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabriviera.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabriviera.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-dabrustico.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabrustico.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-grenada.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-grenada.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-marmur.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-marmur.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-orzech.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-orzech.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-orzechlanzado.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-orzechlanzado.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-popiel.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-popiel.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-wengedeska.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-wengedeska.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-winchester.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-winchester.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-woodec.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-woodec.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-mdf-laminowany-zlotydab.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-zlotydab.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-antracyt.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-antracyt.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-bialy.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-bialy.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-czarnymat.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-czarnymat.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-dabnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-dabnaturalny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-dabwiejski.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-dabwiejski.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-marmur.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-marmur.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-orzech.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-orzech.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-srebrny.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-srebrny.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-winchester.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-winchester.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-pvc-zlotydab.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-zlotydab.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-antracytral7016.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7016.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-antracytral7016piasek.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7016piasek.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-antracytral7024.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7024.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-bialyral9016.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-bialyral9016.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-brazral8017.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-brazral8017.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-brazral8019.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-brazral8019.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-czarnyral9005.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-czarnyral9005.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-ral7021.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-ral7021.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-srebrnyral7037piasek.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral7037piasek.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-srebrnyral9006.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral9006.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/miniatury/parapet-stalowy-srebrnyral9007.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral9007.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-aluminiowy-antracytral7016.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-antracytral7016.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-aluminiowy-bialyral9016.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-bialyral9016.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-aluminiowy-brazral8019.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-brazral8019.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-aluminiowy-czarnyral9005.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-czarnyral9005.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-aluminiowy-ral7021mat.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy-ral7021mat.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-absoluteblack.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-absoluteblack.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-absoluteblacklapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-absoluteblacklapatura.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-blackantracite.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-blackantracite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-blackantracitelapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-blackantracitelapatura.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-brazkrolewski.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-brazkrolewski.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-cambodia.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-cambodia.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-cambodialapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-cambodialapatura.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-coffeebrown.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-coffeebrown.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-coffeebrownlapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-coffeebrownlapatura.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-galaxystar.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-galaxystar.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-galaxystarlapatura.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-galaxystarlapatura.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-goldendream.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-goldendream.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-grey.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-grey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-neroimpala.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-neroimpala.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-steelgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-steelgrey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-granit-steelgreymat.webp",
+      "folder": "parapety",
+      "name": "parapet-granit-steelgreymat.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-agnolo.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-agnolo.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-ancientbeige.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-ancientbeige.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-ashenwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-ashenwhite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-blackforest.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-blackforest.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-blackoro.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-blackoro.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-casablanca.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-casablanca.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-concretetan.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-concretetan.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-corfu.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-corfu.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-grantgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-grantgrey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-lagoonwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-lagoonwhite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-marcuspearl.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-marcuspearl.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-naxos.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-naxos.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-newcarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-newcarrara.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-pietregrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-pietregrey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-santorini.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-santorini.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-semolina.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-semolina.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-tinfoil.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-tinfoil.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-kwarcowy-winterhaze.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-kwarcowy-winterhaze.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-balticgrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-balticgrey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-beigemarfil.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-beigemarfil.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-biancoambra.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancoambra.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-biancocarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancocarrara.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-biancomandorla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancomandorla.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-biancomicro.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-biancomicro.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-botticino.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-botticino.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-calacatta.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-calacatta.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-crystalwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-crystalwhite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-finnishblack.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-finnishblack.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-grigioperla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-grigioperla.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-grigiotorun.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-grigiotorun.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-kalawhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-kalawhite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-lino.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-lino.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-madreperla.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-madreperla.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-mistycarrara.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-mistycarrara.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-perlato.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-perlato.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-polare.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-polare.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-silvergrey.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-silvergrey.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-superwhite.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-superwhite.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-venus.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-venus.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-konglomerat-marmurowy-whiteperl.webp",
+      "folder": "parapety",
+      "name": "parapet-konglomerat-marmurowy-whiteperl.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-aluminium58.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-aluminium58.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-antracytmat.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-antracytmat.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-beton.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-beton.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-bialedrewno.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialedrewno.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-bialymat.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialymat.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-bialypolysk.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-bialypolysk.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-calacatta.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-calacatta.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-ciemnyorzech.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-ciemnyorzech.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-czarny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-czarny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabantyczny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabantyczny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabartisan.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabartisan.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabbielony.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabbielony.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabhalifaxbialy.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxbialy.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabhalifaxnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxnaturalny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabhalifaxtabac.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabhalifaxtabac.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabnaturalny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabribbeck.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabribbeck.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabriviera.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabriviera.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-dabrustico.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-dabrustico.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-grenada.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-grenada.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-marmur.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-marmur.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-orzech.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-orzech.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-orzechlanzado.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-orzechlanzado.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-popiel.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-popiel.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-wengedeska.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-wengedeska.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-winchester.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-winchester.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-woodec.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-woodec.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-mdf-laminowany-zlotydab.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany-zlotydab.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-antracyt.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-antracyt.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-bialy.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-bialy.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-czarnymat.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-czarnymat.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-dabnaturalny.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-dabnaturalny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-dabwiejski.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-dabwiejski.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-marmur.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-marmur.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-orzech.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-orzech.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-srebrny.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-srebrny.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-winchester.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-winchester.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-pvc-zlotydab.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc-zlotydab.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-antracytral7016.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7016.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-antracytral7016piasek.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7016piasek.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-antracytral7024.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-antracytral7024.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-bialyral9016.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-bialyral9016.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-brazral8017.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-brazral8017.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-brazral8019.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-brazral8019.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-czarnyral9005.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-czarnyral9005.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-ral7021.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-ral7021.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-srebrnyral7037piasek.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral7037piasek.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-srebrnyral9006.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral9006.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/kolory/parapet/parapet-stalowy-srebrnyral9007.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy-srebrnyral9007.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-aluminiowy/parapet-aluminiowy--wiz-1.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-aluminiowy/parapet-aluminiowy--wiz-2.webp",
+      "folder": "parapety",
+      "name": "parapet-aluminiowy--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-1.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-2.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-3.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-4.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-5.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-5.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-granit/granit--wiz-6.webp",
+      "folder": "parapety",
+      "name": "granit--wiz-6.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-kwarcowy/konglomerat-kwarcowy--wiz-1.webp",
+      "folder": "parapety",
+      "name": "konglomerat-kwarcowy--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-kwarcowy/konglomerat-kwarcowy--wiz-2.webp",
+      "folder": "parapety",
+      "name": "konglomerat-kwarcowy--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-kwarcowy/konglomerat-kwarcowy--wiz-3.webp",
+      "folder": "parapety",
+      "name": "konglomerat-kwarcowy--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-kwarcowy/konglomerat-kwarcowy--wiz-4.webp",
+      "folder": "parapety",
+      "name": "konglomerat-kwarcowy--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-marmurowy/konglomerat--wiz-1.webp",
+      "folder": "parapety",
+      "name": "konglomerat--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-marmurowy/konglomerat--wiz-2.webp",
+      "folder": "parapety",
+      "name": "konglomerat--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-marmurowy/konglomerat--wiz-3.webp",
+      "folder": "parapety",
+      "name": "konglomerat--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-konglomerat-marmurowy/konglomerat--wiz-4.webp",
+      "folder": "parapety",
+      "name": "konglomerat--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/lacznik-parapetow-MDF.webp",
+      "folder": "parapety",
+      "name": "lacznik-parapetow-MDF.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-1.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-2.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-3.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-4.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-5.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-5.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-mdf-laminowany/parapet-mdf-laminowany--wiz-6.webp",
+      "folder": "parapety",
+      "name": "parapet-mdf-laminowany--wiz-6.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-1.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-2.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-3.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-4.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-5.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-5.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-pvc/parapet-pvc--wiz-6.webp",
+      "folder": "parapety",
+      "name": "parapet-pvc--wiz-6.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-stalowy/parapet-stalowy--wiz-1.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy--wiz-1.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-stalowy/parapet-stalowy--wiz-2.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy--wiz-2.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-stalowy/parapet-stalowy--wiz-3.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy--wiz-3.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/parapety/parapet-stalowy/parapet-stalowy--wiz-4.webp",
+      "folder": "parapety",
+      "name": "parapet-stalowy--wiz-4.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-debow.webp",
+      "folder": "partners",
+      "name": "partner-debow.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-decco.webp",
+      "folder": "partners",
+      "name": "partner-decco.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-dobroplast.webp",
+      "folder": "partners",
+      "name": "partner-dobroplast.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-domel.webp",
+      "folder": "partners",
+      "name": "partner-domel.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-erkado.webp",
+      "folder": "partners",
+      "name": "partner-erkado.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-fill.webp",
+      "folder": "partners",
+      "name": "partner-fill.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-hanarol.webp",
+      "folder": "partners",
+      "name": "partner-hanarol.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-hensfort.webp",
+      "folder": "partners",
+      "name": "partner-hensfort.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-medos.svg",
+      "folder": "partners",
+      "name": "partner-medos.svg",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-mirola.webp",
+      "folder": "partners",
+      "name": "partner-mirola.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-wiked.webp",
+      "folder": "partners",
+      "name": "partner-wiked.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-willingen.webp",
+      "folder": "partners",
+      "name": "partner-willingen.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/partners/partner-wisniowski.webp",
+      "folder": "partners",
+      "name": "partner-wisniowski.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Alicante-W-1-18x40.webp",
+      "folder": "products",
+      "name": "Alicante-W-1-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Alicante-W-2-18x40.webp",
+      "folder": "products",
+      "name": "Alicante-W-2-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Alicante-W-3-18x40.webp",
+      "folder": "products",
+      "name": "Alicante-W-3-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Alicante-W-4-18x40.webp",
+      "folder": "products",
+      "name": "Alicante-W-4-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Alicante-W-5-18x40.webp",
+      "folder": "products",
+      "name": "Alicante-W-5-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-klaudia-1-306x204.webp",
+      "folder": "products",
+      "name": "alu-klaudia-1-306x204.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-klaudia-2-26x40.webp",
+      "folder": "products",
+      "name": "alu-klaudia-2-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-klaudia-3-44x29.webp",
+      "folder": "products",
+      "name": "alu-klaudia-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-klaudia-4-26x40.webp",
+      "folder": "products",
+      "name": "alu-klaudia-4-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-vegas-classic-1-306x203.webp",
+      "folder": "products",
+      "name": "alu-vegas-classic-1-306x203.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-vegas-profil-1-306x203.webp",
+      "folder": "products",
+      "name": "alu-vegas-profil-1-306x203.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-vegas-profil-2-44x29.webp",
+      "folder": "products",
+      "name": "alu-vegas-profil-2-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/alu-vegas-profil-3-26x40.webp",
+      "folder": "products",
+      "name": "alu-vegas-profil-3-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Bilbao-W-1-18x40.webp",
+      "folder": "products",
+      "name": "Bilbao-W-1-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Bilbao-W-2-18x40.webp",
+      "folder": "products",
+      "name": "Bilbao-W-2-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Bilbao-W-3-18x40.webp",
+      "folder": "products",
+      "name": "Bilbao-W-3-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Bilbao-W-4-18x40.webp",
+      "folder": "products",
+      "name": "Bilbao-W-4-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Bilbao-W-5-18x40.webp",
+      "folder": "products",
+      "name": "Bilbao-W-5-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/brama-garazowa-187x250.webp",
+      "folder": "products",
+      "name": "brama-garazowa-187x250.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/brama-garazowa-rolowana-187x250.webp",
+      "folder": "products",
+      "name": "brama-garazowa-rolowana-187x250.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/brama-garazowa-uchylna1-306x207.webp",
+      "folder": "products",
+      "name": "brama-garazowa-uchylna1-306x207.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/brama-segmentowa.webp",
+      "folder": "products",
+      "name": "brama-segmentowa.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dekolux-1-166x250.webp",
+      "folder": "products",
+      "name": "dekolux-1-166x250.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/drzwi-wewnetrzne-aranzacja.webp",
+      "folder": "products",
+      "name": "drzwi-wewnetrzne-aranzacja.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/drzwi-wewnetrzne-dab-szyba.webp",
+      "folder": "products",
+      "name": "drzwi-wewnetrzne-dab-szyba.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/drzwi-wewnetrzne-malaga-w5.webp",
+      "folder": "products",
+      "name": "drzwi-wewnetrzne-malaga-w5.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/drzwi-zewnetrzne-stalowe.webp",
+      "folder": "products",
+      "name": "drzwi-zewnetrzne-stalowe.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-1-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-1-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-10-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-10-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-11-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-11-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-12-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-12-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-13-26x40.webp",
+      "folder": "products",
+      "name": "dzien-noc-13-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-14-26x40.webp",
+      "folder": "products",
+      "name": "dzien-noc-14-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-2-306x204.webp",
+      "folder": "products",
+      "name": "dzien-noc-2-306x204.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-3-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-4-26x40.webp",
+      "folder": "products",
+      "name": "dzien-noc-4-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-5-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-5-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-6-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-6-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-7-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-7-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-8-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-8-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/dzien-noc-9-44x29.webp",
+      "folder": "products",
+      "name": "dzien-noc-9-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/fasada-aluminiowa.webp",
+      "folder": "products",
+      "name": "fasada-aluminiowa.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/fasada-dom-szczytowy.webp",
+      "folder": "products",
+      "name": "fasada-dom-szczytowy.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/do-okien-dachowych-dekolux/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/05-source.webp",
+      "folder": "products",
+      "name": "05-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/06-source.webp",
+      "folder": "products",
+      "name": "06-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/07-source.webp",
+      "folder": "products",
+      "name": "07-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/08-source.webp",
+      "folder": "products",
+      "name": "08-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/09-source.webp",
+      "folder": "products",
+      "name": "09-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/10-source.webp",
+      "folder": "products",
+      "name": "10-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/11-source.webp",
+      "folder": "products",
+      "name": "11-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/12-source.webp",
+      "folder": "products",
+      "name": "12-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/13-source.webp",
+      "folder": "products",
+      "name": "13-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/dzien-noc-2/14-source.webp",
+      "folder": "products",
+      "name": "14-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-slim/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-slim/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-slim/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-slim/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-vegas/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-vegas/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-vegas/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/mini-vegas/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/moskitiery-okienne/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/moskitiery-okienne/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/moskitiery-okienne/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/moskitiery-okienne/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/plisy/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/rolowane/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/segmentowe/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/segmentowe/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/segmentowe/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/uchylne/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-klaudia/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-klaudia/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-klaudia/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-klaudia/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-vegas-classic/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-vegas-profil/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-vegas-profil/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-alu-vegas-profil/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-pcv-vegas-classic/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-pcv-vegas-classic/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/w-kasecie-pcv-vegas-classic/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/05-source.webp",
+      "folder": "products",
+      "name": "05-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-drewniane/06-source.webp",
+      "folder": "products",
+      "name": "06-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-poziome-aluminiowe/01-source.webp",
+      "folder": "products",
+      "name": "01-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-poziome-aluminiowe/02-source.webp",
+      "folder": "products",
+      "name": "02-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-poziome-aluminiowe/03-source.webp",
+      "folder": "products",
+      "name": "03-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-poziome-aluminiowe/04-source.webp",
+      "folder": "products",
+      "name": "04-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/gallery/zaluzje-poziome-aluminiowe/05-source.webp",
+      "folder": "products",
+      "name": "05-source.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Malaga-W-1-18x40.webp",
+      "folder": "products",
+      "name": "Malaga-W-1-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Malaga-W-2-18x40.webp",
+      "folder": "products",
+      "name": "Malaga-W-2-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Malaga-W-3-18x40.webp",
+      "folder": "products",
+      "name": "Malaga-W-3-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Malaga-W-4-18x40.webp",
+      "folder": "products",
+      "name": "Malaga-W-4-18x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/Malaga-W-5-115x250.webp",
+      "folder": "products",
+      "name": "Malaga-W-5-115x250.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-slim-1-306x203.webp",
+      "folder": "products",
+      "name": "mini-slim-1-306x203.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-slim-2-44x29.webp",
+      "folder": "products",
+      "name": "mini-slim-2-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-slim-3-44x29.webp",
+      "folder": "products",
+      "name": "mini-slim-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-slim-4-26x40.webp",
+      "folder": "products",
+      "name": "mini-slim-4-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-vegas-1-306x203.webp",
+      "folder": "products",
+      "name": "mini-vegas-1-306x203.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-vegas-2-26x40.webp",
+      "folder": "products",
+      "name": "mini-vegas-2-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-vegas-3-44x29.webp",
+      "folder": "products",
+      "name": "mini-vegas-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/mini-vegas-4-44x29.webp",
+      "folder": "products",
+      "name": "mini-vegas-4-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera_w_ramce-35x40.webp",
+      "folder": "products",
+      "name": "moskitiera_w_ramce-35x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera-drzwiowa.webp",
+      "folder": "products",
+      "name": "moskitiera-drzwiowa.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera-okienna.webp",
+      "folder": "products",
+      "name": "moskitiera-okienna.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera-plisowana.webp",
+      "folder": "products",
+      "name": "moskitiera-plisowana.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera-ramkowa-okienna-30x40.webp",
+      "folder": "products",
+      "name": "moskitiera-ramkowa-okienna-30x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiera-siatka.webp",
+      "folder": "products",
+      "name": "moskitiera-siatka.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiery_kolorystyka-44x29.webp",
+      "folder": "products",
+      "name": "moskitiery_kolorystyka-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/moskitiery-przeciw-owadom-306x228.webp",
+      "folder": "products",
+      "name": "moskitiery-przeciw-owadom-306x228.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/okna-alu-przesuwne.webp",
+      "folder": "products",
+      "name": "okna-alu-przesuwne.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/okno-infinity-passive-83md.webp",
+      "folder": "products",
+      "name": "okno-infinity-passive-83md.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/oslony-okienne-ekspozycja.webp",
+      "folder": "products",
+      "name": "oslony-okienne-ekspozycja.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/parapety-blaty.webp",
+      "folder": "products",
+      "name": "parapety-blaty.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/plisy-1-306x203.webp",
+      "folder": "products",
+      "name": "plisy-1-306x203.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/roleta-dzien-noc.webp",
+      "folder": "products",
+      "name": "roleta-dzien-noc.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/rolety-adaptacyjne.webp",
+      "folder": "products",
+      "name": "rolety-adaptacyjne.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/rolety-dzien-noc-okno.webp",
+      "folder": "products",
+      "name": "rolety-dzien-noc-okno.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/rolety-nadstawne.webp",
+      "folder": "products",
+      "name": "rolety-nadstawne.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/rolety-podtynkowe-integro.webp",
+      "folder": "products",
+      "name": "rolety-podtynkowe-integro.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/rolety-zewnetrzne.webp",
+      "folder": "products",
+      "name": "rolety-zewnetrzne.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/segm1-44x24.webp",
+      "folder": "products",
+      "name": "segm1-44x24.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/segm2-44x33.webp",
+      "folder": "products",
+      "name": "segm2-44x33.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/vegas-classic-1-306x204.webp",
+      "folder": "products",
+      "name": "vegas-classic-1-306x204.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/vegas-classic-2-26x40.webp",
+      "folder": "products",
+      "name": "vegas-classic-2-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/vegas-classic-3-44x29.webp",
+      "folder": "products",
+      "name": "vegas-classic-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-aluminiowe-1-306x204.webp",
+      "folder": "products",
+      "name": "zaluzje-aluminiowe-1-306x204.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-aluminiowe-2-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-aluminiowe-2-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-aluminiowe-3-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-aluminiowe-3-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-aluminiowe-4-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-aluminiowe-4-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-aluminiowe-5-26x40.webp",
+      "folder": "products",
+      "name": "zaluzje-aluminiowe-5-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-1-306x204.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-1-306x204.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-2-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-2-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-3-26x40.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-3-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-4-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-4-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-5-26x40.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-5-26x40.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane-6-44x29.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane-6-44x29.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-drewniane.webp",
+      "folder": "products",
+      "name": "zaluzje-drewniane.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/products/zaluzje-fasadowe.webp",
+      "folder": "products",
+      "name": "zaluzje-fasadowe.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/alu-aluprof-mb79n.webp",
+      "folder": "profiles",
+      "name": "alu-aluprof-mb79n.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/alu-aluron-as75.webp",
+      "folder": "profiles",
+      "name": "alu-aluron-as75.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-contur.webp",
+      "folder": "profiles",
+      "name": "pcv-contur.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-energetic.webp",
+      "folder": "profiles",
+      "name": "pcv-energetic.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-hensperfect.webp",
+      "folder": "profiles",
+      "name": "pcv-hensperfect.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-koemmerling-88md.webp",
+      "folder": "profiles",
+      "name": "pcv-koemmerling-88md.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-protecto.webp",
+      "folder": "profiles",
+      "name": "pcv-protecto.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-salamander-bluevolution-82.webp",
+      "folder": "profiles",
+      "name": "pcv-salamander-bluevolution-82.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-schuco-living.webp",
+      "folder": "profiles",
+      "name": "pcv-schuco-living.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/profiles/pcv-vector.webp",
+      "folder": "profiles",
+      "name": "pcv-vector.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-02.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-03.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-03.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-04.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-04.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-05.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-05.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-06.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-06.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-07.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-07.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-08.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-08.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-09.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-09.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-nowoczesna-stodola-10.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-10.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-okna-zloty-dab-01.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-okna-zloty-dab-02.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-okna-zloty-dab-03.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-03.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-okna-zloty-dab-04.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-04.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-01.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-02.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-03.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-03.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-04.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-04.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-05.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-05.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-06.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-06.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-07.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-07.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-pietrowy-duze-przeszklenia-08.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-08.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-z-dachem-czterospadowym-01.webp",
+      "folder": "realizacje",
+      "name": "dom-z-dachem-czterospadowym-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-z-dachem-czterospadowym-02.webp",
+      "folder": "realizacje",
+      "name": "dom-z-dachem-czterospadowym-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-z-widokiem-01.webp",
+      "folder": "realizacje",
+      "name": "dom-z-widokiem-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/dom-z-widokiem-02.webp",
+      "folder": "realizacje",
+      "name": "dom-z-widokiem-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/drzwi-wejsciowe-01.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wejsciowe-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/drzwi-wejsciowe-02.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wejsciowe-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/drzwi-wewnetrzne-01.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wewnetrzne-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-02.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-03.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-03.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-04.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-04.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-05.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-05.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-06.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-06.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-07.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-07.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-08.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-08.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-09.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-09.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-nowoczesna-stodola-10.webp",
+      "folder": "realizacje",
+      "name": "dom-nowoczesna-stodola-10.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-okna-zloty-dab-01.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-okna-zloty-dab-02.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-okna-zloty-dab-03.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-03.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-okna-zloty-dab-04.webp",
+      "folder": "realizacje",
+      "name": "dom-okna-zloty-dab-04.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-01.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-02.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-03.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-03.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-04.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-04.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-05.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-05.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-06.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-06.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-07.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-07.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-pietrowy-duze-przeszklenia-08.webp",
+      "folder": "realizacje",
+      "name": "dom-pietrowy-duze-przeszklenia-08.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-z-dachem-czterospadowym-01.webp",
+      "folder": "realizacje",
+      "name": "dom-z-dachem-czterospadowym-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-z-dachem-czterospadowym-02.webp",
+      "folder": "realizacje",
+      "name": "dom-z-dachem-czterospadowym-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-z-widokiem-01.webp",
+      "folder": "realizacje",
+      "name": "dom-z-widokiem-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/dom-z-widokiem-02.webp",
+      "folder": "realizacje",
+      "name": "dom-z-widokiem-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/drzwi-wejsciowe-01.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wejsciowe-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/drzwi-wejsciowe-02.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wejsciowe-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/drzwi-wewnetrzne-01.webp",
+      "folder": "realizacje",
+      "name": "drzwi-wewnetrzne-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/fasada-dom-szczytowy.webp",
+      "folder": "realizacje",
+      "name": "fasada-dom-szczytowy.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/klinaryt-drzwi-HST.webp",
+      "folder": "realizacje",
+      "name": "klinaryt-drzwi-HST.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-alu-przesuwne.webp",
+      "folder": "realizacje",
+      "name": "okna-alu-przesuwne.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-nad-brama-garazowa-01.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-nad-brama-garazowa-02.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-nad-brama-garazowa-03.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-03.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-narozne-01.webp",
+      "folder": "realizacje",
+      "name": "okna-narozne-01.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/okna-narozne-02.webp",
+      "folder": "realizacje",
+      "name": "okna-narozne-02.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/termoparapet-balkonowy.webp",
+      "folder": "realizacje",
+      "name": "termoparapet-balkonowy.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/zabezpieczenie-folii-2.webp",
+      "folder": "realizacje",
+      "name": "zabezpieczenie-folii-2.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/zabezpieczenie-folii-od-zewn_trz-1.webp",
+      "folder": "realizacje",
+      "name": "zabezpieczenie-folii-od-zewn_trz-1.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/zabezpieczenie-folii-od-zewn_trz-2.webp",
+      "folder": "realizacje",
+      "name": "zabezpieczenie-folii-od-zewn_trz-2.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/miniatury/zabezpieczenie-folii.webp",
+      "folder": "realizacje",
+      "name": "zabezpieczenie-folii.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/realizacje/okna-nad-brama-garazowa-01.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/okna-nad-brama-garazowa-02.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/okna-nad-brama-garazowa-03.webp",
+      "folder": "realizacje",
+      "name": "okna-nad-brama-garazowa-03.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/okna-narozne-01.webp",
+      "folder": "realizacje",
+      "name": "okna-narozne-01.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/realizacje/okna-narozne-02.webp",
+      "folder": "realizacje",
+      "name": "okna-narozne-02.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/stores/salon-radlow-kolejowa.webp",
+      "folder": "stores",
+      "name": "salon-radlow-kolejowa.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/stores/salon-tarnow-gieldowa.webp",
+      "folder": "stores",
+      "name": "salon-tarnow-gieldowa.webp",
+      "thumb": false
+    },
+    {
+      "path": "img/thumbs/Baltic-Brown-130x86.webp",
+      "folder": "thumbs",
+      "name": "Baltic-Brown-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/thumbs/Botticino-130x86.webp",
+      "folder": "thumbs",
+      "name": "Botticino-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/thumbs/Crema-Marphil-130x86.webp",
+      "folder": "thumbs",
+      "name": "Crema-Marphil-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/thumbs/dzien-noc-2-130x86.webp",
+      "folder": "thumbs",
+      "name": "dzien-noc-2-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/thumbs/PCV-Bia_y-130x86.webp",
+      "folder": "thumbs",
+      "name": "PCV-Bia_y-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/thumbs/RAL-8019-12-mm1-130x86.webp",
+      "folder": "thumbs",
+      "name": "RAL-8019-12-mm1-130x86.webp",
+      "thumb": true
+    },
+    {
+      "path": "img/wolbud-logo.webp",
+      "folder": "root",
+      "name": "wolbud-logo.webp",
+      "thumb": false
+    }
+  ]
+}

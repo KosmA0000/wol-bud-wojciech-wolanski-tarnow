@@ -4,71 +4,757 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Edycja strony głównej · WOL-BUD</title>
-  <link rel="icon" href="../img/favicon.png">
-  <link rel="stylesheet" href="panel.css?v=20261120-2">
-  <script type="module" src="editor.js?v=20261120-2"></script>
+  <title>WOL-BUD Studio · Kreator Stron</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css?v=20261121-3">
+  <script type="module" src="editor.js?v=20261121-3"></script>
 </head>
-<body>
-  <header class="top">
-    <div class="identity">
-      <img src="../img/wolbud-logo.webp" alt="WOL-BUD" width="109" height="29">
-      <h1>Strona główna</h1>
-    </div>
-    <div class="actions">
-      <a href="../index.html" target="_blank" rel="noopener">Otwórz stronę publiczną</a>
-      <button type="button" id="save" disabled>Zapisz szkic</button>
-      <button type="button" id="publish" class="primary" disabled>Opublikuj</button>
-    </div>
-  </header>
+<body class="is-simple-mode">
+  <!-- EKRAN LOGOWANIA (TRYB HOSTINGU PHP) -->
+  <div id="login-gate" class="login-gate" hidden>
+    <form id="login-form" class="login-card" autocomplete="off">
+      <div class="login-brand">
+        <img id="login-logo-img" src="../img/wolbud-logo.webp" alt="Logo" width="120" height="32">
+        <span id="login-studio-tag" class="brand-tag">Studio</span>
+      </div>
+      <h1>Zaloguj się do panelu</h1>
+      <p class="login-sub">Wpisz hasło edytora, aby bezpiecznie edytować i publikować zmiany na stronie.</p>
+      <div class="field-group">
+        <label for="login-password" class="field-label">Hasło dostępu</label>
+        <input type="password" id="login-password" class="input-field" required autocomplete="current-password" placeholder="Wpisz hasło edytora…">
+      </div>
+      <div id="login-error" class="alert-box alert-error" role="alert" hidden></div>
+      <button type="submit" id="login-submit-btn" class="btn-primary btn-full">Zaloguj się</button>
+      <div class="login-help-row">
+        <button type="button" id="login-support-btn" class="link-btn">📞 Problem z logowaniem? Zadzwoń do wsparcia</button>
+      </div>
+    </form>
+  </div>
 
-  <main class="workspace">
-    <aside class="sidebar" aria-labelledby="sections-title">
-      <h2 id="sections-title">Sekcje strony</h2>
-      <p class="help">Przeciągnij za uchwyt albo wybierz sekcję i użyj przycisków przenoszenia.</p>
-      <ol id="sections"></ol>
-      <div id="last-slot"></div>
-      <p id="movement" class="visually-hidden" role="status"></p>
-      <div class="status-card">
-        <div>
-          <h3>Szkic</h3>
-          <p id="draft-status" role="status">Wczytywanie…</p>
+  <div id="studio-app" class="studio-app">
+    <!-- GÓRNY PASEK (TOPBAR) -->
+    <header class="topbar" role="banner">
+      <div class="topbar-group topbar-left">
+        <a id="brand-badge-link" class="brand-badge" href="./" title="Panel edycji strony">
+          <img id="brand-logo-img" src="../img/wolbud-logo.webp" alt="WOL-BUD" width="96" height="26">
+          <span id="brand-studio-tag" class="brand-tag">Studio</span>
+        </a>
+
+        <button type="button" id="page-switcher-btn" class="page-switcher" title="Przełącz stronę (otwiera listę stron)">
+          <span class="page-switcher-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span class="page-switcher-text">
+            <strong id="topbar-page-label">Strona główna</strong>
+            <small id="topbar-page-path">index.html</small>
+          </span>
+          <span class="page-switcher-chevron" aria-hidden="true">▾</span>
+        </button>
+      </div>
+
+      <div class="topbar-group topbar-center">
+        <div class="btn-segmented" role="group" aria-label="Historia zmian">
+          <button type="button" id="btn-undo" class="icon-btn" title="Cofnij (Ctrl+Z)" aria-label="Cofnij" disabled>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+            <span class="btn-label-xl">Cofnij</span>
+          </button>
+          <button type="button" id="btn-redo" class="icon-btn" title="Ponów (Ctrl+Y)" aria-label="Ponów" disabled>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+            <span class="btn-label-xl">Ponów</span>
+          </button>
         </div>
-        <div>
-          <h3>Strona publiczna</h3>
-          <p id="live-status" role="status">Sprawdzanie wersji…</p>
+
+        <div class="btn-segmented viewport-switch" role="group" aria-label="Rozmiar podglądu">
+          <button type="button" class="vp-btn is-active" data-viewport="desktop" aria-pressed="true" title="Widok komputerowy">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Komputer</span>
+          </button>
+          <button type="button" class="vp-btn" data-viewport="tablet" aria-pressed="false" title="Widok tabletu (768px)">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>Tablet</span>
+          </button>
+          <button type="button" class="vp-btn" data-viewport="mobile" aria-pressed="false" title="Widok telefonu (390px)">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>Telefon</span>
+          </button>
         </div>
+
+        <button type="button" id="btn-globals" class="toolbar-btn toolbar-btn--quiet" title="Edytuj menu główne, stopkę, logo i dane kontaktowe">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Menu i dane</span>
+        </button>
+
+        <button type="button" id="btn-media" class="toolbar-btn toolbar-btn--quiet" title="Otwórz bibliotekę zdjęć i wgrywaj nowe obrazy">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Zdjęcia</span>
+        </button>
+
+        <button type="button" id="btn-simple-add-block" class="toolbar-btn simple-only" title="Dodaj nową sekcję na stronę (np. promocję, zdjęcia, FAQ)">
+          + Dodaj sekcję
+        </button>
+
+        <button type="button" id="btn-ai" class="ai-btn" aria-expanded="false" aria-controls="ai-drawer" title="Otwórz Asystenta AI (edycja strony poleceniami po polsku)">
+          <span class="ai-btn-sparkle" aria-hidden="true">✨</span>
+          <span>Asystent AI</span>
+          <span id="ai-status-dot" class="ai-status-dot is-unconfigured" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="topbar-group topbar-right">
+        <button type="button" id="btn-simple-mode-back" class="toolbar-btn toolbar-btn--quiet advanced-only" title="Wróć do prostego, spokojnego widoku panelu">
+          ← Tryb prosty
+        </button>
+
+        <button type="button" id="btn-backups" class="toolbar-btn toolbar-btn--quiet" title="Kopie zapasowe i przywracanie oryginalnej wersji strony">
+          <span aria-hidden="true">🛡️</span>
+          <span class="btn-label-lg">Kopie</span>
+        </button>
+
+        <button type="button" id="btn-support" class="toolbar-btn toolbar-btn--support" title="Pomoc techniczna — zadzwoń do twórcy strony">
+          <span aria-hidden="true">📞</span>
+          <span class="btn-label-lg">Pomoc</span>
+        </button>
+
+        <div class="more-menu-wrap simple-only">
+          <button type="button" id="btn-more-menu" class="toolbar-btn toolbar-btn--quiet" aria-expanded="false" aria-controls="more-menu-popover" title="Dodatkowe opcje: menu, zdjęcia, kopie zapasowe, tryb zaawansowany">
+            <span>Więcej</span>
+            <span aria-hidden="true">▾</span>
+          </button>
+          <div id="more-menu-popover" class="more-menu-popover" role="menu" hidden>
+            <div class="more-menu-group">
+              <button type="button" id="more-undo" class="more-menu-item" role="menuitem" disabled>↶ Cofnij ostatnią zmianę</button>
+              <button type="button" id="more-globals" class="more-menu-item" role="menuitem">📝 Menu i dane firmy</button>
+              <button type="button" id="more-media" class="more-menu-item" role="menuitem">🖼️ Biblioteka zdjęć</button>
+              <button type="button" id="more-backups" class="more-menu-item" role="menuitem">🛡️ Kopie zapasowe i oryginał</button>
+            </div>
+            <div class="more-menu-sep"></div>
+            <div class="more-menu-group">
+              <button type="button" id="more-vp-mobile" class="more-menu-item" role="menuitem">📱 Zobacz jak na telefonie</button>
+              <button type="button" id="more-vp-desktop" class="more-menu-item" role="menuitem">💻 Wróć do widoku komputera</button>
+              <button type="button" id="more-discard" class="more-menu-item more-menu-item--danger" role="menuitem" disabled>🗑️ Cofnij zmiany na tej stronie</button>
+            </div>
+            <div class="more-menu-sep"></div>
+            <div class="more-menu-group">
+              <button type="button" id="more-toggle-mode" class="more-menu-item more-menu-item--subtle" role="menuitem">⚙️ Tryb administratora</button>
+            </div>
+          </div>
+        </div>
+
+        <span id="draft-counter-badge" class="draft-badge" role="status">Brak zmian</span>
+
+        <button type="button" id="btn-save-draft" class="toolbar-btn toolbar-btn--quiet" title="Zapisz szkic bieżącej strony w przeglądarce (Ctrl+S)">
+          Zapisz
+        </button>
+
+        <button type="button" id="btn-publish" class="btn-primary">
+          <span>Opublikuj</span>
+          <span id="publish-count" class="count-pill" hidden>0</span>
+        </button>
+
+        <a id="btn-live-link" class="live-link" href="../index.html" target="_blank" rel="noopener" title="Otwórz aktualnie wybraną stronę publiczną w nowej karcie">
+          <span class="btn-label-xl">Podgląd</span> ↗
+        </a>
+
+        <button type="button" id="btn-logout" class="toolbar-btn toolbar-btn--quiet" title="Wyloguj się z panelu" hidden>
+          Wyloguj
+        </button>
+      </div>
+    </header>
+
+    <!-- 3-PANELOWY OBSZAR ROBOCZY -->
+    <div class="studio-workspace">
+      <!-- LEWY PANEL: STRUKTURA / DODAJ BLOK / STRONY -->
+      <aside id="panel-left" class="panel-left" aria-label="Nawigacja i struktura strony">
+        <div class="simple-drawer-head simple-only">
+          <strong id="simple-left-title">Strony</strong>
+          <button type="button" id="btn-close-left-drawer" class="dialog-close" aria-label="Zamknij panel">✕</button>
+        </div>
+        <nav class="sidebar-tabs" role="tablist" aria-label="Zakładki kreatora">
+          <button type="button" class="sidebar-tab is-active" role="tab" aria-selected="true" aria-controls="tab-structure" data-tab="structure">
+            Struktura
+          </button>
+          <button type="button" class="sidebar-tab" role="tab" aria-selected="false" aria-controls="tab-blocks" data-tab="blocks">
+            Dodaj blok
+          </button>
+          <button type="button" class="sidebar-tab" role="tab" aria-selected="false" aria-controls="tab-pages" data-tab="pages">
+            Strony
+            <span id="pages-changed-dot" class="tab-dot" hidden aria-label="Zawiera zmiany"></span>
+          </button>
+        </nav>
+
+        <!-- ZAKŁADKA 1: STRUKTURA -->
+        <section id="tab-structure" class="sidebar-pane is-active" role="tabpanel">
+          <div class="pane-intro">
+            <p>Przeciągnij sekcję za uchwyt, aby zmienić kolejność, albo kliknij element na podglądzie.</p>
+          </div>
+          <div id="structure-tree" class="structure-tree" role="tree" aria-label="Sekcje bieżącej strony">
+            <div class="empty-state">Wczytywanie struktury strony…</div>
+          </div>
+          <div class="pane-footer">
+            <button type="button" id="btn-go-blocks" class="btn-secondary btn-full">
+              + Dodaj nową sekcję
+            </button>
+          </div>
+        </section>
+
+        <!-- ZAKŁADKA 2: DODAJ BLOK -->
+        <section id="tab-blocks" class="sidebar-pane" role="tabpanel" hidden>
+          <div id="blocks-insert-banner" class="insert-banner">
+            <span id="blocks-insert-text">Nowa sekcja zostanie dodana poniżej zaznaczonej sekcji lub na dole strony.</span>
+            <button type="button" id="blocks-insert-clear" class="link-btn" hidden>Na dole</button>
+          </div>
+          <div class="search-wrap">
+            <input type="search" id="blocks-search" class="input-field" placeholder="Szukaj bloku (np. galeria, opinie, oferta)…" aria-label="Szukaj bloku">
+          </div>
+          <div id="blocks-catalog" class="blocks-catalog"></div>
+        </section>
+
+        <!-- ZAKŁADKA 3: STRONY -->
+        <section id="tab-pages" class="sidebar-pane" role="tabpanel" hidden>
+          <div class="pane-top-action">
+            <button type="button" id="btn-open-new-page" class="btn-primary btn-full">
+              + Utwórz nową podstronę
+            </button>
+          </div>
+          <div class="search-wrap">
+            <input type="search" id="pages-search" class="input-field" placeholder="Szukaj strony po nazwie lub adresie…" aria-label="Szukaj strony">
+          </div>
+          <div id="pages-filter-bar" class="chip-bar" role="group" aria-label="Filtruj grupy stron">
+            <button type="button" class="chip is-active" data-group="all">Wszystkie</button>
+            <button type="button" class="chip" data-group="glowne">Główne</button>
+            <button type="button" class="chip" data-group="kategorie">Kategorie</button>
+            <button type="button" class="chip" data-group="produkty">Produkty</button>
+            <button type="button" class="chip" data-group="promocje">Promocje</button>
+            <button type="button" class="chip" data-group="changed">Zmienione</button>
+          </div>
+          <div id="pages-list" class="pages-list" role="list">
+            <div class="empty-state">Wczytywanie listy stron…</div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- ŚRODEK: PODGLĄD NA ŻYWO -->
+      <main class="stage-center" aria-label="Podgląd edytowanej strony">
+        <div class="stage-bar">
+          <div class="stage-bar-left">
+            <span id="stage-page-state" class="state-dot" title="Status strony"></span>
+            <code id="stage-page-path" class="path-pill">index.html</code>
+            <span class="stage-tip">Kliknij dowolny tekst lub element, aby edytować</span>
+          </div>
+          <div class="stage-bar-right">
+            <button type="button" id="btn-deselect" class="mini-btn" hidden>Ustawienia strony</button>
+            <button type="button" id="btn-discard-page" class="mini-btn mini-btn-danger" disabled title="Cofnij wszystkie niezopublikowane zmiany na tej stronie">
+              Odrzuć zmiany na tej stronie
+            </button>
+          </div>
+        </div>
+
+        <div id="stage-viewport" class="stage-viewport view-desktop">
+          <div class="frame-shell">
+            <div id="stage-loading" class="stage-loading">
+              <div class="spinner" aria-hidden="true"></div>
+              <span>Wczytywanie podglądu strony…</span>
+            </div>
+            <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" referrerpolicy="same-origin"></iframe>
+          </div>
+        </div>
+
+        <div id="simple-hint-bar" class="simple-hint-bar simple-only" role="status">
+          <span>💡 Kliknij dowolny tekst lub zdjęcie na stronie, żeby je zmienić — albo napisz do <strong>Asystenta AI</strong>.</span>
+          <button type="button" id="btn-dismiss-hint" class="simple-hint-close" aria-label="Ukryj podpowiedź">✕</button>
+        </div>
+      </main>
+
+      <!-- PRAWY PANEL: KONTEKSTOWY INSPEKTOR -->
+      <aside id="panel-right" class="panel-right" aria-label="Inspektor właściwości">
+        <div class="inspector-header-bar">
+          <div id="inspector-header" class="inspector-header">
+            <span class="inspector-kicker">Ustawienia strony</span>
+            <h2 id="inspector-title">Strona główna</h2>
+          </div>
+          <button type="button" id="btn-close-inspector" class="dialog-close simple-only" aria-label="Zamknij edycję elementu">✕</button>
+        </div>
+        <div id="inspector-body" class="inspector-body">
+          <div class="empty-state">Wczytywanie inspektora…</div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- WYSUWANY PANEL BOCZNY: ASYSTENT AI -->
+    <aside id="ai-drawer" class="ai-drawer" aria-label="Asystent AI WOL-BUD" aria-hidden="true">
+      <div class="ai-drawer-head">
+        <div class="ai-drawer-title-row">
+          <div class="ai-drawer-brand">
+            <span class="ai-drawer-sparkle" aria-hidden="true">✨</span>
+            <h2>Asystent AI WOL-BUD</h2>
+          </div>
+          <button type="button" id="ai-close-drawer" class="dialog-close ai-close-btn" title="Zamknij panel Asystenta AI" aria-label="Zamknij panel Asystenta AI">✕</button>
+        </div>
+        <div class="ai-drawer-controls-row">
+          <span id="ai-mode-badge" class="ai-mode-badge is-unconfigured">Wymaga konfiguracji</span>
+          <div class="ai-drawer-actions">
+            <button type="button" id="ai-open-settings" class="ai-head-btn" title="Ustawienia modelu i klucza API">⚙ Ustawienia</button>
+            <button type="button" id="ai-clear-chat" class="ai-head-btn" title="Wyczyść historię rozmowy">Wyczyść czat</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="ai-setup-banner" class="ai-setup-banner">
+        <div class="ai-setup-copy">
+          <strong>Asystent wymaga konfiguracji połączenia</strong>
+          <p>Dodaj darmowy klucz Google Gemini API (lub połącz z proxy PHP na hostingu), aby edytować stronę rozmową po polsku.</p>
+        </div>
+        <button type="button" id="ai-setup-btn" class="btn-primary mini-btn">Skonfiguruj klucz AI</button>
+      </div>
+
+      <div id="ai-messages" class="ai-messages" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="ai-welcome">
+          <div class="ai-welcome-badge">✨ Twój asystent w WOL-BUD Studio</div>
+          <h3>W czym mogę dziś pomóc na stronie?</h3>
+          <p>Mogę tworzyć nowe podstrony, dodawać sekcje i kafelki oferty, poprawiać teksty, zdjęcia, SEO oraz aktualizować menu główne.</p>
+          <div class="ai-suggestions">
+            <button type="button" class="ai-suggestion-chip" data-prompt="Stwórz podstronę Promocja Jesienna i podepnij ją w menu">
+              <span class="ai-chip-icon" aria-hidden="true">📄</span>
+              <span>Stwórz podstronę Promocja Jesienna i podepnij ją w menu</span>
+            </button>
+            <button type="button" class="ai-suggestion-chip" data-prompt="Dodaj sekcję FAQ z 3 pytaniami o ciepły montaż">
+              <span class="ai-chip-icon" aria-hidden="true">❓</span>
+              <span>Dodaj sekcję FAQ z 3 pytaniami o ciepły montaż</span>
+            </button>
+            <button type="button" class="ai-suggestion-chip" data-prompt="Dodaj nowy kafelek oferty: Pergole tarasowe">
+              <span class="ai-chip-icon" aria-hidden="true">🧱</span>
+              <span>Dodaj nowy kafelek oferty: Pergole tarasowe</span>
+            </button>
+            <button type="button" class="ai-suggestion-chip" data-prompt="Jak dodać zdjęcia i opublikować zmiany?">
+              <span class="ai-chip-icon" aria-hidden="true">💡</span>
+              <span>Jak dodać zdjęcia i opublikować zmiany?</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-drawer-foot">
+        <form id="ai-chat-form" class="ai-input-form">
+          <textarea id="ai-input" class="ai-input" rows="2" placeholder="Napisz, co chcesz zmienić na stronie… (Enter wysyła, Shift+Enter nowa linia)" aria-label="Polecenie dla Asystenta AI"></textarea>
+          <div class="ai-foot-bar">
+            <span class="ai-foot-hint">Zmiany zapisują się w szkicu — możesz je cofnąć (Ctrl+Z).</span>
+            <div class="ai-foot-btns">
+              <button type="button" id="ai-stop" class="ai-stop-btn" hidden>Zatrzymaj</button>
+              <button type="submit" id="ai-send" class="btn-primary ai-send-btn">Wyślij</button>
+            </div>
+          </div>
+        </form>
       </div>
     </aside>
+  </div>
 
-    <section class="preview" aria-labelledby="preview-title">
-      <header class="preview-header">
-        <div>
-          <h2 id="preview-title">Podgląd strony</h2>
-          <p class="help">Kliknij obramowany tekst i wpisz zmianę.</p>
-        </div>
-        <div class="devices" role="group" aria-label="Szerokość podglądu">
-          <button type="button" id="wide" aria-pressed="true">Komputer</button>
-          <button type="button" id="phone" aria-pressed="false">Telefon</button>
-        </div>
-      </header>
-      <div class="stage">
-        <iframe id="preview" title="Edytowalny podgląd strony WOL-BUD" src="../index.html" referrerpolicy="same-origin"></iframe>
+  <!-- UKRYTY INPUT DO IMPORTU KOPII ZAPASOWEJ -->
+  <input type="file" id="import-backup-input" accept=".json,application/json" hidden>
+
+  <!-- MODAL 1: MENEDŻER MEDIÓW -->
+  <dialog id="media-dialog" class="studio-dialog dialog-xl" aria-labelledby="media-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="media-dialog-title">Biblioteka zdjęć</h2>
+        <p id="media-dialog-subtitle" class="dialog-sub">Wgraj nowe zdjęcia z komputera (automatyczna kompresja WebP) lub wybierz istniejące.</p>
       </div>
-    </section>
-  </main>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+    </div>
 
-  <dialog id="access" aria-labelledby="access-title">
-    <form method="dialog">
-      <h2 id="access-title">Dostęp do publikacji</h2>
-      <p id="access-help">Użyj klucza publikacji otrzymanego od administratora strony.</p>
-      <label for="credential" id="credential-label">Klucz publikacji</label>
-      <input id="credential" type="password" required autocomplete="off" spellcheck="false">
-      <div class="actions">
-        <button type="submit" value="cancel" formnovalidate>Anuluj</button>
-        <button type="submit" value="publish" class="primary">Połącz i opublikuj</button>
+    <div class="dialog-body media-body">
+      <div id="media-dropzone" class="dropzone" tabindex="0" role="button" aria-label="Przeciągnij zdjęcia tutaj lub kliknij, aby wybrać z komputera">
+        <input type="file" id="media-upload-input" accept="image/*" multiple hidden>
+        <div class="dropzone-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="dropzone-copy">
+          <strong>Przeciągnij zdjęcia tutaj</strong> lub <span class="dropzone-link">wybierz pliki z komputera</span>
+          <small>Obsługiwane formaty: JPG, PNG, WebP, SVG · Automatyczne zmniejszenie i optymalizacja do WebP</small>
+        </div>
+        <span id="media-upload-status" class="upload-status" hidden>Przetwarzanie zdjęć…</span>
+      </div>
+
+      <div class="media-toolbar">
+        <div id="media-folders" class="chip-bar" role="group" aria-label="Foldery zdjęć">
+          <button type="button" class="chip is-active" data-folder="all">Wszystkie</button>
+          <button type="button" class="chip" data-folder="uploads">Wgrane</button>
+          <button type="button" class="chip" data-folder="products">Produkty</button>
+          <button type="button" class="chip" data-folder="realizacje">Realizacje</button>
+          <button type="button" class="chip" data-folder="stores">Salony</button>
+          <button type="button" class="chip" data-folder="profiles">Profile</button>
+          <button type="button" class="chip" data-folder="partners">Partnerzy</button>
+          <button type="button" class="chip" data-folder="montage">Montaż</button>
+          <button type="button" class="chip" data-folder="parapety">Parapety</button>
+        </div>
+        <input type="search" id="media-search" class="input-field media-search" placeholder="Szukaj zdjęcia po nazwie…" aria-label="Szukaj zdjęcia">
+      </div>
+
+      <div id="media-grid" class="media-grid"></div>
+    </div>
+
+    <div class="dialog-foot">
+      <span id="media-count-info" class="dialog-foot-note"></span>
+      <button type="button" class="btn-secondary" data-close-dialog>Zamknij</button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 2: NOWA PODSTRONA -->
+  <dialog id="new-page-dialog" class="studio-dialog dialog-lg" aria-labelledby="new-page-title">
+    <form id="new-page-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <h2 id="new-page-title">Utwórz nową podstronę</h2>
+          <p class="dialog-sub">Wybierz gotowy szablon lub skopiuj układ aktualnie otwartej strony.</p>
+        </div>
+        <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <div class="field-group">
+          <label class="field-label">1. Wybierz szablon strony</label>
+          <div id="new-page-templates" class="template-grid"></div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label for="np-heading" class="field-label">Nazwa strony (nagłówek H1) *</label>
+            <input type="text" id="np-heading" class="input-field" required placeholder="np. Promocja wiosenna na okna PCV">
+          </div>
+          <div class="field-group">
+            <label for="np-eyebrow" class="field-label">Nadtytuł (opcjonalny)</label>
+            <input type="text" id="np-eyebrow" class="input-field" placeholder="np. Oferta specjalna · Tarnów">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="np-lead" class="field-label">Krótki wstęp pod nagłówkiem</label>
+          <textarea id="np-lead" class="input-field" rows="2" placeholder="Krótki opis oferty lub tematu podstrony…"></textarea>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field-group">
+            <label for="np-folder" class="field-label">Folder (sekcja adresu)</label>
+            <select id="np-folder" class="input-field">
+              <option value="promocje">promocje/ (Promocje i landingi)</option>
+              <option value="kategorie">kategorie/ (Kategorie oferty)</option>
+              <option value="produkty">produkty/ (Karty produktów)</option>
+              <option value="">/ (Katalog główny)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="np-slug" class="field-label">Adres URL (slug) *</label>
+            <input type="text" id="np-slug" class="input-field" required placeholder="wiosenna-oferta-okna">
+          </div>
+        </div>
+
+        <div class="url-preview-box">
+          <span>Docelowy plik:</span>
+          <code id="np-url-preview">promocje/nowa-strona/index.html</code>
+        </div>
+        <p id="np-error" class="form-error" hidden></p>
+
+        <details class="seo-details">
+          <summary>Ustawienia SEO (tytuł i opis w Google)</summary>
+          <div class="seo-details-inner">
+            <div class="field-group">
+              <label for="np-title" class="field-label">Tytuł strony (&lt;title&gt;)</label>
+              <input type="text" id="np-title" class="input-field" placeholder="Automatycznie na podstawie nazwy | WOL-BUD Tarnów">
+            </div>
+            <div class="field-group">
+              <label for="np-description" class="field-label">Opis SEO (&lt;meta description&gt;)</label>
+              <textarea id="np-description" class="input-field" rows="2" placeholder="Krótki opis wyświetlany w wynikach wyszukiwania Google…"></textarea>
+            </div>
+          </div>
+        </details>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="np-add-to-menu">
+          <span>Dodaj link do tej podstrony od razu w <strong>Menu głównym</strong></span>
+        </label>
+      </div>
+
+      <div class="dialog-foot">
+        <button type="button" class="btn-secondary" data-close-dialog>Anuluj</button>
+        <button type="submit" class="btn-primary">Utwórz i przejdź do edycji</button>
       </div>
     </form>
   </dialog>
+
+  <!-- MODAL 3: USTAWIENIA GLOBALNE (MENU I DANE FIRMY) -->
+  <dialog id="globals-dialog" class="studio-dialog dialog-lg" aria-labelledby="globals-dialog-title">
+    <form id="globals-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <h2 id="globals-dialog-title">Menu główne, stopka i dane firmy</h2>
+          <p class="dialog-sub">Zmiany zostaną zastosowane spójnie w nagłówku, stopce i dymkach kontaktu.</p>
+        </div>
+        <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+      </div>
+
+      <div class="dialog-body globals-body">
+        <fieldset class="settings-fieldset">
+          <legend>Dane kontaktowe i logo</legend>
+          <div class="form-grid-2">
+            <div class="field-group">
+              <label for="gl-phone-display" class="field-label">Telefon wyświetlany</label>
+              <input type="text" id="gl-phone-display" class="input-field" placeholder="534 091 021">
+            </div>
+            <div class="field-group">
+              <label for="gl-phone-href" class="field-label">Link telefonu (tel:)</label>
+              <input type="text" id="gl-phone-href" class="input-field" placeholder="tel:+48534091021">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="field-group">
+              <label for="gl-email" class="field-label">Adres e-mail</label>
+              <input type="email" id="gl-email" class="input-field" placeholder="biuro@wol-bud.com.pl">
+            </div>
+            <div class="field-group">
+              <label for="gl-facebook" class="field-label">Link do Facebooka</label>
+              <input type="url" id="gl-facebook" class="input-field" placeholder="https://www.facebook.com/sklep.wol.bud.tarnow">
+            </div>
+          </div>
+
+          <div class="logo-picker-row">
+            <div class="logo-thumb-box">
+              <img id="gl-logo-preview" src="../img/wolbud-logo.webp" alt="Podgląd logo">
+            </div>
+            <div class="logo-picker-fields">
+              <div class="field-group">
+                <label for="gl-logo-alt" class="field-label">Opis logo (alt)</label>
+                <input type="text" id="gl-logo-alt" class="input-field" placeholder="WOL-BUD – okna, drzwi, rolety, bramy">
+              </div>
+              <div class="logo-picker-actions">
+                <code id="gl-logo-path" class="path-pill">img/wolbud-logo.webp</code>
+                <button type="button" id="gl-pick-logo" class="btn-secondary mini-btn">Wybierz logo z mediów</button>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="settings-fieldset">
+          <legend>Menu główne</legend>
+          <div id="gl-nav-list" class="repeater-editor-list"></div>
+          <button type="button" id="gl-add-nav" class="btn-secondary mini-btn">+ Dodaj pozycję menu</button>
+        </fieldset>
+
+        <fieldset class="settings-fieldset">
+          <legend>Stopka strony</legend>
+          <div id="gl-footer-links-list" class="repeater-editor-list"></div>
+          <button type="button" id="gl-add-footer-link" class="btn-secondary mini-btn">+ Dodaj link w stopce</button>
+
+          <div class="field-group" style="margin-top: .85rem;">
+            <label for="gl-footer-copy" class="field-label">Tekst w stopce (podpis firmy)</label>
+            <textarea id="gl-footer-copy" class="input-field" rows="2" placeholder="WOL-BUD Wojciech Wolański · Sprzedaż i montaż…"></textarea>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="dialog-foot dialog-foot-split">
+        <button type="button" id="gl-discard-btn" class="mini-btn mini-btn-danger" hidden>Odrzuć zmiany globalne</button>
+        <div class="dialog-foot-actions">
+          <button type="button" class="btn-secondary" data-close-dialog>Anuluj</button>
+          <button type="submit" class="btn-primary">Zapisz w szkicu i podejrzyj</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 4: PUBLIKACJA -->
+  <dialog id="publish-dialog" class="studio-dialog dialog-md" aria-labelledby="publish-dialog-title">
+    <form id="publish-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <h2 id="publish-dialog-title">Opublikuj zmiany na stronie</h2>
+          <p class="dialog-sub">Sprawdź podsumowanie zmian przed wysłaniem na stronę publiczną.</p>
+        </div>
+        <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <div id="pub-changes-list" class="pub-summary"></div>
+
+        <div class="field-group">
+          <label for="pub-commit-message" class="field-label">Notatka do publikacji (opcjonalna)</label>
+          <input type="text" id="pub-commit-message" class="input-field" placeholder="np. Aktualizacja oferty okien i dodanie promocji">
+        </div>
+
+        <div id="pub-auth-box" class="auth-box">
+          <label for="pub-credential" id="pub-cred-label" class="field-label">Klucz publikacji (GitHub Token)</label>
+          <p id="pub-cred-help" class="field-help">Wklej klucz dostępu otrzymany od administratora strony.</p>
+          <input type="password" id="pub-credential" class="input-field" autocomplete="off" spellcheck="false" required placeholder="Wklej klucz dostępu…">
+          <div class="auth-options">
+            <label class="checkbox-row">
+              <input type="checkbox" id="pub-remember">
+              <span>Zapamiętaj klucz w tej przeglądarce</span>
+            </label>
+            <button type="button" id="pub-clear-cred" class="link-btn danger-link" hidden>Wyczyść zapisany klucz</button>
+          </div>
+        </div>
+
+        <div id="pub-progress-wrap" class="pub-progress" hidden>
+          <div class="progress-track">
+            <div id="pub-progress-bar" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <p id="pub-progress-text" class="progress-text">Przygotowywanie publikacji…</p>
+        </div>
+
+        <div id="pub-error" class="alert-box alert-error" role="alert" hidden></div>
+        <div id="pub-help-row" class="pub-help-row" hidden>
+          <button type="button" id="pub-help-btn" class="link-btn">📞 Problem z publikacją? Zadzwoń po pomoc</button>
+        </div>
+      </div>
+
+      <div class="dialog-foot">
+        <button type="button" id="pub-cancel-btn" class="btn-secondary" data-close-dialog>Anuluj</button>
+        <button type="submit" id="pub-submit-btn" class="btn-primary">Opublikuj teraz</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 5: USTAWIENIA ASYSTENTA AI -->
+  <dialog id="ai-settings-dialog" class="studio-dialog dialog-md" aria-labelledby="ai-settings-title">
+    <form id="ai-settings-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <h2 id="ai-settings-title">Ustawienia Asystenta AI</h2>
+          <p class="dialog-sub">Wybierz dostawcę modelu AI oraz sposób połączenia z WOL-BUD Studio.</p>
+        </div>
+        <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <div class="field-group">
+          <label for="ai-provider" class="field-label">Tryb połączenia</label>
+          <select id="ai-provider" class="input-field">
+            <option value="gemini">Google Gemini API (klucz w przeglądarce — polecane do GitHub Pages)</option>
+            <option value="openai">OpenAI API (klucz w przeglądarce)</option>
+            <option value="proxy">Proxy PHP na hostingu klienta (np. cyber_Folks — bez klucza u klienta)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="ai-model" class="field-label">Model AI</label>
+          <input type="text" id="ai-model" class="input-field" list="ai-model-list" autocomplete="off" spellcheck="false" placeholder="np. gemini-2.5-flash">
+          <datalist id="ai-model-list"></datalist>
+          <p class="field-help">Możesz wybrać polecany model z listy lub wpisać własny identyfikator modelu.</p>
+        </div>
+
+        <div id="ai-api-key-group" class="field-group">
+          <label for="ai-api-key" class="field-label">Klucz API</label>
+          <input type="password" id="ai-api-key" class="input-field" autocomplete="off" spellcheck="false" placeholder="Wklej swój klucz API…">
+          <p id="ai-api-key-help" class="field-help">
+            Klucz jest zapisywany wyłącznie lokalnie w Twojej przeglądarce. Darmowy klucz Google Gemini wygenerujesz w
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="ai-help-link">Google AI Studio ↗</a>.
+          </p>
+        </div>
+
+        <div id="ai-proxy-group" class="field-group" hidden>
+          <label for="ai-proxy-url" class="field-label">Adres proxy PHP</label>
+          <div class="ai-proxy-input-row">
+            <input type="text" id="ai-proxy-url" class="input-field" value="./ai-proxy.php" placeholder="./ai-proxy.php">
+            <button type="button" id="ai-check-proxy" class="btn-secondary mini-btn">Sprawdź</button>
+          </div>
+          <div id="ai-proxy-status" class="ai-proxy-status" role="status">Sprawdzanie dostępności proxy…</div>
+        </div>
+      </div>
+
+      <div class="dialog-foot">
+        <button type="button" class="btn-secondary" data-close-dialog>Anuluj</button>
+        <button type="submit" class="btn-primary">Zapisz ustawienia</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 6: KOPIE ZAPASOWE I PRZYWRACANIE ORYGINAŁU -->
+  <dialog id="backups-dialog" class="studio-dialog dialog-lg" aria-labelledby="backups-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="backups-dialog-title">Kopie zapasowe i wersja oryginalna</h2>
+        <p class="dialog-sub">Bezpieczny powrót do fabrycznej wersji strony lub dowolnej wcześniejszej publikacji.</p>
+      </div>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <div class="safety-banner">
+        <span class="safety-banner-icon" aria-hidden="true">🛡️</span>
+        <div>
+          <strong>Twoja oryginalna strona jest zawsze bezpieczna.</strong>
+          <p>Fabryczna kopia oryginalna jest chroniona przed usunięciem i nadpisaniem — jeśli coś pójdzie nie tak, przywrócisz ją jednym kliknięciem.</p>
+        </div>
+      </div>
+
+      <div class="backups-toolbar">
+        <button type="button" id="btn-create-backup" class="btn-secondary mini-btn">+ Zapisz punkt przywracania teraz</button>
+        <button type="button" id="btn-refresh-backups" class="mini-btn">Odśwież listę</button>
+      </div>
+
+      <div id="backups-list" class="backups-list">
+        <div class="empty-state">Wczytywanie kopii zapasowych…</div>
+      </div>
+
+      <div id="backups-error" class="alert-box alert-error" role="alert" hidden></div>
+
+      <details class="inspector-advanced advanced-only">
+        <summary>Lokalna kopia szkicu na dysku (.json)</summary>
+        <div class="backups-local-actions">
+          <button type="button" id="backups-export-json" class="btn-secondary mini-btn">Pobierz kopię szkicu (.json)</button>
+          <button type="button" id="backups-import-json" class="btn-secondary mini-btn">Wczytaj kopię z pliku (.json)</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="dialog-foot">
+      <button type="button" id="backups-support-btn" class="link-btn">📞 Potrzebujesz pomocy? Zadzwoń</button>
+      <button type="button" class="btn-secondary" data-close-dialog>Zamknij</button>
+    </div>
+  </dialog>
+
+  <!-- MODAL 7: POMOC TECHNICZNA / ZADZWOŃ DO TWÓRCY -->
+  <dialog id="support-dialog" class="studio-dialog dialog-md" aria-labelledby="support-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="support-dialog-title">Pomoc i kontakt z twórcą strony</h2>
+        <p id="support-role" class="dialog-sub">Opieka techniczna i szybkie wsparcie</p>
+      </div>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Zamknij">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <div class="support-card">
+        <strong id="support-name" class="support-name">Twórca strony</strong>
+        <p id="support-note" class="support-note">Masz problem z panelem lub coś nie działa tak jak powinno? Zadzwoń lub napisz.</p>
+
+        <div class="support-actions-main">
+          <a id="support-call-link" class="btn-primary btn-full support-call-btn" href="tel:+48000000000">
+            📞 Zadzwoń: <span id="support-phone-text">+48 000 000 000</span>
+          </a>
+          <div class="support-actions-row">
+            <button type="button" id="support-copy-phone" class="btn-secondary mini-btn">Kopiuj numer</button>
+            <a id="support-email-link" class="btn-secondary mini-btn" href="mailto:pomoc@twojadomena.pl">✉ Napisz e-mail</a>
+          </div>
+        </div>
+
+        <p id="support-hours" class="support-hours"></p>
+      </div>
+
+      <div class="support-tools">
+        <button type="button" id="support-open-backups" class="btn-secondary btn-full">🛡️ Otwórz kopie zapasowe (przywróć oryginał)</button>
+        <button type="button" id="support-copy-diag" class="mini-btn btn-full">📋 Kopiuj bezpieczny raport diagnostyczny dla wsparcia</button>
+      </div>
+    </div>
+
+    <div class="dialog-foot">
+      <button type="button" class="btn-secondary" data-close-dialog>Zamknij</button>
+    </div>
+  </dialog>
+
+  <!-- POWIADOMIENIA TOAST -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

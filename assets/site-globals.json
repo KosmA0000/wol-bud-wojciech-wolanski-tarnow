@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "phoneDisplay": "534 091 021",
+  "phoneHref": "tel:+48534091021",
+  "email": "biuro@wol-bud.com.pl",
+  "facebookUrl": "https://www.facebook.com/sklep.wol.bud.tarnow",
+  "facebookLabel": "facebook.com/sklep.wol.bud.tarnow",
+  "logoSrc": "img/wolbud-logo.webp",
+  "logoAlt": "WOL-BUD – okna, drzwi, rolety, bramy",
+  "menu": [
+    { "label": "Strona główna", "href": "index.html", "mobileHref": "index.html#start" },
+    { "label": "Oferta", "href": "oferta/index.html", "mobileHref": "index.html#oferta" },
+    { "label": "Usługi", "href": "uslugi/index.html", "mobileHref": "index.html#uslugi" },
+    { "label": "Realizacje", "href": "realizacje/index.html", "mobileHref": "index.html#realizacje" },
+    { "label": "O firmie", "href": "o-firmie/index.html", "mobileHref": "index.html#ofirmie" },
+    { "label": "Nasze sklepy", "href": "nasze-sklepy/index.html", "mobileHref": "index.html#nasze-sklepy" },
+    { "label": "Kontakt", "href": "kontakt/index.html", "mobileHref": "index.html#kontakt" }
+  ],
+  "footerLinks": [
+    { "label": "Oferta", "href": "oferta/index.html" },
+    { "label": "Usługi", "href": "uslugi/index.html" },
+    { "label": "Realizacje", "href": "realizacje/index.html" },
+    { "label": "O firmie", "href": "o-firmie/index.html" },
+    { "label": "Nasze sklepy", "href": "nasze-sklepy/index.html" },
+    { "label": "Kontakt", "href": "kontakt/index.html" }
+  ],
+  "footerCopy": "WOL-BUD Wojciech Wolański · Sprzedaż i profesjonalny montaż okien, drzwi i bram od 1995 roku · Tarnów, Radłów · "
+}

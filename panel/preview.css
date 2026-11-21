@@ -1,46 +1,571 @@
-.wolbud-preview .home-copy-field {
-  outline: 1px dashed currentColor;
+/* ==========================================================================
+   WOL-BUD Visual CMS — Canvas Preview Styles
+   Wstrzykiwane wyłącznie w podglądzie edytora (body.wolbud-preview).
+   Kolorystyka: #2c4d19 (brand dark), #426728 (accent), #d99b26 (gold focus), #b91c1c (danger)
+   ========================================================================== */
+
+body.wolbud-preview {
+  --cms-dark: #2c4d19;
+  --cms-dark-deep: #1a300e;
+  --cms-accent: #426728;
+  --cms-gold: #d99b26;
+  --cms-gold-soft: rgba(217, 155, 38, 0.24);
+  --cms-danger: #b91c1c;
+  --cms-danger-hover: #991b1b;
+  --cms-ui-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Mniej inwazyjne pływające przyciski strony podczas edycji */
+body.wolbud-preview .contact-bubbles,
+body.wolbud-preview .scroll-top-btn {
+  opacity: 0.22 !important;
+  pointer-events: none !important;
+}
+
+/* Zabezpieczenie klikalności sekcji i elementów */
+body.wolbud-preview .cms-section {
+  position: relative;
+  transition: outline-color 0.14s ease, box-shadow 0.14s ease, opacity 0.18s ease;
+}
+
+body.wolbud-preview aside.subpage-sidebar.cms-section {
+  position: relative;
+  top: auto;
+}
+
+body.wolbud-preview .cms-section.cms-hovered {
+  outline: 2px dashed rgba(66, 103, 40, 0.85);
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.42);
+}
+
+body.wolbud-preview .cms-section.cms-selected {
+  outline: 3px solid var(--cms-gold) !important;
+  outline-offset: -3px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 0 0 4px rgba(217, 155, 38, 0.22);
+}
+
+/* Kafelki / powtarzalne elementy w repeaterach */
+body.wolbud-preview .cms-item {
+  position: relative;
+  transition: outline-color 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+}
+
+body.wolbud-preview .cms-item.cms-hovered {
+  outline: 2px dashed var(--cms-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.55);
+}
+
+body.wolbud-preview .cms-item.cms-selected {
+  outline: 3px solid var(--cms-gold) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--cms-gold-soft);
+  z-index: 12;
+}
+
+/* Pojedyncze wybrane elementy (np. obraz, link, przycisk, nagłówek) */
+body.wolbud-preview .cms-element-selected {
+  outline: 2px solid var(--cms-gold) !important;
   outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Edytowalny tekst inline */
+body.wolbud-preview .cms-editable-text {
   cursor: text;
+  transition: outline-color 0.12s ease, background-color 0.12s ease;
 }
-.wolbud-preview .home-copy-field:focus {
-  outline: 3px solid #f1b752;
+
+body.wolbud-preview .cms-editable-text:hover {
+  outline: 1px dashed rgba(217, 155, 38, 0.85);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+body.wolbud-preview .cms-editable-text:focus {
+  outline: 2px solid var(--cms-gold) !important;
   outline-offset: 4px;
+  border-radius: 4px;
+  background-color: rgba(217, 155, 38, 0.16);
+  caret-color: currentColor;
 }
-.wolbud-preview .home-copy-field[aria-invalid=true] {
-  outline: 3px solid #e36156;
+
+/* Ukryte sekcje i elementy — widoczne półprzezroczyście w podglądzie */
+body.wolbud-preview .cms-hidden {
+  display: block !important;
+  opacity: 0.42 !important;
+  filter: grayscale(0.45);
 }
-.wolbud-preview .editor-section { position: relative; }
-.wolbud-preview .editor-handle {
+
+body.wolbud-preview .home-catalog-grid.cms-hidden,
+body.wolbud-preview .location-grid.cms-hidden,
+body.wolbud-preview .kt.cms-hidden,
+body.wolbud-preview .subcat-grid.cms-hidden,
+body.wolbud-preview .cat-products-grid.cms-hidden,
+body.wolbud-preview .cat-prod-grid.cms-hidden,
+body.wolbud-preview .home-services-grid.cms-hidden,
+body.wolbud-preview .home-featured-grid.cms-hidden,
+body.wolbud-preview .realization-cards.cms-hidden {
+  display: grid !important;
+}
+
+body.wolbud-preview .cat-quick-nav.cms-hidden,
+body.wolbud-preview .home-extra-categories.cms-hidden,
+body.wolbud-preview .partner-row.cms-hidden,
+body.wolbud-preview .brand-chips.cms-hidden {
+  display: flex !important;
+}
+
+body.wolbud-preview [data-cms-ui="hidden-veil"] {
   position: absolute;
-  z-index: 2;
-  top: .35rem;
-  right: max(.6rem, calc((100% - 1160px) / 2));
+  inset: 0;
+  pointer-events: none;
+  z-index: 45;
+  border: 2px dashed rgba(44, 77, 25, 0.85);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(44, 77, 25, 0.16) 0px,
+    rgba(44, 77, 25, 0.16) 10px,
+    rgba(255, 255, 255, 0.18) 10px,
+    rgba(255, 255, 255, 0.18) 20px
+  );
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 12px;
+}
+
+body.wolbud-preview [data-cms-ui="hidden-badge"] {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: .2rem .7rem;
-  border: 1px solid #688453;
-  border-radius: .35rem;
-  color: #234616;
-  background: #eff6e9;
-  font: 700 .875rem system-ui, sans-serif;
-  cursor: grab;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--cms-dark-deep);
+  color: #fff;
+  border: 1px solid rgba(217, 155, 38, 0.75);
+  font-family: var(--cms-ui-font);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+/* ==========================================================================
+   Wspólny reset dla wszystkich wstrzykniętych nakładek [data-cms-ui]
+   ========================================================================== */
+body.wolbud-preview [data-cms-ui] {
+  box-sizing: border-box;
+  font-family: var(--cms-ui-font);
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  text-indent: 0;
+  text-shadow: none;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Pływający pasek narzędzi SEKCJI
+   ========================================================================== */
+body.wolbud-preview [data-cms-ui="section-toolbar"] {
+  position: absolute;
+  top: 10px;
+  right: max(12px, calc((100% - 1280px) / 2));
+  z-index: 82;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: calc(100% - 24px);
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: rgba(24, 42, 14, 0.94);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s ease;
   user-select: none;
 }
-.wolbud-preview .editor-handle.is-selected { background: #2c4d19; color: white; }
-.wolbud-preview .editor-slot {
-  position: absolute;
-  z-index: 3;
-  inset: 0 .5rem auto;
-  min-height: 44px;
-  place-items: center;
-  border: 2px dashed #426728;
-  border-radius: .4rem;
-  background: #f3f9e8;
-  color: #234616;
-  font: 700 .875rem system-ui, sans-serif;
+
+/* Hero zaczyna się od top: 0 pod fixed headerem .bar (78px) */
+body.wolbud-preview .hero > [data-cms-ui="section-toolbar"] {
+  top: 84px;
+  right: 18px;
 }
-.wolbud-preview .editor-slot:not([hidden]) { display: grid; }
-.wolbud-preview .editor-slot.is-over { background: #2c4d19; color: #fff; }
-.wolbud-preview .editor-slot.editor-slot-end { inset: auto .5rem 0; }
+
+/* Na podstronach pasek sekcji unosi się nad górną krawędzią, żeby nie zasłaniać nagłówków h2 */
+body.wolbud-preview .subpage-content > .cms-section > [data-cms-ui="section-toolbar"],
+body.wolbud-preview .page-main .wrap > .cms-section > [data-cms-ui="section-toolbar"] {
+  top: -18px;
+  right: 8px;
+}
+
+body.wolbud-preview .cms-section.cms-hovered > [data-cms-ui="section-toolbar"],
+body.wolbud-preview .cms-section.cms-selected > [data-cms-ui="section-toolbar"],
+body.wolbud-preview [data-cms-ui="section-toolbar"]:hover,
+body.wolbud-preview [data-cms-ui="section-toolbar"]:focus-within {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+body.wolbud-preview .cms-section.cms-selected > [data-cms-ui="section-toolbar"] {
+  border-color: var(--cms-gold);
+  z-index: 94;
+}
+
+body.wolbud-preview .cms-tb-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 28px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+body.wolbud-preview .cms-tb-handle:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+body.wolbud-preview .cms-tb-handle:active {
+  cursor: grabbing;
+}
+
+body.wolbud-preview .cms-tb-label {
+  display: inline-block;
+  max-width: 190px;
+  padding: 0 6px 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f3f7ee;
+}
+
+body.wolbud-preview .cms-tb-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  background: rgba(255, 255, 255, 0.22);
+  flex-shrink: 0;
+}
+
+body.wolbud-preview .cms-tb-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #ffffff;
+  font-family: var(--cms-ui-font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease;
+}
+
+body.wolbud-preview .cms-tb-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+body.wolbud-preview .cms-tb-btn:focus-visible {
+  outline: 2px solid var(--cms-gold);
+  outline-offset: 1px;
+}
+
+body.wolbud-preview .cms-tb-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+body.wolbud-preview .cms-tb-btn--accent {
+  background: var(--cms-accent);
+  color: #ffffff;
+  padding: 0 9px;
+}
+
+body.wolbud-preview .cms-tb-btn--accent:hover:not(:disabled) {
+  background: #517d33;
+}
+
+body.wolbud-preview .cms-tb-btn--active {
+  background: var(--cms-gold);
+  color: #1b1b19;
+}
+
+body.wolbud-preview .cms-tb-btn--active:hover:not(:disabled) {
+  background: #e5aa34;
+}
+
+body.wolbud-preview .cms-tb-btn--danger:hover:not(:disabled) {
+  background: var(--cms-danger);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Przycisk "+ Sekcja poniżej" u dołu zaznaczonej sekcji
+   ========================================================================== */
+body.wolbud-preview [data-cms-ui="add-section-below"] {
+  position: absolute;
+  left: 50%;
+  bottom: -15px;
+  transform: translateX(-50%);
+  z-index: 88;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  background: var(--cms-dark);
+  color: #ffffff;
+  font-family: var(--cms-ui-font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
+}
+
+body.wolbud-preview .cms-section.cms-selected > [data-cms-ui="add-section-below"],
+body.wolbud-preview [data-cms-ui="add-section-below"]:hover,
+body.wolbud-preview [data-cms-ui="add-section-below"]:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+body.wolbud-preview [data-cms-ui="add-section-below"]:hover {
+  background: var(--cms-accent);
+  border-color: var(--cms-gold);
+  transform: translateX(-50%) scale(1.03);
+}
+
+/* ==========================================================================
+   Mini-pasek narzędzi KAFELKA / ELEMENTU w repeaterze
+   ========================================================================== */
+body.wolbud-preview [data-cms-ui="item-toolbar"] {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 86;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px;
+  border-radius: 8px;
+  background: rgba(24, 42, 14, 0.94);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.34);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s ease;
+  user-select: none;
+}
+
+/* Dla małych elementów inline (pigułki, logotypy, punkty listy) pasek nad elementem */
+body.wolbud-preview :is(.cat-nav-pill, .home-extra-category, .brand-chips > li, .partner-logo, .source-list > li) {
+  overflow: visible !important;
+}
+
+body.wolbud-preview :is(.cat-nav-pill, .home-extra-category, .brand-chips > li, .partner-logo, .source-list > li) > [data-cms-ui="item-toolbar"] {
+  top: -32px;
+  right: 0;
+}
+
+body.wolbud-preview .cms-item.cms-hovered > [data-cms-ui="item-toolbar"],
+body.wolbud-preview .cms-item.cms-selected > [data-cms-ui="item-toolbar"],
+body.wolbud-preview [data-cms-ui="item-toolbar"]:hover,
+body.wolbud-preview [data-cms-ui="item-toolbar"]:focus-within {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+body.wolbud-preview .cms-item.cms-selected > [data-cms-ui="item-toolbar"] {
+  border-color: var(--cms-gold);
+  z-index: 92;
+}
+
+body.wolbud-preview [data-cms-ui="item-toolbar"] .cms-tb-handle {
+  width: 22px;
+  height: 24px;
+  font-size: 13px;
+}
+
+body.wolbud-preview [data-cms-ui="item-toolbar"] .cms-tb-btn {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Nakładka zmiany zdjęcia na obrazkach
+   ========================================================================== */
+body.wolbud-preview [data-cms-ui="img-edit-btn"] {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 84;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(24, 42, 14, 0.92);
+  color: #ffffff;
+  font-family: var(--cms-ui-font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, background-color 0.14s ease, transform 0.12s ease;
+}
+
+body.wolbud-preview .cms-img-host {
+  position: relative;
+}
+
+body.wolbud-preview .cms-img-host:hover > [data-cms-ui="img-edit-btn"],
+body.wolbud-preview .cms-item.cms-selected .cms-img-host > [data-cms-ui="img-edit-btn"],
+body.wolbud-preview .cms-section.cms-selected > .cms-img-host > [data-cms-ui="img-edit-btn"],
+body.wolbud-preview .hero.cms-selected [data-cms-ui="img-edit-btn"],
+body.wolbud-preview .hero.cms-hovered [data-cms-ui="img-edit-btn"],
+body.wolbud-preview [data-cms-ui="img-edit-btn"]:hover,
+body.wolbud-preview [data-cms-ui="img-edit-btn"]:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+body.wolbud-preview .hero [data-cms-ui="img-edit-btn"] {
+  top: 84px;
+  left: 18px;
+  bottom: auto;
+  z-index: 85;
+}
+
+body.wolbud-preview [data-cms-ui="img-edit-btn"]:hover {
+  background: var(--cms-accent);
+  border-color: var(--cms-gold);
+  transform: scale(1.03);
+}
+
+/* Mniejsze zdjęcia / miniatury */
+body.wolbud-preview :is(.partner-logo, .product-gallery-thumb) [data-cms-ui="img-edit-btn"] {
+  left: 4px;
+  bottom: 4px;
+  height: 24px;
+  padding: 0 7px;
+  font-size: 11px;
+}
+
+/* ==========================================================================
+   Drag & Drop — stany przeciągania i sloty upuszczenia
+   ========================================================================== */
+body.wolbud-preview .cms-dragging {
+  opacity: 0.4 !important;
+  outline: 2px dashed var(--cms-gold) !important;
+}
+
+body.wolbud-preview [data-cms-ui="drop-slot"] {
+  display: none;
+  position: relative;
+  z-index: 96;
+  width: min(1240px, calc(100% - 24px));
+  margin: 8px auto;
+  min-height: 44px;
+  padding: 8px 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px dashed var(--cms-accent);
+  border-radius: 12px;
+  background: rgba(243, 249, 232, 0.96);
+  color: var(--cms-dark);
+  font-family: var(--cms-ui-font);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+body.wolbud-preview.cms-is-dragging-section [data-cms-ui="drop-slot"] {
+  display: flex;
+}
+
+body.wolbud-preview [data-cms-ui="drop-slot"].cms-drag-over {
+  background: var(--cms-dark);
+  color: #ffffff;
+  border-color: var(--cms-gold);
+  border-style: solid;
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px rgba(217, 155, 38, 0.35), 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Wskaźnik upuszczenia dla kafelków (drag & drop między sąsiednimi kafelkami) */
+body.wolbud-preview .cms-item.cms-drag-over-before {
+  box-shadow: -5px 0 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
+}
+
+body.wolbud-preview .cms-item.cms-drag-over-after {
+  box-shadow: 5px 0 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
+}
+
+body.wolbud-preview :is(.profile-row, .service-card, .source-list > li).cms-drag-over-before {
+  box-shadow: 0 -5px 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
+}
+
+body.wolbud-preview :is(.profile-row, .service-card, .source-list > li).cms-drag-over-after {
+  box-shadow: 0 5px 0 0 var(--cms-gold), 0 0 0 2px var(--cms-accent) !important;
+}
+
+/* Puste kontenery repeaterów — zachowaj widoczną przestrzeń */
+body.wolbud-preview .cms-repeater:empty {
+  min-height: 72px;
+  border: 2px dashed rgba(66, 103, 40, 0.45);
+  border-radius: 12px;
+}

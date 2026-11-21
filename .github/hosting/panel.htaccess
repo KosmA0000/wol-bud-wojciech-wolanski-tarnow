@@ -1,0 +1,36 @@
+# ==============================================================================
+# Plik konfiguracyjny .htaccess dla katalogu: public_html/panel/.htaccess
+# Przeznaczony pod hostingi współdzielone: cyber_Folks (LiteSpeed), LH, Home, dHosting
+# ==============================================================================
+
+Options -Indexes
+
+# 1. Przekazywanie nagłówka Authorization do PHP (LiteSpeed / Apache / CGI / FastCGI)
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+</IfModule>
+
+# 2. Twarda blokada bezpośredniego dostępu HTTP do plików wewnętrznych, logów i kopii
+<FilesMatch "(?:^_common\.php$|\.(?:log|lock|bak|md|sql|sh|ini|env)$|^\.)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. Nagłówki bezpieczeństwa panelu (blokada indeksowania przez Google i clickjackingu)
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
