@@ -1,20 +1,10 @@
 // Port skanera validateSafeHtmlDocument z _common.php: te same reguły i komunikaty, żeby tryb lokalny odrzucał to samo co hosting.
+import { decodeEntities } from './html-entities.js';
 
 const TAG_RE = /<([a-zA-Z][a-zA-Z0-9:-]*)(\s+(?:"[^"]*"|'[^']*'|[^>"'])*)?\s*\/?>/gs;
 const ATTR_RE = /\s+([a-zA-Z_:][a-zA-Z0-9:._-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gs;
 const BAD_SCHEME = /(?:javascript|vbscript):|data:(?:text\/html|image\/svg|application\/)|expression\s*\(/i;
 const SCRIPT_SRC_OK = /^(?:\.\/|(?:\.\.\/)*)assets\/(?:site|home-page)\.js(?:\?v=[a-zA-Z0-9._-]+)?$/;
-const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", colon: ':', tab: '\t', newline: '\n', nbsp: ' ' };
-
-/** Minimalny dekoder encji HTML (liczbowe i najczęstsze nazwane) do wykrywania ukrytych schematów. */
-function decodeEntities(value) {
-  return value.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);?/gi, (m, code) => {
-    const c = code.toLowerCase();
-    if (c.startsWith('#x')) return String.fromCodePoint(parseInt(c.slice(2), 16) || 0);
-    if (c.startsWith('#')) return String.fromCodePoint(parseInt(c.slice(1), 10) || 0);
-    return NAMED[c] ?? m;
-  });
-}
 
 /** @param {string} chunk atrybuty jednego tagu @returns {string|null} błąd */
 function scanAttributes(chunk) {

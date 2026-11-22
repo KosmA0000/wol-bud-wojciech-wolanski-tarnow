@@ -30,6 +30,7 @@ Endpointy: `/panel/api.php`, `/panel/backups.php`, `/panel/auth.php`, `/panel/ai
 - dev-page.js — strona sterowania /__dev/ z przyciskiem resetu
 - env-file.js — odczyt .env.local i zmiennych środowiskowych
 - fs-write.js — atomowy zapis i bezpieczne usuwanie w piaskownicy
+- html-entities.js — dekoder encji HTML (encje ASCII z HTML5, kody liczbowe z bezpiecznym zakresem) dla skanera
 - html-scan.js — skaner bezpieczeństwa HTML (port z _common.php)
 - http-util.js — odpowiedzi JSON, błędy HTTP, odczyt treści z limitem
 - log.js — logger JSON z maskowaniem kluczy

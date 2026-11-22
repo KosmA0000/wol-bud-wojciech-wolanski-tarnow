@@ -18,6 +18,24 @@ test('scanHtml: skrypty, zdarzenia, schematy, iframe, meta refresh są odrzucane
   for (const html of bad) assert.notEqual(scanHtml(html), null, html);
 });
 
+test('scanHtml (L-018): schematy ukryte encjami HTML5 są odrzucane', () => {
+  const bad = ['<a href="data:text&sol;html,&lt;script&gt;alert(1)&lt;/script&gt;">x</a>',
+    '<img src="data:image&sol;svg+xml;base64,AAA">', '<div style="width:expression&lpar;alert(1))">x</div>',
+    '<a href="java&Tab;script:alert(1)">x</a>', '<a href="java&NewLine;script:alert(1)">x</a>',
+    '<a href="javascript&colon;alert(1)">x</a>', '<a href="&#x6A;avascript:x">x</a>', '<a href="data&colon;text&sol;html,x">x</a>',
+    '<a href="data:application&sol;x-shockwave-flash,x">x</a>', '<a href="vbscript&#58;x">x</a>',
+    '<a href="java&#9script:x">x</a>', '<a href="javascript&#x3a x">x</a>'];
+  for (const html of bad) assert.notEqual(scanHtml(html), null, html);
+});
+
+test('scanHtml (L-018): kody spoza Unicode nie wywracają skanera', () => {
+  for (const html of ['<a href="&#99999999;">x</a>', '<a href="&#x110000;">x</a>', '<a title="&#0;">x</a>',
+    '<a href="&#xFFFFFFFFFFFF;">x</a>']) {
+    assert.doesNotThrow(() => scanHtml(html), html);
+  }
+  assert.equal(scanHtml('<a href="kontakt/index.html" title="Okna &amp; drzwi &sol; Tarn&oacute;w">x</a>'), null);
+});
+
 test('checkContent: JSON, sitemap.xml i robots.txt jak w api.php', () => {
   const b = (s) => Buffer.from(s);
   assert.equal(checkContent('assets/a.json', b('{"a":1}')), null);
