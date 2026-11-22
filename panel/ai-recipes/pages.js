@@ -1,4 +1,5 @@
 import { hrefFrom, pagePath, productButton, run as addOffer, setImage } from './add-offer.js?v=turbo2-b';
+import { kindOf as siteKind, parentOf } from './knowledge.js?v=turbo5';
 
 const ADD = 'dodaj_podstrone';
 const COPY = 'duplikuj_strone';
@@ -8,7 +9,7 @@ const PROMOTIONS = 'promocje/index.html';
 
 export const tools = [{
   name: ADD,
-  description: 'Tworzy podstronę z istniejącej analogicznej strony i dodaje te same drogi dojścia. Pozycje oferty wykonuje przepis dodaj_pozycje_oferty.',
+  description: 'Tworzy podstronę z istniejącej analogicznej strony. Gdy podasz stronę i grupę, stosuje rodzaj, układ i wszystkie odnośniki wymagane przez tę grupę.',
   parameters: {
     type: 'object',
     required: ['nazwa'],
@@ -19,6 +20,9 @@ export const tools = [{
       rodzic: { type: 'string', description: 'Kategoria nadrzędna podkategorii lub produktu.' },
       opis: { type: 'string', description: 'Treść podana przez klienta.' },
       zdjecie: { type: 'string', description: 'Ścieżka zdjęcia od katalogu głównego strony albo URL HTTP(S).' },
+      strona: { type: 'string', description: 'Ścieżka strony, na której znajduje się grupa nowych odnośników.' },
+      grupa: { type: 'string', description: 'Nazwa albo selektor grupy reguł. Można podać ścieżkę i selektor jako strona::selektor.' },
+      sekcja: { type: 'string', description: 'Nazwa sekcji z grupą na wskazanej stronie.' },
     },
   },
 }, {
@@ -36,6 +40,179 @@ export const tools = [{
 
 function ask(needsAnswer, options = []) {
   return { ok: false, needsAnswer, options };
+}
+
+async function optionalSibling(promise) {
+  try {
+    return await promise;
+  } catch (error) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND') return null;
+    throw error;
+  }
+}
+
+export async function recipeGroups(ctx) {
+  const consistency = await optionalSibling(import('./consistency.js?v=spojnosc1'));
+  return consistency ? consistency.analyzeGroups(ctx) : [];
+}
+
+const fold = (value) => String(value || '').trim().toLowerCase().normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l');
+
+function findElements(doc, selector) {
+  try {
+    return [...doc.querySelectorAll(selector)];
+  } catch {
+    return [];
+  }
+}
+
+export function groupElements(doc, group) {
+  const split = group.selector.lastIndexOf(' > ');
+  return findElements(doc, split < 0 ? group.selector : group.selector.slice(0, split));
+}
+
+function linksInGroup(doc, group) {
+  const roots = group.selector.includes(' > ') ? findElements(doc, group.selector) : groupElements(doc, group);
+  return roots.flatMap((root) => root.matches('a[href]') ? [root] : [...root.querySelectorAll('a[href]')]);
+}
+
+export function findRecipeGroups(groups, { host, query, doc, section, block } = {}) {
+  const [hostRef, selector] = String(query || '').trim().split('::');
+  const selectors = selector ? [selector] : [hostRef];
+  const scoped = groups.filter((group) => (!host || group.hostPage === host)
+    && (!selector || group.hostPage === hostRef));
+  if (section && doc) {
+    return scoped.filter((group) => group.selector === section.selector
+      || groupElements(doc, group).some((element) => element === section.el));
+  }
+  if (!hostRef) return scoped;
+  const text = fold(selectors[0]);
+  const exact = scoped.filter((group) => [group.selector, group.label].some((value) => fold(value) === text));
+  if (exact.length) return exact;
+  const container = scoped.filter((group) => doc && groupElements(doc, group).some((element) => {
+    return [...element.classList].some((cls) => fold(cls) === text.replace(/^\./, ''));
+  }));
+  if (container.length) return container;
+  const region = doc?.getElementById(selectors[0].replace(/^#/, ''));
+  if (region) {
+    const withContainer = scoped.flatMap((group) => groupElements(doc, group).map((element) => ({ group, element })));
+    const firstGroup = [...region.querySelectorAll('*')].find((element) => withContainer.some((entry) => entry.element === element));
+    if (firstGroup) return withContainer.filter((entry) => entry.element === firstGroup).map((entry) => entry.group);
+  }
+  return scoped.filter((group) => {
+    if (fold(group.label).includes(text)) return true;
+    return doc && groupElements(doc, group).some((element) => {
+      const region = element.closest('section[id]');
+      const name = region && fold(region.querySelector('h2, h3')?.textContent);
+      if (region && (fold(region.id) === text || name === text)) return true;
+      return block && [...element.children].some((child) => [...child.classList].some((cls) => fold(cls) === text));
+    });
+  });
+}
+
+export const groupOptions = (groups) => groups.map((group) => `${group.hostPage}::${group.selector}`);
+
+async function groupModels(ctx, group) {
+  const targets = [...new Set(group.members.map((member) => member.target).filter(Boolean))];
+  const models = await Promise.all(targets.map(async (path) => {
+    const html = await ctx.readPage(path);
+    if (!html) return null;
+    const doc = ctx.parse(html);
+    return { path, doc, kind: siteKind(path, doc), parent: parentOf(path, doc) };
+  }));
+  return models.filter(Boolean);
+}
+
+function groupTargetKind(group) {
+  const inferred = fold(group.rules?.targetKind);
+  return inferred === 'strona informacyjna' ? 'informacyjna' : inferred;
+}
+
+function groupParent(group, models, groups) {
+  const siblings = new Set(models.map(({ path }) => path));
+  const byParent = new Map();
+  for (const model of models) {
+    if (model.parent) byParent.set(model.parent, (byParent.get(model.parent) || 0) + 1);
+  }
+  for (const possible of groups) {
+    if (!/^kategorie\//.test(possible.hostPage) || groupTargetKind(possible) !== groupTargetKind(group)) continue;
+    const count = new Set(possible.members.map(({ target }) => target).filter((path) => siblings.has(path))).size;
+    if (count) byParent.set(possible.hostPage, Math.max(count, byParent.get(possible.hostPage) || 0));
+  }
+  const ordered = [...byParent.entries()].sort((a, b) => b[1] - a[1]);
+  const parent = ordered.find(([path]) => path === group.hostPage)?.[0]
+    || (ordered[0]?.[1] > (ordered[1]?.[1] || 0) ? ordered[0][0] : '');
+  return { parent, options: ordered.map(([path]) => path) };
+}
+
+async function stageGroupChanges(ctx, perform) {
+  const changes = new Map();
+  let globals;
+  const staged = {
+    ...ctx,
+    listPages: () => {
+      const entries = new Map(ctx.listPages().map((entry) => [entry.path, entry]));
+      for (const [path, { opts }] of changes) entries.set(path, { ...entries.get(path), ...opts, path });
+      return [...entries.values()];
+    },
+    readPage: async (path) => changes.get(path)?.html ?? ctx.readPage(path),
+    writePage: async (path, html, opts) => changes.set(path, { html, opts: { ...changes.get(path)?.opts, ...opts } }),
+    getGlobals: () => globals === undefined ? ctx.getGlobals() : structuredClone(globals),
+    setGlobals: async (value) => { globals = structuredClone(value); },
+  };
+  const result = await perform(staged);
+  if (!result.ok) return result;
+  for (const [path, { html, opts }] of changes) await ctx.writePage(path, html, opts);
+  if (globals !== undefined) await ctx.setGlobals(globals);
+  return { ...result, changedPages: [...changes.keys()] };
+}
+
+export async function addGroupMember(ctx, group, args, groups, updateMember) {
+  const kind = groupTargetKind(group);
+  if (!kind) return ask(`Do jakiego rodzaju strony ma prowadzić element w grupie „${group.label}”?`, KINDS);
+  const models = await groupModels(ctx, group);
+  const neighbors = models.filter((model) => model.path !== args.target);
+  const sample = neighbors.find((model) => {
+    return model.kind === kind || (kind === 'informacyjna' && model.kind === 'strona informacyjna');
+  }) || neighbors[0];
+  if (!sample) return ask(`Wskaż istniejącą stronę, której układ ma wzorować nowy element w grupie „${group.label}”.`);
+  const join = await optionalSibling(import('./group-join.js?v=spojnosc1'));
+  if (!join) return { ok: false, error: 'Dołączanie do grupy jest chwilowo niedostępne.' };
+  const { parent, options } = groupParent(group, models, groups);
+  if (!args.target && ['produkt', 'podkategoria'].includes(kind) && !args.rodzic && !parent) {
+    return ask(`Do której kategorii należy dodać „${args.nazwa}”?`, options);
+  }
+
+  return stageGroupChanges(ctx, async (staged) => {
+    let created;
+    let target = args.target;
+    if (!target) {
+      const createArgs = {
+        nazwa: args.nazwa, rodzaj: kind, rodzic: args.rodzic || parent, wzor: sample.path, opis: args.opis, zdjecie: args.zdjecie,
+      };
+      created = CATALOG.includes(kind) ? await addOffer('dodaj_pozycje_oferty', createArgs, staged)
+        : await run(ADD, createArgs, staged);
+      if (!created.ok) return created;
+      target = created.pagePath;
+    }
+    const linked = await join.run('dolacz_do_grupy', {
+      strona: target, grupa: group.selector, jakStrona: sample.path, hostPage: group.hostPage,
+    }, staged);
+    if (!linked.ok) return linked;
+    const hostHtml = await staged.readPage(group.hostPage);
+    const hostDoc = hostHtml && staged.parse(hostHtml);
+    const existing = hostDoc && linksInGroup(hostDoc, group)
+      .filter((link) => pagePath(link.getAttribute('data-desktop-href') || link.getAttribute('href'), group.hostPage) === target);
+    if (!existing?.length) return { ok: false, error: `Brakuje odnośnika do „${args.nazwa}” w grupie „${group.label}”.` };
+    const memberSummary = updateMember && await updateMember(staged, hostDoc, existing, target);
+    const summary = [created?.summary, linked.changedPages?.length ? linked.summary : '', memberSummary].filter(Boolean).join(' ');
+    return {
+      ...linked,
+      pagePath: target,
+      summary: summary || linked.summary,
+    };
+  });
 }
 
 function kindOf(path) {
@@ -306,6 +483,21 @@ export async function run(name, args, ctx) {
   if (!title) return ask(copying ? 'Jak ma się nazywać kopia strony?' : 'Jak ma się nazywać podstrona?');
   const requestedKind = String(args.rodzaj ?? '').trim().toLowerCase();
   const kind = requestedKind === 'strona informacyjna' ? 'informacyjna' : requestedKind;
+  const groupQuery = args.grupa || args.sekcja;
+  if (!copying && (args.strona || groupQuery)) {
+    const host = pagePath(args.strona) || (String(groupQuery || '').includes('::') ? '' : ctx.currentPage || 'index.html');
+    const html = host && await ctx.readPage(host);
+    const groups = await recipeGroups(ctx);
+    const matches = findRecipeGroups(groups, { host, query: groupQuery, doc: html && ctx.parse(html) });
+    if (matches.length !== 1) {
+      return ask('Do której grupy ma prowadzić nowa podstrona?', groupOptions(matches.length ? matches : findRecipeGroups(groups, { host })));
+    }
+    const group = matches[0];
+    if (kind && groupTargetKind(group) && kind !== groupTargetKind(group)) {
+      return ask(`W grupie „${group.label}” są strony rodzaju „${groupTargetKind(group)}”. Utworzyć stronę tego rodzaju czy wybrać inną grupę?`, [groupTargetKind(group), ...groupOptions(findRecipeGroups(groups, { host }).filter((other) => other !== group))]);
+    }
+    return addGroupMember(ctx, group, { ...args, nazwa: title }, groups);
+  }
   if (!copying && CATALOG.includes(kind)) return addOffer('dodaj_pozycje_oferty', { ...args, rodzaj: kind }, ctx);
   if (!copying && !KINDS.includes(kind)) return ask('Jaki rodzaj podstrony utworzyć?', KINDS);
 

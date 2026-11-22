@@ -1,9 +1,25 @@
 // Części stron: usuń / przenieś blok, zmień wspólny blok na wszystkich stronach danego rodzaju.
 import { clean, resolve, container, blocksOf, blockLabel, findBlocks, loadSite, fillBlock } from './knowledge.js?v=turbo5';
+import { run as addOrdinaryBlock, tools as knowledgeTools } from './knowledge.js?v=turbo5';
+import { addGroupMember, findRecipeGroups, groupOptions, recipeGroups } from './pages.js?v=spojnosc1';
 
 const KINDS = ['strona główna', 'kategoria', 'podkategoria', 'produkt', 'promocja', 'strona informacyjna'];
 
 export const tools = [
+  ...knowledgeTools.filter((tool) => tool.name === 'dodaj_blok').map((tool) => ({
+    ...tool,
+    description: tool.description + ' Gdy część należy do grupy linków, podaj nagłówek lub cel, aby wykonać wszystkie powiązane zmiany.',
+    parameters: {
+      ...tool.parameters,
+      properties: {
+        ...tool.parameters.properties,
+        grupa: { type: 'string', description: 'Opcjonalna nazwa lub selektor grupy, do której ma trafić element.' },
+        link: { type: 'string', description: 'Ścieżka istniejącej strony do podpięcia w grupie, np. promocje/index.html.' },
+        rodzic: { type: 'string', description: 'Opcjonalna kategoria nadrzędna nowej podstrony.' },
+        zdjecie: { type: 'string', description: 'Opcjonalna ścieżka do zdjęcia.' },
+      },
+    },
+  })),
   {
     name: 'usun_blok',
     description:
@@ -240,7 +256,33 @@ async function changeEverywhere(ctx, args) {
   };
 }
 
+async function addBlock(ctx, args) {
+  const host = clean(args.strona) || ctx.currentPage;
+  const query = args.grupa || args.blok;
+  if (!host || !query) return addOrdinaryBlock('dodaj_blok', args, ctx);
+  const html = await ctx.readPage(host);
+  if (!html) return addOrdinaryBlock('dodaj_blok', args, ctx);
+  const doc = ctx.parse(html);
+  const groups = await recipeGroups(ctx);
+  const matches = findRecipeGroups(groups, { host, query, doc, block: true });
+  if (!matches.length && !args.grupa) return addOrdinaryBlock('dodaj_blok', args, ctx);
+  if (matches.length !== 1) {
+    return { ok: false, needsAnswer: 'Do której grupy dodać ten element?', options: groupOptions(matches.length ? matches : findRecipeGroups(groups, { host })) };
+  }
+  const group = matches[0];
+  const target = args.link ? resolve(args.link, 'index.html') : '';
+  if (args.link && (!target || !ctx.listPages().some((page) => page.path === target))) {
+    return { ok: false, needsAnswer: 'Podaj ścieżkę istniejącej strony lub nagłówek nowej strony.', options: group.members.map((member) => member.target).filter(Boolean) };
+  }
+  const title = String(args.naglowek || '').trim();
+  if (!target && !title) {
+    return { ok: false, needsAnswer: `Co dodać do grupy „${group.label}”? Podaj nazwę nowej podstrony lub wskaż istniejącą.`, options: group.members.map((member) => member.target).filter(Boolean) };
+  }
+  return addGroupMember(ctx, group, { ...args, target, nazwa: title || target, opis: args.tekst }, groups);
+}
+
 export async function run(name, args, ctx) {
+  if (name === 'dodaj_blok') return addBlock(ctx, args);
   if (name === 'usun_blok') return removeBlock(ctx, args);
   if (name === 'przenies_blok') return moveBlock(ctx, args);
   if (name === 'zmien_blok_wszedzie') return changeEverywhere(ctx, args);
