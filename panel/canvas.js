@@ -785,6 +785,7 @@ export function connectCanvas(doc, options = {}) {
     onDragTargetStart: typeof options.onDragTargetStart === 'function' ? options.onDragTargetStart : () => {},
     onDragTargetEnd: typeof options.onDragTargetEnd === 'function' ? options.onDragTargetEnd : () => {},
     onNavigate: typeof options.onNavigate === 'function' ? options.onNavigate : () => {},
+    onContextMenu: typeof options.onContextMenu === 'function' ? options.onContextMenu : null,
   };
 
   let browseMode = Boolean(options.browseMode);
@@ -4639,7 +4640,22 @@ export function connectCanvas(doc, options = {}) {
     }
   }
 
+  // Prawy przycisk na elemencie: zaznacz go i pokaż menu panelu (Usuń, Ukryj, Duplikuj, Przywróć…)
+  function onContextMenuCapture(e) {
+    if (browseMode || aiPickMode) return;
+    const target = e.target instanceof doc.defaultView.Element ? e.target : e.target?.parentElement;
+    const el = target?.closest('.cms-item') || target?.closest('.cms-section');
+    if (!el || !callbacks.onContextMenu) return;
+    const uid = el.getAttribute('data-cms-uid');
+    if (!uid) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    selectByUid(uid);
+    callbacks.onContextMenu({ uid, kind: el.classList.contains('cms-item') ? 'item' : 'section', x: e.clientX, y: e.clientY });
+  }
+
   // Podepnij listenery
+  doc.addEventListener('contextmenu', onContextMenuCapture, true);
   doc.addEventListener('click', onClickCapture, true);
   doc.addEventListener('dblclick', onDblClickCapture, true);
   doc.addEventListener('pointerdown', onPointerDown, true);

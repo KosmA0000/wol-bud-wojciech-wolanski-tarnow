@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261121-27';
+} from './canvas.js?v=20261122-turbo6';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -1313,6 +1313,11 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
       onRequestAddSection: handleRequestAddSection,
       onRequestAddItem: handleRequestAddItem,
       onRequestGlobals: (opts) => openGlobalsDialog(opts),
+      onContextMenu: (info) => {
+        const r = frame.getBoundingClientRect();
+        const scale = r.width / (frame.contentWindow?.innerWidth || r.width) || 1;
+        showElementContextMenu({ ...info, x: r.left + info.x * scale, y: r.top + info.y * scale });
+      },
       onSendToAi: (targets) => {
         setAiPickModeUi(false);
         pinAiTargets(targets, { openDrawer: true });
@@ -3027,6 +3032,168 @@ async function handleDiscardCurrentPage() {
 
   showToast(isNew ? 'Usunięto nową stronę.' : 'Przywrócono opublikowaną wersję strony.', 'warn');
   await loadPage(isNew ? 'index.html' : state.currentPagePath, { skipFlush: true });
+}
+
+// ============================================================================
+// MENU POD PRAWYM PRZYCISKIEM + HISTORIA STRONY (bez kopii na hostingu: wersje z historii git)
+// ============================================================================
+
+function closeElementContextMenu() {
+  document.getElementById('cms-context-menu')?.remove();
+}
+
+function buildContextMenuEl(x, y) {
+  closeElementContextMenu();
+  const menu = document.createElement('div');
+  menu.id = 'cms-context-menu';
+  menu.setAttribute('role', 'menu');
+  menu.style.cssText =
+    'position:fixed;z-index:99999;min-width:250px;max-width:340px;background:#fff;border:1px solid #d9d4cc;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;font:14px/1.3 system-ui,sans-serif;color:#1c1b19';
+  document.body.append(menu);
+  const place = () => {
+    const w = menu.offsetWidth;
+    const h = menu.offsetHeight;
+    menu.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`;
+    menu.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
+  };
+  place();
+  setTimeout(() => {
+    const away = (e) => {
+      if (!menu.contains(e.target)) {
+        closeElementContextMenu();
+        document.removeEventListener('pointerdown', away, true);
+      }
+    };
+    document.addEventListener('pointerdown', away, true);
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && closeElementContextMenu(), { once: true });
+  }, 0);
+  return { menu, place };
+}
+
+function addContextMenuItem(menu, label, onClick, { danger = false, hint = '' } = {}) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.setAttribute('role', 'menuitem');
+  btn.style.cssText = `display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:8px;cursor:pointer;font:inherit;color:${danger ? '#b42318' : 'inherit'}`;
+  btn.onmouseenter = () => (btn.style.background = danger ? '#fdecea' : '#f3efe8');
+  btn.onmouseleave = () => (btn.style.background = 'none');
+  btn.textContent = label;
+  if (hint) {
+    const small = document.createElement('small');
+    small.style.cssText = 'display:block;color:#7a746b;font-size:12px;margin-top:2px';
+    small.textContent = hint;
+    btn.append(small);
+  }
+  btn.addEventListener('click', async () => {
+    closeElementContextMenu();
+    try {
+      await onClick();
+    } catch (err) {
+      showToast(err?.message || 'Nie udało się wykonać operacji.', 'error');
+    }
+  });
+  menu.append(btn);
+  return btn;
+}
+
+function addContextMenuSeparator(menu, title = '') {
+  const sep = document.createElement('div');
+  sep.style.cssText = 'border-top:1px solid #eee8df;margin:6px 4px 4px;padding-top:6px;color:#7a746b;font-size:12px;padding-left:8px';
+  sep.textContent = title;
+  menu.append(sep);
+}
+
+function showElementContextMenu({ uid, kind, x, y }) {
+  const { menu, place } = buildContextMenuEl(x, y);
+  const desc = state.canvas?.selectByUid?.(uid, { scroll: false });
+  const what = kind === 'item' ? 'element' : 'sekcję';
+  const head = document.createElement('div');
+  head.style.cssText = 'padding:6px 12px 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  head.textContent = desc?.label || (kind === 'item' ? 'Element' : 'Sekcja');
+  menu.append(head);
+
+  addContextMenuItem(menu, `🗑️ Usuń ${what}`, async () => {
+    const res = await executeAiTool('delete_element', { uid });
+    if (res?.ok === false) throw new Error(res.error);
+    showToast('Usunięto. Ctrl+Z albo „Cofnij” przywraca.', 'warn');
+  }, { danger: true });
+  addContextMenuItem(menu, desc?.hidden ? '👁️ Pokaż' : '🙈 Ukryj', async () => {
+    const res = await executeAiTool('toggle_element_visibility', { uid });
+    if (res?.ok === false) throw new Error(res.error);
+  });
+  addContextMenuItem(menu, '⧉ Duplikuj', async () => {
+    const res = await executeAiTool('duplicate_element', { uid });
+    if (res?.ok === false) throw new Error(res.error);
+  });
+  addPageHistoryItems(menu, place);
+}
+
+function showPageHistoryMenu(anchorEl) {
+  const r = anchorEl.getBoundingClientRect();
+  const { menu, place } = buildContextMenuEl(r.left, r.bottom + 6);
+  addPageHistoryItems(menu, place, { withSeparator: false });
+}
+
+const pageHistoryCache = new Map();
+
+async function fetchPageVersions(pagePath) {
+  if (pageHistoryCache.has(pagePath)) return pageHistoryCache.get(pagePath);
+  const url = `https://api.github.com/repos/${config.repository}/commits?path=${encodeURIComponent(pagePath)}&sha=${encodeURIComponent(config.branch || 'main')}&per_page=6`;
+  const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+  if (!res.ok) throw new Error(`Historia niedostępna (HTTP ${res.status}).`);
+  const list = (await res.json()).map((c) => ({ sha: c.sha, date: c.commit?.author?.date || c.commit?.committer?.date }));
+  pageHistoryCache.set(pagePath, list);
+  return list;
+}
+
+async function restorePageFromSha(sha, label) {
+  const pagePath = state.currentPagePath;
+  const raw = `https://raw.githubusercontent.com/${config.repository}/${sha}/${pagePath.split('/').map(encodeURIComponent).join('/')}`;
+  const res = await fetch(raw, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(res.status === 404 ? `Ta strona nie istniała w wersji „${label}”.` : `Nie udało się pobrać wersji (HTTP ${res.status}).`);
+  }
+  const html = await res.text();
+  if (!window.confirm(`Przywrócić tę stronę do wersji: ${label}?\nTrafi do szkicu — zobaczysz ją przed publikacją, a „Odrzuć zmiany” wraca do obecnej wersji opublikowanej.`)) return;
+  await flushAutosaveIfNeeded();
+  await writeAiPageDraft(pagePath, html);
+  await loadPage(pagePath, { skipFlush: true });
+  showToast(`Przywrócono wersję: ${label} (w szkicu, do publikacji).`);
+}
+
+function addPageHistoryItems(menu, place, { withSeparator = true } = {}) {
+  if (withSeparator) addContextMenuSeparator(menu, 'Cała ta strona');
+  const hasDraft = Boolean(state.pageDrafts[state.currentPagePath]) || state.currentPageDirty;
+  addContextMenuItem(menu, '↺ Wróć do ostatniej opublikowanej wersji', () => handleDiscardCurrentPage(), {
+    hint: hasDraft ? 'Odrzuca wszystkie nieopublikowane zmiany na tej stronie' : 'Brak nieopublikowanych zmian — strona już jest w tej wersji',
+  });
+  const baseline = String(siteProfile.baselineCommitSha || '').trim();
+  if (baseline) {
+    addContextMenuItem(menu, '⟲ Wróć do oryginału', () => restorePageFromSha(baseline, 'oryginał (przed panelem)'), {
+      hint: 'Wersja strony sprzed pierwszych zmian w panelu',
+    });
+  }
+  const holder = document.createElement('div');
+  holder.style.cssText = 'padding:4px 12px;color:#7a746b;font-size:12px';
+  holder.textContent = 'Wczytywanie wcześniejszych publikacji…';
+  menu.append(holder);
+  place();
+  fetchPageVersions(state.currentPagePath)
+    .then((versions) => {
+      holder.remove();
+      if (!document.body.contains(menu)) return;
+      const older = versions.slice(1);
+      if (!older.length) return;
+      addContextMenuSeparator(menu, 'Wcześniejsze publikacje tej strony');
+      for (const v of older) {
+        const label = v.date ? formatDateTimePl(v.date) : v.sha.slice(0, 7);
+        addContextMenuItem(menu, `🕘 ${label}`, () => restorePageFromSha(v.sha, label));
+      }
+      place();
+    })
+    .catch(() => {
+      holder.textContent = 'Wcześniejsze publikacje: chwilowo niedostępne.';
+    });
 }
 
 // ============================================================================
@@ -8276,6 +8443,7 @@ function bindUIEvents() {
     handleCanvasSelect(null);
   });
   $('btn-discard-page').addEventListener('click', handleDiscardCurrentPage);
+  $('btn-page-history')?.addEventListener('click', (e) => showPageHistoryMenu(e.currentTarget));
 
   // Backup file input
   $('import-backup-input').addEventListener('change', (e) => {
