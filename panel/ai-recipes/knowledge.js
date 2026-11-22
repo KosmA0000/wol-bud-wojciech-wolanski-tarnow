@@ -189,6 +189,21 @@ export async function getSiteKnowledgeText(ctx) {
     lines.push(`- ${kind} (${same.length} stron, wzór: ${model.path}): ${seq.join(' → ')}${fromTxt ? `. Linki do niej są w: ${fromTxt}` : ''}`);
   }
 
+  // 3. Katalog wszystkich sekcji witryny: AI od razu wie, jaka sekcja istnieje i gdzie (bez szukania narzędziami)
+  const catalog = new Map();
+  for (const p of pages) {
+    for (const b of blocksOf(p.doc)) {
+      if (!catalog.has(b.cls)) catalog.set(b.cls, { label: blockLabel(b), pages: [] });
+      const entry = catalog.get(b.cls);
+      if (!entry.pages.includes(p.path)) entry.pages.push(p.path);
+    }
+  }
+  lines.push('', 'KATALOG SEKCJI CAŁEJ WITRYNY (nazwa („nagłówek”) — gdzie jest). Gdy klient chce „sekcję X”, znajdź ją tu i od razu dodaj_blok { blok: nazwa, wzor: strona z listy }; gdy pasuje kilka — zapytaj krótko, którą, podając nagłówki:');
+  for (const [, e] of [...catalog].sort((a, b) => b[1].pages.length - a[1].pages.length).slice(0, 70)) {
+    const where = e.pages.slice(0, 3).join(', ') + (e.pages.length > 3 ? ` (+${e.pages.length - 3})` : '');
+    lines.push(`- ${e.label} — ${where}`);
+  }
+
   lines.push('', ...HOW_TO);
 
   cache = lines.join('\n');
@@ -268,14 +283,18 @@ export async function run(name, args, ctx) {
     return { ok: false, needsAnswer: 'Jaki blok dodać? (taki jak na innych stronach tego rodzaju)', options: avail };
   }
 
-  const sources = pages
+  let sources = pages
     .filter((p) => p.path !== path && (args.wzor ? p.path === clean(args.wzor) : p.kind === kind))
     .filter((p) => findBlocks(p.doc, cls).matches.length)
     .sort((a, b) => Number(b.parent === parent) - Number(a.parent === parent));
+  if (!sources.length) {
+    // Nie ma go na stronach tego rodzaju (albo we wskazanym wzorze) — weź tę samą sekcję z dowolnej strony witryny
+    sources = pages.filter((p) => p.path !== path && findBlocks(p.doc, cls).matches.length);
+  }
   const src = sources[0];
   if (!src) {
-    const avail = [...new Set(sameKind.flatMap((p) => blocksOf(p.doc).map((b) => b.cls)))];
-    return { ok: false, needsAnswer: `Na stronach tego rodzaju nie ma bloku „${cls}”. Który blok dodać?`, options: avail };
+    const avail = [...new Set(pages.flatMap((p) => blocksOf(p.doc).map((b) => blockLabel(b))))].slice(0, 40);
+    return { ok: false, needsAnswer: `Na stronie nie ma sekcji „${cls}”. Którą sekcję dodać?`, options: avail };
   }
 
   const rebased = ctx.parse(ctx.rebaseUrls(await ctx.readPage(src.path), src.path, path));

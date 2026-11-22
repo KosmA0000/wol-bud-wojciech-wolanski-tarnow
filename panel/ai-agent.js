@@ -1,5 +1,5 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo5';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo10';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo15';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo15';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1011,6 +1011,12 @@ export async function checkProxyStatus(proxyUrl = './ai-proxy.php') {
   }
 }
 
+const READ_ONLY_TOOLS = new Set([
+  'sprawdz_powiazania', 'znajdz_analogiczne', 'read_file', 'list_files', 'get_page_structure', 'get_element_details',
+  'list_pages', 'get_globals', 'list_site_components', 'get_section_html', 'read_page_summary', 'search_site_wide',
+  'search_images', 'list_backups', 'open_page',
+]);
+
 export async function runAiTurn({
   userMessage,
   history = [],
@@ -1135,6 +1141,8 @@ export async function runAiTurn({
     return res.json();
   };
 
+  let readStreak = 0;
+  let brakeSent = false;
   for (let round = 0; round < 16; round += 1) {
     const data = await callModel();
     const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : [];
@@ -1172,11 +1180,22 @@ export async function runAiTurn({
       const summary = ok ? 'OK' : (result?.error || 'Błąd');
       toolLog.push({ name: tc.name, args, ok, summary });
       await onToolResult?.({ id, name: tc.name, args, ok, summary, result });
+      // Hamulec: po 5 odczytach z rzędu bez żadnej zmiany każemy działać albo zapytać (zamiast analizować w kółko)
+      readStreak = READ_ONLY_TOOLS.has(tc.name) ? readStreak + 1 : 0;
+      let payload = result;
+      if (readStreak >= 5 && !brakeSent && result && typeof result === 'object') {
+        brakeSent = true;
+        payload = {
+          ...result,
+          uwagaPanelu:
+            'Masz już dość informacji (WIEDZA O STRONIE i KATALOG SEKCJI). Nie odczytuj więcej. Teraz wykonaj prośbę JEDNYM przepisem (np. dodaj_blok z wzorem z katalogu) albo zadaj klientowi jedno krótkie pytanie z 2–4 opcjami.',
+        };
+      }
       messages.push({
         role: 'tool',
         tool_call_id: id,
         name: tc.name,
-        content: JSON.stringify(result),
+        content: JSON.stringify(payload),
       });
     }
   }
