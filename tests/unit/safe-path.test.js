@@ -67,6 +67,24 @@ test('zapis: dowiązanie w ścieżce wyprowadzające poza katalog jest odrzucane
   fs.rmSync(base, { recursive: true, force: true });
 });
 
+test('odczyt (L-017): katalog/ z index.html przechodzi tę samą kontrolę co zwykły plik', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'wolbud-l017-'));
+  const root = path.join(base, 'site');
+  fs.mkdirSync(path.join(root, 'dirindex', 'index.html'), { recursive: true });
+  fs.writeFileSync(path.join(base, 'sekret.html'), 'OUTSIDE_SECRET');
+  fs.mkdirSync(path.join(root, 'fsym'));
+  assert.equal(resolveStatic(root, '/dirindex/'), null, 'katalog o nazwie index.html');
+  try {
+    fs.symlinkSync(path.join(base, 'sekret.html'), path.join(root, 'fsym', 'index.html'), 'file');
+  } catch {
+    t.diagnostic('brak uprawnień do symlinku pliku: pominięto część z symlinkiem');
+    fs.rmSync(base, { recursive: true, force: true });
+    return;
+  }
+  assert.equal(resolveStatic(root, '/fsym/'), null, 'symlink index.html poza root');
+  fs.rmSync(base, { recursive: true, force: true });
+});
+
 test('odczyt: resolveStatic odrzuca .., zakodowane kropki, backslash, ukryte i nieprawidłowe %', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wolbud-static-'));
   fs.writeFileSync(path.join(root, 'index.html'), 'ok');

@@ -27,19 +27,26 @@ export function resolveStatic(root, urlPath) {
   if (segments.some((s) => s === '..' || s.startsWith('.') || s.includes(':'))) return null;
   let realRoot;
   try { realRoot = fs.realpathSync(root); } catch { return null; }
-  let target = path.join(realRoot, ...segments);
-  let real;
-  try { real = fs.realpathSync(target); } catch { return null; }
-  if (!isInside(realRoot, real)) return null;
-  const st = fs.statSync(real);
-  if (st.isDirectory()) {
+  const found = realInside(realRoot, path.join(realRoot, ...segments));
+  if (!found) return null;
+  if (found.stat.isDirectory()) {
     if (!decoded.endsWith('/')) return { redirect: true };
-    real = path.join(real, 'index.html');
-    if (!fs.existsSync(real)) return null;
-  } else if (!st.isFile()) {
-    return null;
+    const index = realInside(realRoot, path.join(found.real, 'index.html'));
+    return index && index.stat.isFile() ? { file: index.real } : null;
   }
-  return { file: real };
+  return found.stat.isFile() ? { file: found.real } : null;
+}
+
+/**
+ * realpath kandydata, o ile istnieje i po rozwiązaniu dowiązań leży w realRoot (L-017).
+ * @param {string} realRoot @param {string} candidate
+ * @returns {{ real: string, stat: fs.Stats } | null}
+ */
+function realInside(realRoot, candidate) {
+  let real;
+  try { real = fs.realpathSync(candidate); } catch { return null; }
+  if (!isInside(realRoot, real)) return null;
+  return { real, stat: fs.statSync(real) };
 }
 
 /**
