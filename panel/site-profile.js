@@ -17,7 +17,7 @@ export const siteProfile = Object.freeze({
   faviconSrc: 'img/favicon.png',
   accentColor: '#2c4d19',
   accentLight: '#426728',
-  baselineCommitSha: '6e4e0fe27ba8d80f9767d30d941f2b6c5d16539b',
+  baselineCommitSha: '7343a1aa2251cbc9c831337b8b9aad85e919c7c3',
   protectedPages: Object.freeze([
     'index.html',
     'oferta/index.html',

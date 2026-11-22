@@ -1,5 +1,5 @@
 import { config } from './config.js?v=20261121-17';
-import { siteProfile } from './site-profile.js?v=20261121-17';
+import { siteProfile } from './site-profile.js?v=20261122-turbo11';
 import { AiGuardrailTracker, sanitizeUrl, assertSafeSerializedHtml } from './sanitizer.js?v=20261121-27';
 import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
@@ -402,6 +402,17 @@ function getPageEntry(pagePath) {
 function normalizeHtmlForCompare(html) {
   try {
     const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    // Pomijamy techniczne ślady panelu (znaczniki edytora, kolejność atrybutów, białe znaki) — liczy się tylko realna treść i wygląd
+    doc.querySelectorAll('[data-cms-ui]').forEach((el) => el.remove());
+    for (const el of doc.querySelectorAll('*')) {
+      const attrs = [...el.attributes].filter((a) => !/^data-cms-|^contenteditable$|^spellcheck$|^draggable$/i.test(a.name));
+      for (const a of [...el.attributes]) el.removeAttribute(a.name);
+      attrs.sort((x, y) => x.name.localeCompare(y.name)).forEach((a) => {
+        const v = a.name === 'class' ? a.value.split(/\s+/).filter((c) => c && !/^cms-/.test(c)).sort().join(' ') : a.value;
+        if (a.name === 'class' && !v) return;
+        el.setAttribute(a.name, v);
+      });
+    }
     return doc.documentElement.outerHTML.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
   } catch {
     return String(html || '').replace(/\s+/g, ' ').trim();
@@ -3239,6 +3250,98 @@ async function restorePageFromSha(sha, label) {
   showToast(`Przywrócono wersję: ${label} (w szkicu, do publikacji).`);
 }
 
+// Lista stron i treść ORYGINAŁU (pierwsza wersja witryny): GitHub = pierwszy commit, hosting = kopia z pierwszego uruchomienia
+async function listOriginalPages() {
+  if (config.mode === 'hosting') {
+    const data = await fetchHostingPage({ originalPages: '1' });
+    return data.pages || [];
+  }
+  const sha = String(siteProfile.baselineCommitSha || '').trim();
+  const res = await fetch(`https://api.github.com/repos/${config.repository}/git/trees/${sha}?recursive=1`, {
+    headers: { Accept: 'application/vnd.github+json' },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Nie udało się odczytać listy stron oryginału (HTTP ${res.status}).`);
+  const tree = (await res.json()).tree || [];
+  return tree
+    .filter((n) => n.type === 'blob' && n.path.endsWith('.html') && !/^(panel|\.github|tools|node_modules)\//.test(n.path))
+    .map((n) => n.path);
+}
+
+async function fetchOriginalPageHtml(pagePath) {
+  if (config.mode === 'hosting') return (await fetchHostingPage({ page: pagePath, version: 'original' })).html;
+  const sha = String(siteProfile.baselineCommitSha || '').trim();
+  const res = await fetch(`https://raw.githubusercontent.com/${config.repository}/${sha}/${pagePath.split('/').map(encodeURIComponent).join('/')}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Brak strony ${pagePath} w oryginale (HTTP ${res.status}).`);
+  return res.text();
+}
+
+async function restoreWholeSiteToOriginal() {
+  if (!window.confirm('Przywrócić CAŁĄ stronę internetową do ORYGINAŁU (pierwszej wersji)?\n\nWszystkie podstrony wrócą do pierwszej wersji, strony dodane później zostaną usunięte, menu i stopka wrócą do opublikowanych. Wszystko trafi do szkicu — zobaczysz to przed publikacją.')) return;
+  await flushAutosaveIfNeeded();
+  showToast('Przywracanie oryginału całej strony…', 'warn', 6000);
+  const originalPages = await listOriginalPages();
+  const originalSet = new Set(originalPages);
+  let restored = 0;
+  let removed = 0;
+  let i = 0;
+  for (const path of originalPages) {
+    i += 1;
+    const html = await fetchOriginalPageHtml(path);
+    const current = state.pageDrafts[path]?.html ?? (await fetchPublishedHtml(path));
+    if (current !== null && normalizeHtmlForCompare(current) === normalizeHtmlForCompare(html)) {
+      if (state.pageDrafts[path]) {
+        await deletePageDraft(path);
+        delete state.pageDrafts[path];
+      }
+      continue;
+    }
+    await writeAiPageDraft(path, html);
+    restored += 1;
+    if (i % 15 === 0) showToast(`Przywracanie oryginału… ${i}/${originalPages.length}`, 'warn', 4000);
+  }
+  for (const page of getAllPagesMerged()) {
+    if (page.deleted || originalSet.has(page.path)) continue;
+    await executeAiTool('delete_page', { pagePath: page.path });
+    removed += 1;
+  }
+  if (state.globalsDraft) {
+    await deleteGlobalsDraft();
+    state.globalsDraft = null;
+  }
+  await pruneUnchangedDrafts();
+  const cur = getAllPagesMerged().some((p) => p.path === state.currentPagePath && !p.deleted) ? state.currentPagePath : 'index.html';
+  await loadPage(cur, { skipFlush: true });
+  updateTopbarAndIndicators();
+  renderPagesList();
+  showToast(
+    restored || removed
+      ? `Oryginał przywrócony w szkicu: ${restored} podstron wraca do pierwszej wersji${removed ? `, ${removed} dodanych stron do usunięcia` : ''}. Opublikuj, żeby zobaczyć to na stronie.`
+      : 'Strona już jest identyczna z oryginałem — nie ma czego przywracać.'
+  );
+}
+
+async function discardAllDraftsEverywhere() {
+  const n = getTotalPendingChanges().total;
+  if (!n) {
+    showToast('Nie ma nieopublikowanych zmian.');
+    return;
+  }
+  if (!window.confirm(`Odrzucić WSZYSTKIE nieopublikowane zmiany (${n}) na całej stronie i wrócić do wersji opublikowanej?`)) return;
+  clearTimeout(state.autosaveTimer);
+  await clearAllDrafts();
+  clearPersistedUndoRedo();
+  state.pageDrafts = {};
+  state.pendingImages = {};
+  state.globalsDraft = null;
+  state.currentPageDirty = false;
+  const cur = getAllPagesMerged().some((p) => p.path === state.currentPagePath && !p.deleted) ? state.currentPagePath : 'index.html';
+  await loadPage(cur, { skipFlush: true });
+  updateTopbarAndIndicators();
+  renderPagesList();
+  showToast('Odrzucono wszystkie nieopublikowane zmiany. Licznik: 0.', 'warn');
+}
+
 function addPageHistoryItems(menu, place, { withSeparator = true } = {}) {
   if (withSeparator) addContextMenuSeparator(menu, 'Cała ta strona');
   const hasDraft = Boolean(state.pageDrafts[state.currentPagePath]) || state.currentPageDirty;
@@ -3251,6 +3354,14 @@ function addPageHistoryItems(menu, place, { withSeparator = true } = {}) {
       hint: config.mode === 'hosting' ? 'Strona taka, jaka była przy pierwszym uruchomieniu na hostingu' : 'Wersja strony sprzed pierwszych zmian w panelu',
     });
   }
+  addContextMenuSeparator(menu, 'Cała strona internetowa (wszystkie podstrony)');
+  addContextMenuItem(menu, '⟲ Przywróć całą stronę do oryginału', () => restoreWholeSiteToOriginal(), {
+    hint: 'Pierwsza wersja witryny — wszystkie podstrony, menu; strony dodane później do usunięcia',
+  });
+  addContextMenuItem(menu, '↺ Odrzuć wszystkie nieopublikowane zmiany', () => discardAllDraftsEverywhere(), {
+    hint: `Wraca do wersji opublikowanej na całej stronie (licznik: ${getTotalPendingChanges().total} → 0)`,
+    danger: true,
+  });
   const holder = document.createElement('div');
   holder.style.cssText = 'padding:4px 12px;color:#7a746b;font-size:12px';
   holder.textContent = 'Wczytywanie wcześniejszych publikacji…';
@@ -4561,6 +4672,13 @@ async function handleCreateBackup() {
 
 async function handleRestoreBackup(item, triggerBtn) {
   const isOriginal = Boolean(item.immutable || item.id === 'original');
+  if (isOriginal && config.mode !== 'hosting') {
+    // GitHub: oryginał = pierwsza wersja witryny bez panelu — podmiana całego repozytorium usunęłaby panel.
+    // Przywracamy więc tylko strony (do szkicu), panel zostaje.
+    $('backups-dialog')?.close?.();
+    await restoreWholeSiteToOriginal();
+    return;
+  }
   const confirmMsg = isOriginal
     ? 'Czy na pewno przywrócić ORYGINALNĄ (fabryczną) wersję strony? Aktualny stan zostanie najpierw bezpiecznie zapisany jako punkt przywracania.'
     : `Czy na pewno przywrócić wersję „${item.label || item.id}”? Obecny szkic lokalny zostanie wyczyszczony.`;

@@ -1633,3 +1633,16 @@ function readPageVersion(string $privateDir, string $relPath, string $versionId)
     }
     return $html;
 }
+
+/** Ścieżki stron HTML zapisanych w nieusuwalnym oryginale (pierwsza wersja witryny na hostingu). */
+function listOriginalPages(string $privateDir): array {
+    $meta = ensureBackupsRoot($privateDir) . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . 'meta.json';
+    if (!is_file($meta)) {
+        throw new RuntimeException('Brak kopii oryginalnej witryny.', 404);
+    }
+    $decoded = json_decode((string) file_get_contents($meta), true);
+    $files = is_array($decoded['files'] ?? null) ? $decoded['files'] : [];
+    $pages = array_values(array_filter($files, static fn($f) => is_string($f) && str_ends_with(strtolower($f), '.html')));
+    sort($pages, SORT_STRING);
+    return $pages;
+}

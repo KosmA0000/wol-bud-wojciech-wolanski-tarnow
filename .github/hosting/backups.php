@@ -50,6 +50,19 @@ if (!$config['found']) {
 
 requireAuthenticated($config, $method === 'POST', $privateDir);
 
+// Lista stron w ORYGINALE (pierwsza wersja witryny): GET ?originalPages=1
+if ($method === 'GET' && isset($_GET['originalPages'])) {
+    try {
+        ensureOriginalBackup($siteRoot, $privateDir);
+        reply(200, ['pages' => listOriginalPages($privateDir)]);
+    } catch (RuntimeException $e) {
+        $code = $e->getCode();
+        reply(($code >= 400 && $code < 600) ? $code : 500, ['error' => $e->getMessage()]);
+    } catch (Throwable) {
+        reply(500, ['error' => 'Nie udało się odczytać listy stron oryginału.']);
+    }
+}
+
 // Historia pojedynczej strony: GET ?page=<ścieżka> (lista) albo ?page=<ścieżka>&version=<id|original> (treść HTML)
 if ($method === 'GET' && isset($_GET['page'])) {
     try {
