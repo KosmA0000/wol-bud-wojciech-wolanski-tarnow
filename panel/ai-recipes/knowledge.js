@@ -1,7 +1,7 @@
 // Wiedza o stronie podawana AI w każdej wiadomości: AI wie od razu, jak strona jest zbudowana
 // i jak wykonać zmianę, bez czytania plików. Generowana z prawdziwych stron, odświeżana po każdej operacji.
 // Eksportuje też wspólne pomocniki bloków (używa ich blocks.js).
-import { groupRulesText } from './consistency.js?v=turbo25';
+import { groupRulesText } from './consistency.js?v=turbo26';
 
 export const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
 

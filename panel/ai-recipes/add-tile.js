@@ -1,6 +1,6 @@
-﻿// Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
-import { pagePath } from './add-offer.js?v=turbo25';
-import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo25';
+// Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
+import { pagePath } from './add-offer.js?v=turbo26';
+import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo26';
 
 function normPath(p) {
   let s = String(p || '').trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');

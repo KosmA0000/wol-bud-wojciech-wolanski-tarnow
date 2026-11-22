@@ -61,8 +61,8 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=turbo25';
-import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=turbo25';
+} from './ai-agent.js?v=turbo26';
+import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=turbo26';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -690,6 +690,28 @@ function injectCmsBaseTag(html, pagePath) {
     return cleaned.replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n${baseTag}`);
   }
   return `${baseTag}\n${cleaned}`;
+}
+
+// Tworzy świeżą ramkę podglądu z atrybutami poprzedniej (bez src/srcdoc). Do strony trafia w loadPage,
+// gdy ma już ustawione źródło (stara ramka zostaje do tego czasu jako _cmsPlaceholder).
+function replacePreviewFrame() {
+  const old = $('preview');
+  const fresh = document.createElement('iframe');
+  for (const attr of Array.from(old?.attributes || [])) {
+    if (attr.name === 'src' || attr.name === 'srcdoc') continue;
+    fresh.setAttribute(attr.name, attr.value);
+  }
+  if (!fresh.id) fresh.id = 'preview';
+  if (old?.parentNode) {
+    fresh._cmsPlaceholder = old;
+  } else {
+    // awaryjnie: brak starej ramki w dokumencie
+    const stage = document.querySelector('.stage') || document.body;
+    const marker = document.createComment('preview');
+    stage.appendChild(marker);
+    fresh._cmsPlaceholder = marker;
+  }
+  return fresh;
 }
 
 function safeCaptureSnapshot() {
@@ -1382,18 +1404,30 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
   renderPagesList();
   renderStructureTree();
 
-  // Sync URL query param (?strona=...)
+  // Sync URL query param (?strona=...).
+  // Przejście na inną podstronę = nowy wpis w historii panelu, więc przycisk „Wstecz” przeglądarki
+  // wraca do poprzedniej podstrony W PANELU (ze szkicem), zamiast cofać samą ramkę podglądu.
   try {
     const url = new URL(location.href);
     if (pagePath === 'index.html') url.searchParams.delete('strona');
     else url.searchParams.set('strona', pagePath);
     if (!focusSectionId) url.searchParams.delete('sekcja');
-    history.replaceState(null, '', url.toString());
+    const currentStrona = new URLSearchParams(location.search).get('strona') || 'index.html';
+    const histState = { cmsPage: pagePath };
+    if (!fromHistory && state.panelHistoryReady && currentStrona !== pagePath) {
+      history.pushState(histState, '', url.toString());
+    } else {
+      history.replaceState(histState, '', url.toString());
+    }
+    state.panelHistoryReady = true;
   } catch {
     // ignore history API errors
   }
 
-  const frame = $('preview');
+  // Każde wczytanie podstrony w NOWEJ ramce podglądu. Zmiana src/srcdoc istniejącej ramki dopisuje
+  // wpisy do historii przeglądarki — wtedy „Wstecz” cofał sam podgląd do starej, opublikowanej
+  // wersji bez szkicu (zmiany „raz są, raz nie”), a panel tego nie widział.
+  const frame = replacePreviewFrame();
   const draft = state.pageDrafts[pagePath];
 
   await new Promise((resolve) => {
@@ -1417,18 +1451,17 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
     };
     const fallbackTimer = setTimeout(done, 12000);
 
+    frame.addEventListener('load', onLoad);
     if (draft && !draft.deleted && typeof draft.html === 'string' && draft.html.trim()) {
-      frame.addEventListener('load', onLoad);
       frame.srcdoc = injectCmsBaseTag(draft.html, pagePath);
     } else {
-      if (frame.hasAttribute('srcdoc')) {
-        frame.removeAttribute('srcdoc');
-      }
-      frame.addEventListener('load', onLoad);
       const liveUrl = new URL('../' + pagePath, location.href);
       liveUrl.searchParams.set('_cms', String(Date.now()));
       frame.src = liveUrl.href;
     }
+    // Ramka trafia do strony dopiero z ustawionym źródłem: pierwsze wczytanie nowej ramki nie tworzy wpisu w historii
+    frame._cmsPlaceholder.replaceWith(frame);
+    delete frame._cmsPlaceholder;
   });
 
   // Bail out if user switched to another page while loading
@@ -9017,6 +9050,28 @@ function bindUIEvents() {
       e.preventDefault();
       e.returnValue = '';
     }
+  });
+
+  // Wyjście z panelu (np. na stronę główną witryny) lub schowanie karty: zapisz szkic od razu,
+  // żeby po powrocie („Wstecz” albo ponowne otwarcie) zmiany były na miejscu.
+  const flushOnLeave = () => {
+    if (state.currentPageDirty && state.canvas) {
+      saveCurrentPageDraft({ silent: true }).catch(() => {});
+    }
+  };
+  window.addEventListener('pagehide', flushOnLeave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushOnLeave();
+  });
+
+  // „Wstecz” / „Dalej” przeglądarki przełącza podstrony w panelu (zawsze ze szkicem)
+  window.addEventListener('popstate', (e) => {
+    const target = e.state?.cmsPage || new URLSearchParams(location.search).get('strona') || 'index.html';
+    const clean = String(target).replace(/^\/+/, '');
+    const exists = getAllPagesMerged().some((p) => p.path === clean && !p.deleted);
+    const pagePath = exists ? clean : 'index.html';
+    if (pagePath === state.currentPagePath) return;
+    loadPage(pagePath, { fromHistory: true }).catch((err) => console.warn('popstate loadPage:', err));
   });
 }
 
