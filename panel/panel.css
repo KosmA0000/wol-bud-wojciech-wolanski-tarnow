@@ -2832,6 +2832,27 @@ dialog.studio-dialog::backdrop {
   }
 }
 
+/* Pasek górny nigdy nie ucina przycisków: najpierw krótsze przyciski, a gdy dalej brakuje miejsca — drugi wiersz zamiast chowania za prawą krawędzią */
+.topbar {
+  height: auto;
+  min-height: var(--topbar-h-base, 58px);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  padding-block: 0.4rem;
+  overflow: visible;
+}
+@media (max-width: 1900px) {
+  body:not(.is-simple-mode) .btn-label-lg {
+    display: none;
+  }
+}
+@media (max-width: 1700px) {
+  body:not(.is-simple-mode) #draft-counter-badge {
+    display: none;
+  }
+}
+
 /* LOGIN GATE (HOSTING MODE) */
 .login-gate {
   position: fixed;

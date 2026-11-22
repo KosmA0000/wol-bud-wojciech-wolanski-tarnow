@@ -8472,6 +8472,13 @@ function bindUIEvents() {
     }
   });
   window.addEventListener('resize', () => toggleMoreMenu(false));
+  // Pasek górny może zawinąć się do dwóch wierszy — reszta panelu (szuflady itp.) dopasowuje się do jego realnej wysokości
+  const topbarEl = document.querySelector('.topbar');
+  if (topbarEl && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--topbar-h', `${Math.round(topbarEl.getBoundingClientRect().height)}px`);
+    }).observe(topbarEl);
+  }
   document.querySelector('.topbar')?.addEventListener('scroll', () => toggleMoreMenu(false), { passive: true });
   $('more-undo')?.addEventListener('click', () => {
     toggleMoreMenu(false);
