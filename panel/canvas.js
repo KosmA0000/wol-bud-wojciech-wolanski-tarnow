@@ -2178,6 +2178,45 @@ export function connectCanvas(doc, options = {}) {
     };
   }
 
+  // Elementy wspólne dla całej witryny (zmieniane przez „Menu i dane firmy”, nie jako sekcje strony)
+  const GLOBAL_REGIONS = [
+    { sel: 'nav.menu-panel, .menu-panel, nav.menu', region: 'menu', label: 'Menu główne' },
+    { sel: 'footer', region: 'footer', label: 'Stopka' },
+    { sel: '.contact-bubble, .contact-bubbles', region: 'contact', label: 'Dymki kontaktu (telefon, e-mail, Facebook)' },
+    { sel: 'header.bar, header.site-header, body > header', region: 'header', label: 'Nagłówek (logo, telefon)' },
+  ];
+
+  function findGlobalRegion(target) {
+    if (!target?.closest) return null;
+    for (const g of GLOBAL_REGIONS) {
+      const el = target.closest(g.sel);
+      if (el && !el.closest('.cms-item')) return { ...g, el };
+    }
+    return null;
+  }
+
+  function buildGlobalPayload(hit, pickedFn) {
+    const links = [...hit.el.querySelectorAll('a')].filter((a) => {
+      try {
+        return pickedFn(a);
+      } catch {
+        return false;
+      }
+    });
+    const names = [...new Set(links.map((a) => truncate(getPreservedText(a), 40)).filter(Boolean))].slice(0, 8);
+    return {
+      uid: `global:${hit.region}`,
+      kind: 'global',
+      region: hit.region,
+      itemType: '',
+      label: names.length ? `${hit.label}: ${names.join(', ')}` : hit.label,
+      id: '',
+      pagePath,
+      textSnippet: truncate(names.join(', ') || getPreservedText(hit.el), 140),
+      selector: hit.sel,
+    };
+  }
+
   function getElementTargetPayload(uid) {
     const entry = nodesByUid.get(uid);
     return buildTargetPayload(entry);
@@ -4605,8 +4644,14 @@ export function connectCanvas(doc, options = {}) {
           return r.width > 0 && r.height > 0 && r.right >= left && r.left <= right && r.bottom >= top && r.top <= bottom;
         };
 
-        const matchedItems = Array.from(doc.querySelectorAll('.cms-item')).filter(intersects);
-        const candidates = matchedItems.length > 0
+        // Zaznaczenie w elemencie wspólnym (menu, nagłówek, stopka) — to nie sekcja strony
+        const globalHit = findGlobalRegion(st.target);
+        if (globalHit) {
+          const p = buildGlobalPayload(globalHit, intersects);
+          if (p) payloads.push(p);
+        }
+        const matchedItems = globalHit ? [] : Array.from(doc.querySelectorAll('.cms-item')).filter(intersects);
+        const candidates = globalHit ? [] : matchedItems.length > 0
           ? matchedItems
           : Array.from(doc.querySelectorAll('.cms-section')).filter(intersects);
 
@@ -4618,11 +4663,17 @@ export function connectCanvas(doc, options = {}) {
           if (p) payloads.push(p);
         }
       } else {
-        const el = st.target.closest('.cms-item') || st.target.closest('.cms-section');
-        const uid = el?.getAttribute('data-cms-uid');
-        if (uid) {
-          const p = buildTargetPayload(nodesByUid.get(uid));
+        const globalHit = findGlobalRegion(st.target);
+        if (globalHit) {
+          const p = buildGlobalPayload(globalHit, (el) => el === st.target || el.contains(st.target));
           if (p) payloads.push(p);
+        } else {
+          const el = st.target.closest('.cms-item') || st.target.closest('.cms-section');
+          const uid = el?.getAttribute('data-cms-uid');
+          if (uid) {
+            const p = buildTargetPayload(nodesByUid.get(uid));
+            if (p) payloads.push(p);
+          }
         }
       }
 

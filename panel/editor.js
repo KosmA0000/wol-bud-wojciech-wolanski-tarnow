@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261122-turbo9';
+} from './canvas.js?v=20261122-turbo18';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -5827,7 +5827,10 @@ function buildAiContextSummary() {
     id: t.id || undefined,
     pagePath: t.pagePath,
     actionIntent: t.intent || 'edit',
-    actionInstruction: intentLabels[t.intent || 'edit'] || intentLabels.edit,
+    actionInstruction:
+      t.kind === 'global'
+        ? `To ELEMENT WSPÓLNY całej witryny (${t.region === 'menu' ? 'menu główne' : t.region === 'footer' ? 'stopka' : t.region === 'contact' ? 'dymki kontaktu' : 'nagłówek'}), widoczny na każdej podstronie — NIE jest sekcją tej strony. Zmieniaj go: menu/stopka → update_globals (pozycje, kolejność: zmien_kolejnosc gdzie=menu); telefon/e-mail → zmien_dane_kontaktowe; nazwa strony z menu → zmien_nazwe_wszedzie. Nigdy nie zmieniaj w tym celu sekcji strony (np. banera).`
+        : intentLabels[t.intent || 'edit'] || intentLabels.edit,
     textSnippet: t.textSnippet || undefined,
   }));
 
@@ -8241,7 +8244,9 @@ function loadHtml2Canvas() {
 async function captureTargetShot(t) {
   if (!t?.uid || t.pagePath !== state.currentPagePath) return;
   const doc = $('preview')?.contentDocument;
-  const el = doc?.querySelector(`[data-cms-uid="${CSS.escape(t.uid)}"]`);
+  const el = t.kind === 'global' && t.selector
+    ? doc?.querySelector(t.selector)
+    : doc?.querySelector(`[data-cms-uid="${CSS.escape(t.uid)}"]`);
   if (!el) return;
   try {
     const h2c = await loadHtml2Canvas();
