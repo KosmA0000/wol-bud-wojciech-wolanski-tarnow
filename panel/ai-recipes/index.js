@@ -16,6 +16,11 @@ import * as tiles from './tiles.js?v=turbo25';
 import * as groupJoin from './group-join.js?v=turbo25';
 import * as repair from './repair.js?v=turbo25';
 import { checkConsistency } from './consistency.js?v=turbo25';
+import * as proposal from './proposal.js?v=turbo25';
+
+// Propozycja przed zmianą (PROPOZYCJA.md): panel ustawia ctx.requireApproval = true dla wywołań od AI.
+// Wtedy każde narzędzie zmieniające przechodzi tylko z __approvedProposalId zatwierdzonym kliknięciem klienta.
+export const { approveProposal, verifyApplied, isMutatingPanelTool, consumeApproval, getProposal, GATE_ERROR } = proposal;
 
 export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
 
@@ -37,10 +42,15 @@ for (const m of MODULES) for (const t of m.tools || []) {
   TOOL_DECL.set(t.name, t);
 }
 
-export const RECIPE_TOOLS = [...TOOL_DECL.values(), UNDO_TOOL];
+export const RECIPE_TOOLS = [proposal.PROPOSE_TOOL, ...TOOL_DECL.values(), UNDO_TOOL];
 
 export function isRecipeTool(name) {
-  return name === UNDO_TOOL.name || TOOL_OWNER.has(name);
+  return name === UNDO_TOOL.name || name === proposal.PROPOSE_TOOL.name || TOOL_OWNER.has(name);
+}
+
+// Przepis zmieniający stronę (wymaga propozycji i kliknięcia klienta, gdy bramka włączona)
+export function isMutatingRecipe(name) {
+  return TOOL_OWNER.has(name) && !proposal.READ_ONLY_RECIPES.has(name) && !proposal.UNDO_TOOLS.has(name);
 }
 
 // Stos operacji do cofania: [{ name, pages: Map(path -> {existed, html}), globals }]
@@ -86,12 +96,16 @@ async function undoLast(ctx) {
 
 export async function runRecipe(name, args, ctx) {
   if (name === UNDO_TOOL.name) return undoLast(ctx);
+  if (name === proposal.PROPOSE_TOOL.name) return proposal.propose(args || {}, ctx, (t) => TOOL_OWNER.get(t));
   const mod = TOOL_OWNER.get(name);
   if (!mod) return { ok: false, error: `Nieznany przepis: ${name}` };
+  if (ctx?.requireApproval && isMutatingRecipe(name) && !proposal.consumeApproval(name, args || {})) {
+    return { ok: false, error: proposal.GATE_ERROR, wymagaPropozycji: true };
+  }
   const op = { name, pages: new Map(), globals: null };
   let result;
   try {
-    result = await mod.run(name, args || {}, recordingCtx(ctx, op));
+    result = await mod.run(name, proposal.stripApproval(args), recordingCtx(ctx, op));
   } catch (e) {
     result = { ok: false, error: e?.message || String(e) };
   }
