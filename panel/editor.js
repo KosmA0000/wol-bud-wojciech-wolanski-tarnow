@@ -4223,8 +4223,39 @@ async function openPublishDialog() {
   const cred = getCredential();
   state.savedCredential = cred;
   $('pub-credential').value = cred.value || '';
-  $('pub-remember').checked = Boolean(cred.remembered);
+  // Domyślnie zapamiętaj klucz na tym komputerze — podaje się go tylko raz
+  $('pub-remember').checked = cred.value ? Boolean(cred.remembered) : true;
   $('pub-clear-cred').hidden = !cred.value;
+
+  // Klucz już zapamiętany: okno publikacji w ogóle o niego nie pyta (tylko podsumowanie i „Opublikuj”)
+  let savedNote = $('pub-saved-cred-note');
+  if (!savedNote && authBox) {
+    savedNote = document.createElement('p');
+    savedNote.id = 'pub-saved-cred-note';
+    savedNote.className = 'field-help';
+    savedNote.style.cssText = 'margin:0.5rem 0;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap';
+    const txt = document.createElement('span');
+    txt.textContent = '🔒 Klucz publikacji jest zapamiętany na tym komputerze — nie trzeba go wpisywać.';
+    const change = document.createElement('button');
+    change.type = 'button';
+    change.className = 'link-btn';
+    change.textContent = 'Zmień klucz';
+    change.addEventListener('click', () => {
+      authBox.hidden = false;
+      savedNote.hidden = true;
+      $('pub-credential').focus();
+      $('pub-credential').select();
+    });
+    savedNote.append(txt, change);
+    authBox.after(savedNote);
+  }
+  if (!hasHostingSession && cred.value && cred.remembered && authBox) {
+    authBox.hidden = true;
+    $('pub-credential').required = false;
+    if (savedNote) savedNote.hidden = false;
+  } else if (savedNote) {
+    savedNote.hidden = true;
+  }
 
   $('pub-error').hidden = true;
   if ($('pub-help-row')) $('pub-help-row').hidden = true;
@@ -4342,7 +4373,7 @@ async function handlePublishSubmit(e) {
   const hasHostingSession = config.mode === 'hosting' && Boolean(state.auth.csrfToken);
   const credential = $('pub-credential').value.trim();
   const remember = $('pub-remember').checked;
-  if (!hasHostingSession && !credential) {
+  if (!hasHostingSession && !credential && !getCredential().value) {
     $('pub-error').textContent = 'Podaj klucz publikacji przed wysłaniem zmian.';
     $('pub-error').hidden = false;
     $('pub-credential').focus();
