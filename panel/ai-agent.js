@@ -1011,6 +1011,17 @@ export async function checkProxyStatus(proxyUrl = './ai-proxy.php') {
   }
 }
 
+function waitWithAbort(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(new DOMException('Przerwano', 'AbortError'));
+    const t = setTimeout(resolve, ms);
+    signal?.addEventListener?.('abort', () => {
+      clearTimeout(t);
+      reject(new DOMException('Przerwano', 'AbortError'));
+    }, { once: true });
+  });
+}
+
 const READ_ONLY_TOOLS = new Set([
   'sprawdz_powiazania', 'znajdz_analogiczne', 'read_file', 'list_files', 'get_page_structure', 'get_element_details',
   'list_pages', 'get_globals', 'list_site_components', 'get_section_html', 'read_page_summary', 'search_site_wide',
@@ -1028,6 +1039,7 @@ export async function runAiTurn({
   onToolResult,
   signal,
   images = [], // [{ mimeType, data (base64) }] — zrzuty zaznaczonych elementów strony
+  onRetry, // ({ attempt, waitMs }) — informacja dla panelu, że serwery AI są przeciążone i ponawiamy
 }) {
   const s = { ...DEFAULT_AI_SETTINGS, ...(settings || loadAiSettings()) };
   const isLocalProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
@@ -1078,10 +1090,17 @@ export async function runAiTurn({
       }
       const gTools = [{ functionDeclarations: toGeminiFunctionDeclarations(ALL_TOOLS) }];
       const candidateModels = Array.from(
-        new Set([model, 'gemini-4-hydrogen', 'gemini-3.1-pro-preview', 'gemini-3.8-flash'].filter(Boolean))
+        new Set([model, 'gemini-4-hydrogen', 'gemini-3.1-pro-preview', 'gemini-3.8-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite'].filter(Boolean))
       );
       let data = null;
       let lastErrMsg = '';
+      let lastStatus = 0;
+      // 503/429 = chwilowe przeciążenie serwerów Google: do 3 rund po wszystkich modelach, z przerwą 2 s i 5 s
+      for (let pass = 0; pass < 3 && !data; pass += 1) {
+        if (pass > 0) {
+          onRetry?.({ attempt: pass + 1, waitMs: pass === 1 ? 2000 : 5000 });
+          await waitWithAbort(pass === 1 ? 2000 : 5000, signal);
+        }
       for (const m of candidateModels) {
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(s.apiKey)}`,
@@ -1103,11 +1122,19 @@ export async function runAiTurn({
           break;
         }
         lastErrMsg = json?.error?.message ? `HTTP ${res.status}: ${json.error.message}` : `HTTP ${res.status}`;
+        if (res.status !== 404) lastStatus = res.status;
         if (res.status !== 429 && res.status !== 404 && res.status !== 503) {
           throw new Error(`Błąd Gemini API (${lastErrMsg})`);
         }
       }
-      if (!data) throw new Error(`Błąd Gemini API (${lastErrMsg || 'HTTP 429'})`);
+      }
+      if (!data) {
+        throw new Error(
+          lastStatus === 503 || lastStatus === 429
+            ? `Serwery Google (Gemini) są teraz przeciążone albo chwilowo wyczerpał się limit zapytań — panel próbował 3 razy na kilku modelach. To chwilowe: spróbuj ponownie za minutę lub dwie, nic na stronie nie zostało zepsute. (${lastErrMsg})`
+            : `Błąd Gemini API (${lastErrMsg || 'brak odpowiedzi'})`
+        );
+      }
       const parts = data?.candidates?.[0]?.content?.parts || [];
       const text = parts.filter((p) => !p.thought && p.text).map((p) => p.text).join('\n').trim();
       const toolCalls = parts.filter((p) => p.functionCall).map((p, i) => ({
@@ -1119,23 +1146,33 @@ export async function runAiTurn({
       return { text, toolCalls };
     }
 
-    const res = await fetch(s.proxyUrl || './ai-proxy.php', {
-      method: 'POST',
-      headers,
-      signal,
-      body: JSON.stringify({
-        systemPrompt: systemText,
-        messages,
-        tools,
-        ...(s.provider && s.provider !== 'proxy' ? { provider: s.provider } : {}),
-        ...(s.model ? { model: s.model } : {}),
-      }),
-    });
+    let res = null;
+    for (let pass = 0; pass < 3; pass += 1) {
+      if (pass > 0) {
+        onRetry?.({ attempt: pass + 1, waitMs: pass === 1 ? 2000 : 5000 });
+        await waitWithAbort(pass === 1 ? 2000 : 5000, signal);
+      }
+      res = await fetch(s.proxyUrl || './ai-proxy.php', {
+        method: 'POST',
+        headers,
+        signal,
+        body: JSON.stringify({
+          systemPrompt: systemText,
+          messages,
+          tools,
+          ...(s.provider && s.provider !== 'proxy' ? { provider: s.provider } : {}),
+          ...(s.model ? { model: s.model } : {}),
+        }),
+      });
+      if (res.status !== 503 && res.status !== 429 && res.status !== 502) break;
+    }
     if (!res.ok) {
       throw new Error(
         res.status === 405
           ? 'HTTP 405 — na GitHub Pages nie działa PHP proxy. Otwórz lokalnie http://127.0.0.1:4180/panel/ albo wpisz klucz Gemini API w ustawieniach AI.'
-          : `Błąd serwera AI (HTTP ${res.status})`
+          : res.status === 503 || res.status === 429 || res.status === 502
+            ? `Serwery AI są teraz przeciążone (HTTP ${res.status}) — panel próbował 3 razy. To chwilowe: spróbuj ponownie za minutę lub dwie, nic na stronie nie zostało zepsute.`
+            : `Błąd serwera AI (HTTP ${res.status})`
       );
     }
     return res.json();

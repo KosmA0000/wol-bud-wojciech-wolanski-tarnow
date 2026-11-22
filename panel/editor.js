@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo15';
+} from './ai-agent.js?v=20261122-turbo17';
 import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo15';
 
 // ============================================================================
@@ -7937,6 +7937,8 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       confirmBeforeEdit: Boolean(state.ai.confirmBeforeEdit),
       forceExecute: Boolean(forceExecute),
       images: getPinnedShotsForAi(usedPinnedTargets),
+      onRetry: ({ attempt, waitMs }) =>
+        showToast(`Serwery AI są chwilowo przeciążone — ponawiam za ${Math.round(waitMs / 1000)} s (próba ${attempt}/3)…`, 'warn', waitMs + 1500),
       toolExecutor: executeAiTool,
       onToolCall: (callInfo) => {
         const id = callInfo?.id || `${callInfo?.name || 'tool'}_${toolPillsById.size}`;
