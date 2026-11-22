@@ -5,3 +5,6 @@ __pycache__/
 Thumbs.db
 .github/qa/node_modules/
 .github/qa/test-results/
+
+# Piaskownice serwera dev (npm run dev)
+.sandbox/
