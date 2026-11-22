@@ -13,6 +13,7 @@ import * as blocks from './blocks.js?v=turbo15';
 import * as pages from './pages.js?v=turbo15';
 import * as offerMove from './offer-move.js?v=turbo15';
 import * as tiles from './tiles.js?v=turbo15';
+import { checkConsistency } from './consistency.js?v=turbo15';
 
 export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
 
@@ -91,6 +92,23 @@ export async function runRecipe(name, args, ctx) {
     undoStack.push(op);
     if (undoStack.length > 20) undoStack.shift();
     await ctx.reloadCurrent?.();
+    // Spójność: wynik musi spełniać reguły grup strony (rodzaj, budowa i obecność celu każdego elementu grupy).
+    if (result && typeof result === 'object') {
+      try {
+        const changed = [...op.pages.keys()];
+        result.niespojnosci = await checkConsistency(ctx, { pages: changed });
+        if (result.niespojnosci.length) {
+          result.uwaga =
+            'Wynik łamie reguły strony: ' +
+            result.niespojnosci.slice(0, 5).map((p) => p.message).join(' ') +
+            (result.niespojnosci.length > 5 ? ` (i ${result.niespojnosci.length - 5} więcej)` : '') +
+            ' Napraw przed zakończeniem (fix).';
+        }
+      } catch (e) {
+        result.niespojnosci = [];
+        result.uwagaSprawdzenia = `Nie udało się sprawdzić spójności: ${e?.message || e}`;
+      }
+    }
   }
   return result;
 }
