@@ -772,6 +772,17 @@ function toggleMoreMenu(forceOpen) {
   const btn = $('btn-more-menu');
   if (!pop || !btn) return;
   const next = typeof forceOpen === 'boolean' ? forceOpen : pop.hidden;
+  if (next) {
+    // Pasek górny ma przewijanie poziome (overflow), które przycinało menu — pokazujemy je ponad panelem, pod przyciskiem.
+    const r = btn.getBoundingClientRect();
+    pop.style.position = 'fixed';
+    pop.style.top = `${Math.round(r.bottom + 8)}px`;
+    pop.style.right = `${Math.max(8, Math.round(window.innerWidth - r.right))}px`;
+    pop.style.left = 'auto';
+    pop.style.zIndex = '9999';
+    pop.style.maxHeight = `${Math.max(200, window.innerHeight - r.bottom - 24)}px`;
+    pop.style.overflowY = 'auto';
+  }
   pop.hidden = !next;
   btn.setAttribute('aria-expanded', String(next));
 }
@@ -8460,6 +8471,8 @@ function bindUIEvents() {
       toggleMoreMenu(false);
     }
   });
+  window.addEventListener('resize', () => toggleMoreMenu(false));
+  document.querySelector('.topbar')?.addEventListener('scroll', () => toggleMoreMenu(false), { passive: true });
   $('more-undo')?.addEventListener('click', () => {
     toggleMoreMenu(false);
     performUndo();
