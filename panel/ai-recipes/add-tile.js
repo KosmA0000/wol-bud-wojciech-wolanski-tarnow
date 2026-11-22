@@ -1,5 +1,356 @@
-﻿// Zaślepka — do zbudowania (patrz README.md).
-export const tools = [];
-export async function run(name) {
-  return { ok: false, error: `Przepis ${name} nie jest jeszcze zbudowany.` };
+﻿// Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
+
+function normPath(p) {
+  let s = String(p || '').trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
+  if (s.endsWith('/')) s += 'index.html';
+  return s;
+}
+
+function normText(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isRedirectDoc(doc) {
+  return Boolean(doc?.querySelector?.('meta[http-equiv="refresh" i]'));
+}
+
+function toRel(targetRootPath, fromPagePath) {
+  const fromParts = normPath(fromPagePath).split('/');
+  fromParts.pop();
+  const toParts = normPath(targetRootPath).split('/');
+  let i = 0;
+  while (i < fromParts.length && i < toParts.length - 1 && fromParts[i] === toParts[i]) i++;
+  const ups = fromParts.length - i;
+  return (ups > 0 ? '../'.repeat(ups) : '') + toParts.slice(i).join('/');
+}
+
+function resolvePage(query, pages) {
+  const qRaw = String(query || '').trim();
+  if (!qRaw) return { error: 'Podaj nazwę lub ścieżkę strony, na której dodać kafelek.' };
+  const qNorm = normText(qRaw);
+
+  if (qNorm === 'home' || qNorm === 'strona glowna' || qNorm === 'glowna' || qRaw === '/') {
+    const home = pages.find((p) => p.path === 'index.html');
+    if (home) return { match: home };
+  }
+
+  const qClean = normPath(qRaw.replace(/\/$/, ''));
+  const pathCandidates = new Set([
+    qClean,
+    qClean.endsWith('.html') ? qClean : `${qClean}/index.html`,
+    `kategorie/${qClean}/index.html`,
+    `produkty/${qClean}/index.html`,
+    `promocje/${qClean}/index.html`,
+  ]);
+  for (const p of pages) {
+    if (pathCandidates.has(p.path)) return { match: p };
+  }
+
+  const exact = pages.filter((p) => {
+    const lbl = normText(p.label);
+    const tBase = normText(String(p.title || '').split('|')[0]);
+    return lbl === qNorm || tBase === qNorm;
+  });
+  if (exact.length === 1) return { match: exact[0] };
+  if (exact.length > 1) return { ambiguous: exact };
+
+  const partial = pages.filter((p) => {
+    const hay = `${normText(p.label)} ${normText(p.title)} ${normText(p.path)}`;
+    return hay.includes(qNorm);
+  });
+  if (partial.length === 1) return { match: partial[0] };
+  if (partial.length > 1) return { ambiguous: partial };
+
+  return { error: `Nie znaleziono strony „${qRaw}”.` };
+}
+
+const KNOWN_GRIDS = [
+  { selector: '.home-catalog-grid', key: 'kategorie', label: 'Kategorie produktów (główna siatka kafelków)' },
+  { selector: '.home-extra-categories', key: 'dodatkowe', label: 'Dodatkowe kategorie (pigułki)' },
+  { selector: '.home-featured-grid', key: 'polecane', label: 'Polecane produkty (Warto sprawdzić)' },
+  { selector: '.home-services-grid', key: 'uslugi', label: 'Usługi montażowe i serwisowe' },
+  { selector: '.realization-cards', key: 'realizacje', label: 'Realizacje' },
+  { selector: '.subcat-grid', key: 'podkategorie', label: 'Podkategorie' },
+  { selector: '.cat-products-grid', key: 'produkty', label: 'Produkty w kategorii' },
+];
+
+function findGridSections(doc) {
+  const sections = [];
+  const usedEls = new Set();
+
+  for (const def of KNOWN_GRIDS) {
+    for (const el of doc.querySelectorAll(def.selector)) {
+      if (usedEls.has(el) || !el.firstElementChild) continue;
+      usedEls.add(el);
+      const heading = el.closest('section')?.querySelector('h2, h3')?.textContent?.trim();
+      const label = heading ? `${def.label} — „${heading}”` : def.label;
+      sections.push({ el, key: def.key, label, selector: def.selector });
+    }
+  }
+
+  if (sections.length === 0) {
+    const main = doc.querySelector('main') || doc.body;
+    for (const el of main.querySelectorAll('[class*="grid"], [class*="cards"]')) {
+      if (usedEls.has(el)) continue;
+      if (el.closest('aside.subpage-sidebar, .cat-quick-nav, header, footer')) continue;
+      if (el.classList.contains('subpage-grid')) continue;
+      const item = el.firstElementChild;
+      if (!item || !item.matches('a, article, details, div')) continue;
+      if (!item.querySelector('a[href], h3, h4') && !item.matches('a[href]')) continue;
+      usedEls.add(el);
+      const heading = el.closest('section')?.querySelector('h2, h3')?.textContent?.trim();
+      sections.push({
+        el,
+        key: el.className.split(/\s+/)[0] || 'siatka',
+        label: heading ? `Siatka kafelków („${heading}”)` : `Siatka kafelków (${el.className.split(/\s+/)[0]})`,
+        selector: '.' + el.className.split(/\s+/)[0],
+      });
+    }
+  }
+
+  return sections;
+}
+
+function matchSection(sekcjaQuery, sections) {
+  const q = normText(sekcjaQuery);
+  const exact = sections.filter((s) => normText(s.label) === q || normText(s.key) === q);
+  if (exact.length === 1) return { match: exact[0] };
+
+  const partial = sections.filter(
+    (s) => normText(s.label).includes(q) || normText(s.key).includes(q) || q.includes(normText(s.key))
+  );
+  if (partial.length === 1) return { match: partial[0] };
+  if (partial.length > 1) return { ambiguous: partial };
+  return { notFound: true };
+}
+
+async function resolveLinkTarget(rawLink, hostPagePath, pages, ctx) {
+  const raw = String(rawLink || '').trim();
+  if (!raw) return { href: '#' };
+  if (raw.startsWith('#') || /^(?:https?:|mailto:|tel:)/i.test(raw)) {
+    return { href: raw };
+  }
+
+  const hashIdx = raw.indexOf('#');
+  const linkBase = (hashIdx >= 0 ? raw.slice(0, hashIdx) : raw).trim();
+  const hashPart = hashIdx >= 0 ? raw.slice(hashIdx) : '';
+
+  const found = resolvePage(linkBase, pages);
+  if (found.match) {
+    const html = await ctx.readPage(found.match.path);
+    const doc = html ? ctx.parse(html) : null;
+    if (!doc || !isRedirectDoc(doc)) {
+      return { href: toRel(found.match.path, hostPagePath) + hashPart, targetPage: found.match };
+    }
+  }
+
+  return { missing: raw };
+}
+
+function updateClonedTile(clone, { tytul, opis, href, imgRel, hasCustomImage }) {
+  // 1. Tytuł
+  if (clone.classList.contains('home-extra-category')) {
+    const spans = clone.querySelectorAll('span');
+    if (spans.length >= 2) {
+      spans[0].textContent = tytul;
+    } else {
+      const arrow = clone.querySelector('span[aria-hidden="true"]');
+      clone.textContent = '';
+      clone.append(clone.ownerDocument.createTextNode(`${tytul} `));
+      if (arrow) clone.append(arrow);
+      else {
+        const sp = clone.ownerDocument.createElement('span');
+        sp.setAttribute('aria-hidden', 'true');
+        sp.textContent = '↗';
+        clone.append(sp);
+      }
+    }
+  } else {
+    const titleEl =
+      clone.querySelector('.cat-prod-title a') ||
+      clone.querySelector('.cat-prod-title') ||
+      clone.querySelector('summary h4') ||
+      clone.querySelector('h3, h4, h2');
+    if (titleEl) titleEl.textContent = tytul;
+  }
+
+  // 2. Opis
+  const descEl = clone.querySelector('.home-service-item-teaser, .home-featured-copy p, p');
+  if (opis !== undefined && opis !== null && String(opis).trim() !== '') {
+    const cleanOpis = String(opis).trim();
+    if (descEl) {
+      descEl.textContent = cleanOpis;
+    } else if (!clone.classList.contains('home-extra-category') && !clone.classList.contains('realization-card')) {
+      const body = clone.querySelector('.home-cat-body, .subcat-card-body, .cat-prod-body, .home-featured-copy') || clone;
+      const p = clone.ownerDocument.createElement('p');
+      p.textContent = cleanOpis;
+      const cta = body.querySelector('.home-cat-cta, .cat-prod-btn, .arr');
+      if (cta) body.insertBefore(p, cta);
+      else body.appendChild(p);
+    }
+  } else if (descEl) {
+    descEl.remove();
+  }
+
+  // 3. Link
+  if (clone.matches('a[href]')) {
+    clone.setAttribute('href', href);
+  }
+  for (const a of clone.querySelectorAll('a[href]')) {
+    a.setAttribute('href', href);
+  }
+  for (const a of clone.querySelectorAll('a[aria-label]')) {
+    a.setAttribute('aria-label', a.classList.contains('arr') ? `Dowiedz się więcej: ${tytul}` : tytul);
+  }
+
+  // 4. Zdjęcie
+  const img = clone.querySelector('img');
+  if (img) {
+    if (hasCustomImage || imgRel) {
+      img.setAttribute('src', imgRel);
+    }
+    img.setAttribute('alt', tytul);
+  }
+}
+
+export const tools = [
+  {
+    name: 'dodaj_kafelek',
+    description:
+      'Dodaje nowy kafelek (kartę lub pigułkę) w istniejącej siatce kafelków na wskazanej stronie, klonując sąsiedni kafelek i podmieniając tekst, link i zdjęcie. Gdy na stronie jest kilka sekcji z kafelkami i nie podano sekcji — pyta o wybór. Gdy link wskazuje nieistniejącą stronę — pyta, czy ją utworzyć.',
+    parameters: {
+      type: 'object',
+      properties: {
+        strona: {
+          type: 'string',
+          description: 'Nazwa lub ścieżka strony, na której dodać kafelek (np. „strona główna”, „Oferta”, „Osłony okienne”, „index.html”).',
+        },
+        sekcja: {
+          type: 'string',
+          description: 'Opcjonalna nazwa sekcji z kafelkami, jeśli na stronie jest ich kilka (np. „Kategorie produktów”, „Polecane produkty”).',
+        },
+        tytul: {
+          type: 'string',
+          description: 'Tytuł nowego kafelka.',
+        },
+        opis: {
+          type: 'string',
+          description: 'Opcjonalny krótki opis na kafelku.',
+        },
+        link: {
+          type: 'string',
+          description: 'Opcjonalny docelowy adres (ścieżka strony, nazwa istniejącej podstrony, #kotwica lub URL zewnętrzny).',
+        },
+        zdjecie: {
+          type: 'string',
+          description: 'Opcjonalna ścieżka do zdjęcia (np. „img/products/okno.webp”).',
+        },
+      },
+      required: ['strona', 'tytul'],
+    },
+  },
+];
+
+export async function run(name, args, ctx) {
+  if (name !== 'dodaj_kafelek') {
+    return { ok: false, error: `Nieznane narzędzie: ${name}` };
+  }
+
+  const tytul = String(args.tytul || '').trim();
+  if (!tytul) return { ok: false, error: 'Podaj tytuł nowego kafelka (tytul).' };
+
+  const pages = ctx.listPages();
+  const hostFound = resolvePage(args.strona, pages);
+  if (hostFound.error) return { ok: false, error: hostFound.error };
+  if (hostFound.ambiguous) {
+    return {
+      ok: false,
+      needsAnswer: `Znalazłem kilka stron pasujących do „${args.strona}”. Na której dodać kafelek?`,
+      options: hostFound.ambiguous.slice(0, 8).map((p) => `${p.label || p.title} (${p.path})`),
+    };
+  }
+
+  const hostPage = hostFound.match;
+  const hostHtml = await ctx.readPage(hostPage.path);
+  if (!hostHtml) return { ok: false, error: `Nie udało się odczytać strony „${hostPage.path}”.` };
+
+  const doc = ctx.parse(hostHtml);
+  const sections = findGridSections(doc);
+  if (sections.length === 0) {
+    return {
+      ok: false,
+      error: `Na stronie „${hostPage.label || hostPage.path}” nie znaleziono żadnej siatki kafelków do sklonowania.`,
+    };
+  }
+
+  let chosenSection = sections[0];
+  if (args.sekcja && String(args.sekcja).trim()) {
+    const matched = matchSection(args.sekcja, sections);
+    if (matched.match) {
+      chosenSection = matched.match;
+    } else {
+      const list = matched.ambiguous || sections;
+      return {
+        ok: false,
+        needsAnswer: `Nie mam pewności, o którą sekcję chodzi na „${hostPage.label || hostPage.path}”. Wybierz sekcję dla kafelka „${tytul}”:`,
+        options: list.map((s) => s.label),
+      };
+    }
+  } else if (sections.length > 1) {
+    return {
+      ok: false,
+      needsAnswer: `Na stronie „${hostPage.label || hostPage.path}” jest kilka sekcji z kafelkami. W której dodać kafelek „${tytul}”?`,
+      options: sections.map((s) => s.label),
+    };
+  }
+
+  const linkRes = await resolveLinkTarget(args.link, hostPage.path, pages, ctx);
+  if (linkRes.missing) {
+    return {
+      ok: false,
+      needsAnswer: `Strona docelowa „${linkRes.missing}” jeszcze nie istnieje. Czy najpierw utworzyć tę stronę, czy dodać kafelek z pustym linkiem „#” do uzupełnienia?`,
+      options: [
+        `Tak, utwórz stronę „${linkRes.missing}”`,
+        'Dodaj kafelek z linkiem „#” (bez tworzenia strony)',
+      ],
+    };
+  }
+
+  const templateTile = chosenSection.el.lastElementChild;
+  if (!templateTile) {
+    return { ok: false, error: `Sekcja „${chosenSection.label}” jest pusta — nie ma sąsiedniego kafelka do sklonowania.` };
+  }
+
+  let imgRel = '';
+  let hasCustomImage = false;
+  if (args.zdjecie && String(args.zdjecie).trim()) {
+    const rawImg = String(args.zdjecie).trim();
+    hasCustomImage = true;
+    imgRel = /^(?:https?:|data:)/i.test(rawImg) ? rawImg : toRel(normPath(rawImg), hostPage.path);
+  } else if (templateTile.querySelector('img')) {
+    imgRel = toRel('img/placeholder-photo.svg', hostPage.path);
+  }
+
+  const clone = templateTile.cloneNode(true);
+  updateClonedTile(clone, {
+    tytul,
+    opis: args.opis,
+    href: linkRes.href,
+    imgRel,
+    hasCustomImage,
+  });
+
+  chosenSection.el.appendChild(clone);
+  await ctx.writePage(hostPage.path, ctx.serialize(doc));
+
+  return {
+    ok: true,
+    summary: `Dodano kafelek „${tytul}” w sekcji „${chosenSection.label}” na stronie „${hostPage.label || hostPage.path}” (klon sąsiedniego kafelka, link: ${linkRes.href}).`,
+    changedPages: [hostPage.path],
+  };
 }
