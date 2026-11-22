@@ -12,13 +12,18 @@ import { pathToFileURL } from 'node:url';
 /** @type {Rule[]} */
 export const RULES = [];
 
-/** @param {string} root @returns {string[]} ścieżki względne plików .html, bez katalogów ukrytych */
+/** Katalogi najwyższego poziomu, które nie są stroną (panel, kod i testy w kopii repozytorium). */
+const NOT_SITE_DIRS = ['panel', 'dev', 'tests', 'docs', 'tools'];
+
+/** @param {string} root @returns {string[]} ścieżki względne stron .html, bez katalogów ukrytych i panelu */
 export function listHtml(root) {
   const out = [];
   for (const e of fs.readdirSync(root, { withFileTypes: true, recursive: true })) {
     if (!e.isFile() || !e.name.toLowerCase().endsWith('.html')) continue;
     const rel = path.relative(root, path.join(e.parentPath, e.name)).split(path.sep).join('/');
-    if (!rel.split('/').some((s) => s.startsWith('.') || s === 'node_modules')) out.push(rel);
+    const segs = rel.split('/');
+    if (NOT_SITE_DIRS.includes(segs[0].toLowerCase())) continue;
+    if (!segs.some((s) => s.startsWith('.') || s === 'node_modules')) out.push(rel);
   }
   return out.sort();
 }

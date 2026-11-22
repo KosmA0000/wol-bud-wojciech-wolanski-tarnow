@@ -6,11 +6,13 @@ export class HttpError extends Error {
    * @param {number} status
    * @param {string} message komunikat po polsku dla panelu
    * @param {Record<string, unknown>} [extra] dodatkowe pola odpowiedzi
+   * @param {Record<string, string>} [headers] dodatkowe nagłówki odpowiedzi (np. Retry-After)
    */
-  constructor(status, message, extra = {}) {
+  constructor(status, message, extra = {}, headers = {}) {
     super(message);
     this.status = status;
     this.extra = extra;
+    this.headers = headers;
   }
 }
 
@@ -48,7 +50,7 @@ export function sendJson(res, status, payload = {}, headers = {}) {
  * @param {HttpError} err
  */
 export function sendError(res, err) {
-  sendJson(res, err.status, { error: err.message, ...err.extra });
+  sendJson(res, err.status, { error: err.message, ...err.extra }, err.headers);
 }
 
 /**

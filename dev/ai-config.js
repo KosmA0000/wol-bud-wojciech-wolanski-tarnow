@@ -32,8 +32,9 @@ export function resolveAiConfig(env, request = {}) {
       reason: `Asystent AI w trybie lokalnym jest wyłączony: brak klucza ${keyName} w pliku .env.local. Poproś właściciela projektu o dopisanie klucza i spróbuj ponownie.` };
   }
   const requested = typeof request.model === 'string' ? request.model.trim() : '';
-  const modelSource = requested ? 'request' : (env.WOLBUD_AI_MODEL ? 'env' : 'default');
-  const model = requested || (env.WOLBUD_AI_MODEL || '').trim() || DEFAULT_MODELS[provider];
+  const fromEnvModel = (env.WOLBUD_AI_MODEL || '').trim();
+  const modelSource = requested ? 'request' : (fromEnvModel ? 'env' : 'default');
+  const model = requested || fromEnvModel || DEFAULT_MODELS[provider];
   if (!MODEL_RE.test(model)) {
     return { configured: false, provider, model: null, status: 400, reason: 'Nieprawidłowa nazwa modelu AI.' };
   }

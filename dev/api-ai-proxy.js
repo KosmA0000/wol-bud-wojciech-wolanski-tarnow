@@ -36,6 +36,20 @@ function buildCall(cfg, b) {
 }
 
 /**
+ * Limit liczony dopiero dla wywołań, które naprawdę pójdą do dostawcy (L-021: brak klucza nie zużywa limitu).
+ * @returns {Record<string, string>} nagłówki X-RateLimit-* do odpowiedzi
+ */
+function checkRateLimit(req, ctx) {
+  const limit = ctx.rateLimiter.hit(req.socket.remoteAddress || 'local');
+  const headers = { 'X-RateLimit-Limit': String(ctx.rateLimiter.max), 'X-RateLimit-Remaining': String(limit.remaining) };
+  if (!limit.allowed) {
+    throw new HttpError(429, `Zbyt wiele zapytań do Asystenta AI (limit ${ctx.rateLimiter.max} na minutę). Odczekaj ${limit.retryAfter} s i spróbuj ponownie.`,
+      { retryAfter: limit.retryAfter }, { ...headers, 'Retry-After': String(limit.retryAfter) });
+  }
+  return headers;
+}
+
+/**
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res
  * @param {{ envFile: string, env?: Record<string, string|undefined>, session: { csrfToken: string },
@@ -47,20 +61,16 @@ export async function handleAiProxy(req, res, ctx) {
   const { values } = loadEnv(ctx.envFile, ctx.env);
   if (req.method === 'GET') {
     const cfg = resolveAiConfig(values);
-    sendJson(res, 200, { configured: cfg.configured, authenticated: true, provider: cfg.provider, model: cfg.model, local: true });
+    sendJson(res, 200, { configured: cfg.configured, authenticated: true, provider: cfg.configured ? cfg.provider : null,
+      model: cfg.model, local: true });
     return;
   }
   requireCsrf(req, ctx.session);
-  const limit = ctx.rateLimiter.hit(req.socket.remoteAddress || 'local');
-  const rlHeaders = { 'X-RateLimit-Limit': String(ctx.rateLimiter.max), 'X-RateLimit-Remaining': String(limit.remaining) };
-  if (!limit.allowed) {
-    throw new HttpError(429, `Zbyt wiele zapytań do Asystenta AI (limit ${ctx.rateLimiter.max} na minutę). Odczekaj ${limit.retryAfter} s i spróbuj ponownie.`,
-      { retryAfter: limit.retryAfter });
-  }
   const body = parseJsonObject(await readBody(req, AI_MAX_REQUEST_BYTES, 'Żądanie przekracza maksymalny limit rozmiaru (512 KB).'),
     'Oczekiwano obiektu JSON z polami systemPrompt, messages i tools.');
   const cfg = resolveAiConfig(values, body);
   if (!cfg.configured) throw new HttpError(cfg.status, cfg.reason);
+  const rlHeaders = checkRateLimit(req, ctx);
   const call = buildCall(cfg, validateBody(body));
   const secrets = secretValues(values);
   ctx.aiStats.calls += 1;
@@ -71,7 +81,12 @@ export async function handleAiProxy(req, res, ctx) {
     ctx.log('ai_call_failed', { ...entry, status: result.status, upstreamStatus: result.upstreamStatus ?? null });
     throw new HttpError(result.status, maskSecrets(result.error, secrets), { provider: cfg.provider, model: cfg.model });
   }
-  const parsed = call.parse(result.data);
+  let parsed;
+  try { parsed = call.parse(result.data); } catch (err) {
+    ctx.aiStats.failed += 1;
+    ctx.log('ai_call_failed', { ...entry, status: err?.status ?? 502, reason: 'parse' });
+    throw err;
+  }
   ctx.aiStats.ok += 1;
   ctx.aiStats.byModel[cfg.model] = (ctx.aiStats.byModel[cfg.model] || 0) + 1;
   ctx.log('ai_call', { ...entry, toolCalls: parsed.toolCalls.length });

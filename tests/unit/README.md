@@ -1,5 +1,6 @@
 # tests/unit/ — testy jednostkowe Budowniczego (`npm test`, node:test, bez zależności)
 
+- ai-proxy-limits.test.js — L-021: nagłówki limitu, kolejność limitu i braku klucza, liczniki, validate bez panelu
 - ai-proxy.test.js — proxy AI: brak klucza, maskowanie, jawny model, brak fallbacku, limit
 - api.test.js — api.php, backups.php, auth.php i /__dev/reset przez serwer na losowym porcie
 - cli.test.js — validate, check:size i argumenty serwera

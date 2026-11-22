@@ -19,7 +19,7 @@ test('validate: istniejący katalog → kod 0 i raport JSON na stdout', () => {
   assert.equal(run.status, 0, run.stderr);
   const report = JSON.parse(run.stdout);
   assert.equal(report.ok, true);
-  assert.equal(report.checkedFiles, 3);
+  assert.equal(report.checkedFiles, 2, 'index.html i o-firmie/index.html; panel/index.html nie jest stroną (L-021)');
   assert.deepEqual(report.violations, []);
   fs.rmSync(site, { recursive: true, force: true });
 });
@@ -35,7 +35,7 @@ test('validate: naruszenie reguły → kod 1 z listą naruszeń', () => {
   const rule = { id: 'test-rule', check: (_root, files) => files.map((f) => ({ rule: '', file: f, message: 'x' })) };
   const { code, report } = runValidate(['--root', site], [rule]);
   assert.equal(code, 1);
-  assert.equal(report.violations.length, 3);
+  assert.equal(report.violations.length, 2);
   assert.equal(report.violations[0].rule, 'test-rule');
   fs.rmSync(site, { recursive: true, force: true });
 });
