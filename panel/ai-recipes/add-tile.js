@@ -8,6 +8,8 @@ function normPath(p) {
 
 function normText(s) {
   return String(s || '')
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -16,7 +18,11 @@ function normText(s) {
 }
 
 function isRedirectDoc(doc) {
-  return Boolean(doc?.querySelector?.('meta[http-equiv="refresh" i]'));
+  if (!doc) return false;
+  for (const m of doc.querySelectorAll('meta[http-equiv]')) {
+    if (String(m.getAttribute('http-equiv') || '').trim().toLowerCase() === 'refresh') return true;
+  }
+  return false;
 }
 
 function toRel(targetRootPath, fromPagePath) {
@@ -29,6 +35,32 @@ function toRel(targetRootPath, fromPagePath) {
   return (ups > 0 ? '../'.repeat(ups) : '') + toParts.slice(i).join('/');
 }
 
+function getPageLabel(page, doc) {
+  const h1 = doc?.querySelector?.('main h1, h1')?.textContent?.trim();
+  if (h1) return h1;
+  if (page?.label && page.label !== page.path) return page.label;
+  return String(doc?.title || page?.title || page?.path || '').split('|')[0].trim();
+}
+
+async function loadPageEntries(ctx) {
+  const pages = ctx.listPages();
+  const entries = [];
+  for (const p of pages) {
+    const html = await ctx.readPage(p.path);
+    if (!html) continue;
+    const doc = ctx.parse(html);
+    if (isRedirectDoc(doc)) continue;
+    entries.push({
+      ...p,
+      doc,
+      html,
+      displayLabel: getPageLabel(p, doc),
+      docTitle: doc?.title || p.title || '',
+    });
+  }
+  return entries;
+}
+
 function resolvePage(query, pages) {
   const qRaw = String(query || '').trim();
   if (!qRaw) return { error: 'Podaj nazwę lub ścieżkę strony, na której dodać kafelek.' };
@@ -39,7 +71,8 @@ function resolvePage(query, pages) {
     if (home) return { match: home };
   }
 
-  const qClean = normPath(qRaw.replace(/\/$/, ''));
+  const parenMatch = qRaw.match(/\(([^()]+\.html)\)\s*$/i);
+  const qClean = normPath((parenMatch ? parenMatch[1] : qRaw).replace(/\/$/, ''));
   const pathCandidates = new Set([
     qClean,
     qClean.endsWith('.html') ? qClean : `${qClean}/index.html`,
@@ -52,15 +85,16 @@ function resolvePage(query, pages) {
   }
 
   const exact = pages.filter((p) => {
-    const lbl = normText(p.label);
-    const tBase = normText(String(p.title || '').split('|')[0]);
-    return lbl === qNorm || tBase === qNorm;
+    const lbl = normText(p.displayLabel || p.label);
+    const pLbl = normText(p.label);
+    const tBase = normText(String(p.docTitle || p.title || '').split('|')[0]);
+    return lbl === qNorm || pLbl === qNorm || tBase === qNorm;
   });
   if (exact.length === 1) return { match: exact[0] };
   if (exact.length > 1) return { ambiguous: exact };
 
   const partial = pages.filter((p) => {
-    const hay = `${normText(p.label)} ${normText(p.title)} ${normText(p.path)}`;
+    const hay = `${normText(p.displayLabel || p.label)} ${normText(p.label)} ${normText(p.docTitle || p.title)} ${normText(p.path)}`;
     return hay.includes(qNorm);
   });
   if (partial.length === 1) return { match: partial[0] };
@@ -121,15 +155,18 @@ function matchSection(sekcjaQuery, sections) {
   const exact = sections.filter((s) => normText(s.label) === q || normText(s.key) === q);
   if (exact.length === 1) return { match: exact[0] };
 
-  const partial = sections.filter(
-    (s) => normText(s.label).includes(q) || normText(s.key).includes(q) || q.includes(normText(s.key))
-  );
-  if (partial.length === 1) return { match: partial[0] };
-  if (partial.length > 1) return { ambiguous: partial };
+  const byLabel = sections.filter((s) => normText(s.label).includes(q));
+  if (byLabel.length === 1) return { match: byLabel[0] };
+  if (byLabel.length > 1) return { ambiguous: byLabel };
+
+  const byKey = sections.filter((s) => normText(s.key).includes(q) || q.includes(normText(s.key)));
+  if (byKey.length === 1) return { match: byKey[0] };
+  if (byKey.length > 1) return { ambiguous: byKey };
+
   return { notFound: true };
 }
 
-async function resolveLinkTarget(rawLink, hostPagePath, pages, ctx) {
+async function resolveLinkTarget(rawLink, hostPagePath, pages) {
   const raw = String(rawLink || '').trim();
   if (!raw) return { href: '#' };
   if (raw.startsWith('#') || /^(?:https?:|mailto:|tel:)/i.test(raw)) {
@@ -142,11 +179,10 @@ async function resolveLinkTarget(rawLink, hostPagePath, pages, ctx) {
 
   const found = resolvePage(linkBase, pages);
   if (found.match) {
-    const html = await ctx.readPage(found.match.path);
-    const doc = html ? ctx.parse(html) : null;
-    if (!doc || !isRedirectDoc(doc)) {
-      return { href: toRel(found.match.path, hostPagePath) + hashPart, targetPage: found.match };
-    }
+    return { href: toRel(found.match.path, hostPagePath) + hashPart, targetPage: found.match };
+  }
+  if (found.ambiguous) {
+    return { ambiguous: found.ambiguous, raw };
   }
 
   return { missing: raw };
@@ -213,9 +249,19 @@ function updateClonedTile(clone, { tytul, opis, href, imgRel, hasCustomImage }) 
   if (img) {
     if (hasCustomImage || imgRel) {
       img.setAttribute('src', imgRel);
+      for (const attr of ['data-src', 'data-lightbox-src']) {
+        if (img.hasAttribute(attr)) img.setAttribute(attr, imgRel);
+      }
     }
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
+    img.removeAttribute('width');
+    img.removeAttribute('height');
+    img.closest('picture')?.querySelectorAll('source').forEach((s) => s.remove());
     img.setAttribute('alt', tytul);
   }
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
 }
 
 export const tools = [
@@ -261,30 +307,42 @@ export async function run(name, args, ctx) {
     return { ok: false, error: `Nieznane narzędzie: ${name}` };
   }
 
-  const tytul = String(args.tytul || '').trim();
-  if (!tytul) return { ok: false, error: 'Podaj tytuł nowego kafelka (tytul).' };
+  const pages = await loadPageEntries(ctx);
+  if (!args.strona || !String(args.strona).trim()) {
+    return {
+      ok: false,
+      needsAnswer: 'Na której stronie chcesz dodać kafelek?',
+      options: ['Strona główna (index.html)', 'Oferta (oferta/index.html)', ...pages.filter((p) => p.path.startsWith('kategorie/')).slice(0, 6).map((p) => `${p.displayLabel} (${p.path})`)],
+    };
+  }
 
-  const pages = ctx.listPages();
   const hostFound = resolvePage(args.strona, pages);
   if (hostFound.error) return { ok: false, error: hostFound.error };
   if (hostFound.ambiguous) {
     return {
       ok: false,
       needsAnswer: `Znalazłem kilka stron pasujących do „${args.strona}”. Na której dodać kafelek?`,
-      options: hostFound.ambiguous.slice(0, 8).map((p) => `${p.label || p.title} (${p.path})`),
+      options: hostFound.ambiguous.slice(0, 8).map((p) => `${p.displayLabel} (${p.path})`),
     };
   }
 
   const hostPage = hostFound.match;
-  const hostHtml = await ctx.readPage(hostPage.path);
+  const tytul = String(args.tytul || '').trim();
+  if (!tytul) {
+    return {
+      ok: false,
+      needsAnswer: `Jaki tytuł ma mieć nowy kafelek na stronie „${hostPage.displayLabel}”?`,
+    };
+  }
+  const hostHtml = hostPage.html;
   if (!hostHtml) return { ok: false, error: `Nie udało się odczytać strony „${hostPage.path}”.` };
 
-  const doc = ctx.parse(hostHtml);
+  const doc = hostPage.doc;
   const sections = findGridSections(doc);
   if (sections.length === 0) {
     return {
       ok: false,
-      error: `Na stronie „${hostPage.label || hostPage.path}” nie znaleziono żadnej siatki kafelków do sklonowania.`,
+      error: `Na stronie „${hostPage.displayLabel}” nie znaleziono żadnej siatki kafelków do sklonowania.`,
     };
   }
 
@@ -297,19 +355,26 @@ export async function run(name, args, ctx) {
       const list = matched.ambiguous || sections;
       return {
         ok: false,
-        needsAnswer: `Nie mam pewności, o którą sekcję chodzi na „${hostPage.label || hostPage.path}”. Wybierz sekcję dla kafelka „${tytul}”:`,
+        needsAnswer: `Nie mam pewności, o którą sekcję chodzi na „${hostPage.displayLabel}”. Wybierz sekcję dla kafelka „${tytul}”:`,
         options: list.map((s) => s.label),
       };
     }
   } else if (sections.length > 1) {
     return {
       ok: false,
-      needsAnswer: `Na stronie „${hostPage.label || hostPage.path}” jest kilka sekcji z kafelkami. W której dodać kafelek „${tytul}”?`,
+      needsAnswer: `Na stronie „${hostPage.displayLabel}” jest kilka sekcji z kafelkami. W której dodać kafelek „${tytul}”?`,
       options: sections.map((s) => s.label),
     };
   }
 
-  const linkRes = await resolveLinkTarget(args.link, hostPage.path, pages, ctx);
+  const linkRes = await resolveLinkTarget(args.link, hostPage.path, pages);
+  if (linkRes.ambiguous) {
+    return {
+      ok: false,
+      needsAnswer: `Znalazłem kilka stron pasujących do linku „${linkRes.raw}”. Którą podpiąć?`,
+      options: linkRes.ambiguous.slice(0, 8).map((p) => `${p.displayLabel} (${p.path})`),
+    };
+  }
   if (linkRes.missing) {
     return {
       ok: false,
@@ -350,7 +415,7 @@ export async function run(name, args, ctx) {
 
   return {
     ok: true,
-    summary: `Dodano kafelek „${tytul}” w sekcji „${chosenSection.label}” na stronie „${hostPage.label || hostPage.path}” (klon sąsiedniego kafelka, link: ${linkRes.href}).`,
+    summary: `Dodano kafelek „${tytul}” w sekcji „${chosenSection.label}” na stronie „${hostPage.displayLabel}” (klon sąsiedniego kafelka, link: ${linkRes.href}).`,
     changedPages: [hostPage.path],
   };
 }
