@@ -3109,7 +3109,10 @@ async function handleDiscardCurrentPage() {
 // ============================================================================
 
 function closeElementContextMenu() {
-  document.getElementById('cms-context-menu')?.remove();
+  const menu = document.getElementById('cms-context-menu');
+  if (!menu) return;
+  menu._cleanup?.();
+  menu.remove();
 }
 
 function buildContextMenuEl(x, y) {
@@ -3127,15 +3130,36 @@ function buildContextMenuEl(x, y) {
     menu.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
   };
   place();
+  // Zamykanie: klik gdziekolwiek (także na podglądzie strony — to osobny dokument), Esc, przewinięcie, zmiana rozmiaru
   setTimeout(() => {
+    if (!document.body.contains(menu)) return;
+    const frameDoc = $('preview')?.contentDocument || null;
+    const frameWin = $('preview')?.contentWindow || null;
     const away = (e) => {
-      if (!menu.contains(e.target)) {
-        closeElementContextMenu();
-        document.removeEventListener('pointerdown', away, true);
+      if (!menu.contains(e.target)) closeElementContextMenu();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeElementContextMenu();
+    };
+    const close = () => closeElementContextMenu();
+    const subs = [
+      [document, 'pointerdown', away, true],
+      [document, 'keydown', onKey, true],
+      [window, 'resize', close, false],
+      [window, 'blur', close, false],
+    ];
+    if (frameDoc) subs.push([frameDoc, 'pointerdown', close, true], [frameDoc, 'keydown', onKey, true]);
+    if (frameWin) subs.push([frameWin, 'scroll', close, false]);
+    for (const [t, ev, fn, cap] of subs) t.addEventListener(ev, fn, cap);
+    menu._cleanup = () => {
+      for (const [t, ev, fn, cap] of subs) {
+        try {
+          t.removeEventListener(ev, fn, cap);
+        } catch {
+          // dokument podglądu mógł zostać już przeładowany
+        }
       }
     };
-    document.addEventListener('pointerdown', away, true);
-    document.addEventListener('keydown', (e) => e.key === 'Escape' && closeElementContextMenu(), { once: true });
   }, 0);
   return { menu, place };
 }
