@@ -20,7 +20,7 @@ export const tools = [{
   },
 }];
 
-function pagePath(href, from = '') {
+export function pagePath(href, from = '') {
   if (!href || href.startsWith('#')) return '';
   try {
     const url = new URL(href, SITE_ORIGIN + '/' + from);
@@ -32,7 +32,7 @@ function pagePath(href, from = '') {
   }
 }
 
-function hrefFrom(path, from) {
+export function hrefFrom(path, from) {
   return '../'.repeat(from.split('/').length - 1) + path;
 }
 
@@ -41,7 +41,7 @@ function linkTo(root, path, from) {
     .find((link) => pagePath(link.getAttribute('href'), from) === path);
 }
 
-function setImage(image, src, title) {
+export function setImage(image, src, title) {
   image.setAttribute('src', src);
   image.setAttribute('alt', title);
   image.removeAttribute('srcset');
@@ -112,13 +112,16 @@ function fillPage(doc, { path, title, description, photo, ancestors }) {
     const paragraph = doc.createElement('p');
     paragraph.textContent = description;
     descriptionBody.replaceChildren(paragraph);
-    if (!description) descriptionBody.closest('details')?.remove();
+    if (!description) descriptionBody.closest('details')?.setAttribute('hidden', '');
   }
 
   const content = doc.querySelector('.subpage-content');
   const keep = '.product-gallery, .category-feature, .source-content-disclosure, .product-nav-bar, .cta-banner-dark, .cat-products-grid, .subcat-grid';
   for (const child of [...content.children]) {
-    if (!child.matches(keep)) child.remove();
+    if (!child.matches(keep)) {
+      child.replaceChildren();
+      child.setAttribute('hidden', '');
+    }
   }
   for (const grid of content.querySelectorAll('.cat-products-grid, .subcat-grid')) {
     grid.replaceChildren();
@@ -225,7 +228,7 @@ function appendCategoryLinks(doc, host, path, title) {
   return changed;
 }
 
-function productButton(sample, path, host, label, direction) {
+export function productButton(sample, path, host, label, direction) {
   const button = sample.cloneNode(true);
   button.classList.remove('pnav-prev', 'pnav-next');
   button.classList.add('pnav-' + direction);
@@ -239,7 +242,7 @@ export async function run(name, args, ctx) {
   if (name !== TOOL_NAME) return { ok: false, error: 'Nieznany przepis: ' + name };
   const title = args.nazwa?.trim();
   const kind = args.rodzaj;
-  if (!title) return { ok: false, needsAnswer: 'Jak ma się nazywać nowa pozycja oferty?' };
+  if (!title) return { ok: false, needsAnswer: 'Jak ma się nazywać nowa pozycja oferty?', options: [] };
   if (!KINDS.includes(kind)) {
     return { ok: false, needsAnswer: 'Czy „' + title + '” ma być kategorią, podkategorią czy produktem?', options: KINDS };
   }
@@ -267,7 +270,7 @@ export async function run(name, args, ctx) {
   const categories = sections.filter(({ doc }) => doc?.querySelector('main h1') && !doc.querySelector('meta[http-equiv="refresh" i]'));
   for (const category of categories) {
     const heading = category.doc.querySelector('main h1');
-    category.label = category.label || heading.textContent.trim();
+    category.label = heading.textContent.trim() || category.label;
     category.parent = categories.find((candidate) => {
       if (candidate === category) return false;
       const grid = candidate.doc.querySelector('.subcat-grid');
@@ -332,8 +335,10 @@ export async function run(name, args, ctx) {
   } else {
     const sameType = categories.filter((page) => Boolean(page.parent) === (kind === 'podkategoria'));
     const siblings = sameType.filter((page) => page.parent === parent || (!parent && !page.parent));
-    template = siblings.find((page) => page.doc.querySelector('.category-feature img')) || siblings[0]
-      || sameType.find((page) => page.doc.querySelector('.category-feature img')) || sameType[0];
+    const matches = siblings.length ? siblings : sameType;
+    template = matches.find((page) => args.zdjecie && page.doc.querySelector('.category-feature img'))
+      || matches.find((page) => page.doc.querySelector('.source-content-body') && page.doc.querySelector('.cat-products-grid'))
+      || matches.find((page) => page.doc.querySelector('.source-content-body')) || matches[0];
   }
   if (!template) return { ok: false, error: 'Brak istniejącej strony tego rodzaju do skopiowania.' };
 
@@ -343,10 +348,10 @@ export async function run(name, args, ctx) {
       || !doc.querySelector('.breadcrumbs [aria-current]')) {
     return { ok: false, error: 'Strona wzorcowa nie ma nagłówka, treści lub okruszków potrzebnych do skopiowania.' };
   }
-  if (kind !== 'produkt' && args.zdjecie && !doc.querySelector('.category-feature img')) {
-    const figure = categories.map((page) => page.doc.querySelector('.category-feature'))
-      .find((feature) => feature?.querySelector('img'));
-    if (figure) doc.querySelector('.subpage-content').prepend(figure.cloneNode(true));
+  if (description && !doc.querySelector('.subpage-lead, .source-content-body')) {
+    const sample = categories.map((page) => page.doc.querySelector('.subpage-head .subpage-lead')).find(Boolean);
+    const header = doc.querySelector('.subpage-head');
+    if (sample && header) header.append(doc.importNode(sample, false));
   }
   const ancestors = kind === 'kategoria' ? [] : [parent.parent, parent].filter(Boolean);
   const metadata = fillPage(doc, { ...item, photo: imageFrom(path), ancestors });
@@ -427,8 +432,10 @@ export async function run(name, args, ctx) {
         return { ok: false, error: 'Nie udało się podpiąć nawigacji poprzedniego produktu.' };
       }
       all.before(productButton(sample, previous, path, previousLabel || previous, 'prev'));
-      previousNav.querySelector('.pnav-next')?.remove();
-      previousNav.append(productButton(sample, path, previous, title, 'next'));
+      const nextSlot = previousNav.querySelector('.pnav-next') || previousNav.lastElementChild;
+      const nextButton = productButton(sample, path, previous, title, 'next');
+      if (nextSlot && !nextSlot.matches('.pnav-all, .pnav-prev')) nextSlot.replaceWith(nextButton);
+      else previousNav.append(nextButton);
       changes.set(previous, { doc: previousDoc });
     }
     places.push('nawigacja produktów w kategorii');
@@ -443,5 +450,7 @@ export async function run(name, args, ctx) {
     ok: true,
     summary: 'Dodano „' + title + '” w szkicu. Zmienione miejsca: nowa strona z okruszkami, ' + places.join(', ') + '.',
     changedPages: [...changes.keys()],
+    sourcePath: template.path,
+    pagePath: path,
   };
 }
