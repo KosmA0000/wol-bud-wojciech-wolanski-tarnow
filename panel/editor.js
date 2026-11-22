@@ -61,8 +61,8 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo23';
-import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo15';
+} from './ai-agent.js?v=turbo25';
+import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=turbo25';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS

@@ -1,23 +1,25 @@
 // Katalog przepisów AI: jedno polecenie klienta = cały łańcuch powiązanych zmian.
 // Każdy moduł eksportuje { tools: [{ name, description, parameters }], run(name, args, ctx) }.
 // ctx (budowany w editor.js, buildRecipeCtx) — patrz README.md.
-import * as inspect from './inspect.js?v=turbo15';
-import * as addOffer from './add-offer.js?v=turbo15';
-import * as rename from './rename.js?v=turbo15';
-import * as contact from './contact.js?v=turbo15';
-import * as remove from './remove.js?v=turbo15';
-import * as addTile from './add-tile.js?v=turbo15';
-import * as analog from './analog.js?v=turbo15';
-import * as knowledge from './knowledge.js?v=turbo15';
-import * as blocks from './blocks.js?v=turbo15';
-import * as pages from './pages.js?v=turbo15';
-import * as offerMove from './offer-move.js?v=turbo15';
-import * as tiles from './tiles.js?v=turbo15';
-import { checkConsistency } from './consistency.js?v=turbo15';
+import * as inspect from './inspect.js?v=turbo25';
+import * as addOffer from './add-offer.js?v=turbo25';
+import * as rename from './rename.js?v=turbo25';
+import * as contact from './contact.js?v=turbo25';
+import * as remove from './remove.js?v=turbo25';
+import * as addTile from './add-tile.js?v=turbo25';
+import * as analog from './analog.js?v=turbo25';
+import * as knowledge from './knowledge.js?v=turbo25';
+import * as blocks from './blocks.js?v=turbo25';
+import * as pages from './pages.js?v=turbo25';
+import * as offerMove from './offer-move.js?v=turbo25';
+import * as tiles from './tiles.js?v=turbo25';
+import * as groupJoin from './group-join.js?v=turbo25';
+import * as repair from './repair.js?v=turbo25';
+import { checkConsistency } from './consistency.js?v=turbo25';
 
 export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
 
-const MODULES = [inspect, analog, knowledge, blocks, addOffer, pages, rename, contact, offerMove, remove, addTile, tiles];
+const MODULES = [inspect, analog, knowledge, blocks, addOffer, pages, rename, contact, offerMove, remove, addTile, tiles, groupJoin, repair];
 
 const UNDO_TOOL = {
   name: 'cofnij_cala_operacje',

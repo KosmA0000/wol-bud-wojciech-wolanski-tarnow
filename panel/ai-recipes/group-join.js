@@ -2,7 +2,7 @@
 // podkategorie, produkty, menu itd.) z pełną budową ramy strony i obecnością we wszystkich miejscach grupy.
 // Korzysta z ./consistency.js (część A) gdy jest dostępny, a na samodzielnej gałęzi ma zgodny silnik reguł.
 
-import { resolve, loadSite } from './knowledge.js?v=turbo15';
+import { resolve, loadSite } from './knowledge.js?v=turbo25';
 
 const RULE_SHARE = 0.75;
 const BLOCK_SHARE = 0.5;
