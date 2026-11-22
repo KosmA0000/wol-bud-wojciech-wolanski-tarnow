@@ -1,12 +1,12 @@
 // Katalog przepisów AI: jedno polecenie klienta = cały łańcuch powiązanych zmian.
 // Każdy moduł eksportuje { tools: [{ name, description, parameters }], run(name, args, ctx) }.
 // ctx (budowany w editor.js, buildRecipeCtx) — patrz README.md.
-import * as inspect from './inspect.js';
-import * as addOffer from './add-offer.js';
-import * as rename from './rename.js';
-import * as contact from './contact.js';
-import * as remove from './remove.js';
-import * as addTile from './add-tile.js';
+import * as inspect from './inspect.js?v=turbo2';
+import * as addOffer from './add-offer.js?v=turbo2';
+import * as rename from './rename.js?v=turbo2';
+import * as contact from './contact.js?v=turbo2';
+import * as remove from './remove.js?v=turbo2';
+import * as addTile from './add-tile.js?v=turbo2';
 
 const MODULES = [inspect, addOffer, rename, contact, remove, addTile];
 
