@@ -398,6 +398,53 @@ function getPageEntry(pagePath) {
   );
 }
 
+// Szkic identyczny z opublikowaną wersją nie jest zmianą: usuń go (np. po „cofnij” albo gdy przepis AI niczego realnie nie zmienił).
+function normalizeHtmlForCompare(html) {
+  try {
+    const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    return doc.documentElement.outerHTML.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
+  } catch {
+    return String(html || '').replace(/\s+/g, ' ').trim();
+  }
+}
+
+async function fetchPublishedHtml(pagePath) {
+  try {
+    const res = await fetch(new URL('../' + pagePath, location.href).href, { cache: 'no-store' });
+    return res.ok ? await res.text() : null;
+  } catch {
+    return null;
+  }
+}
+
+let pruneRunning = null;
+async function pruneUnchangedDrafts() {
+  if (pruneRunning) return pruneRunning;
+  pruneRunning = (async () => {
+    let removed = 0;
+    for (const [path, draft] of Object.entries(state.pageDrafts || {})) {
+      if (!draft || draft.isNew || draft.deleted || typeof draft.html !== 'string') continue;
+      if (path === state.currentPagePath && state.currentPageDirty) continue;
+      const published = await fetchPublishedHtml(path);
+      if (published === null) continue;
+      if (normalizeHtmlForCompare(published) === normalizeHtmlForCompare(draft.html)) {
+        await deletePageDraft(path);
+        clearPersistedUndoRedo(path);
+        delete state.pageDrafts[path];
+        removed += 1;
+      }
+    }
+    if (removed) {
+      updateTopbarAndIndicators();
+      renderPagesList();
+    }
+    return removed;
+  })().finally(() => {
+    pruneRunning = null;
+  });
+  return pruneRunning;
+}
+
 function getTotalPendingChanges() {
   const draftEntries = Object.entries(state.pageDrafts || {});
   const modifiedPages = draftEntries.filter(([, d]) => d && !d.deleted && !d.isNew).length;
@@ -7496,7 +7543,9 @@ async function executeAiTool(name, rawArgs = {}) {
     default:
       if (isRecipeTool(name)) {
         await flushAutosaveIfNeeded();
-        return runRecipe(name, args, buildRecipeCtx());
+        const recipeResult = await runRecipe(name, args, buildRecipeCtx());
+        await pruneUnchangedDrafts();
+        return recipeResult;
       }
       return { ok: false, error: `Nieznane narzędzie Asystenta AI: ${name}` };
   }
@@ -8708,6 +8757,11 @@ async function bootstrap() {
     : 'index.html';
 
   await loadPage(validPage, { focusSectionId: requestedSection, skipFlush: true });
+
+  // Sprzątanie szkiców bez realnych zmian (licznik „Opublikuj” pokazuje tylko faktyczne zmiany)
+  pruneUnchangedDrafts().then((n) => {
+    if (n) showToast(`Usunięto ${n} ${n === 1 ? 'pusty szkic' : 'pustych szkiców'} bez realnych zmian.`);
+  });
 }
 
 bootstrap().catch((err) => {
