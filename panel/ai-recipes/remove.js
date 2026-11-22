@@ -8,6 +8,8 @@ function normPath(p) {
 
 function normText(s) {
   return String(s || '')
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -22,7 +24,7 @@ function resolveHref(rawHref, fromPath) {
   if (!noHash) return null;
   try {
     const base = 'https://wolbud.local/' + normPath(fromPath);
-    let out = new URL(noHash, base).pathname.replace(/^\/+/, '');
+    let out = decodeURIComponent(new URL(noHash, base).pathname).replace(/^\/+/, '');
     if (!out || out.endsWith('/')) out += 'index.html';
     return out;
   } catch {
@@ -41,7 +43,11 @@ function toRel(targetRootPath, fromPagePath) {
 }
 
 function isRedirectDoc(doc) {
-  return Boolean(doc?.querySelector?.('meta[http-equiv="refresh" i]'));
+  if (!doc) return false;
+  for (const m of doc.querySelectorAll('meta[http-equiv]')) {
+    if (String(m.getAttribute('http-equiv') || '').trim().toLowerCase() === 'refresh') return true;
+  }
+  return false;
 }
 
 function getPageTitleLabel(page, doc) {
@@ -307,6 +313,17 @@ export async function run(name, args, ctx) {
     const entry = { page: p, html, doc, label: getPageTitleLabel(p, doc) };
     entries.push(entry);
     entriesByPath.set(p.path, entry);
+  }
+
+  if (!args.strona || !String(args.strona).trim()) {
+    return {
+      ok: false,
+      needsAnswer: 'Którą stronę oferty lub podstronę chcesz usunąć?',
+      options: entries
+        .filter((e) => e.page.path !== 'index.html' && e.page.path !== 'oferta/index.html')
+        .slice(0, 10)
+        .map((e) => `${e.label} (${e.page.path})`),
+    };
   }
 
   const found = resolveTargetPage(args.strona, entries);
