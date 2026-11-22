@@ -61,7 +61,8 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261121-31';
+} from './ai-agent.js?v=20261122-turbo1';
+import { isRecipeTool, runRecipe } from './ai-recipes/index.js?v=20261122-turbo1';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -7273,36 +7274,79 @@ async function executeAiTool(name, rawArgs = {}) {
 
     case 'write_file': {
       const p = String(args.path || '').trim().replace(/^\/+/, '');
-      const content = String(args.content ?? '');
       if (!p) return { ok: false, error: 'Podaj path' };
-      const existingDraft = state.pageDrafts[p];
-      const entry = getPageEntry(p);
-      const parsed = new DOMParser().parseFromString(content, 'text/html');
-      const nextDraft = {
-        html: content,
-        title: parsed.title || entry.title || p,
-        description: parsed.querySelector('meta[name="description"]')?.getAttribute('content') || entry.description || '',
-        label: existingDraft?.label || entry.label || p,
-        group: existingDraft?.group || entry.group || inferPageGroup(p),
-        isNew: Boolean(existingDraft?.isNew || !state.manifest?.pages?.some((m) => m.path === p)),
-        deleted: false,
-      };
-      await savePageDraft(p, nextDraft);
-      state.pageDrafts[p] = nextDraft;
-      if (p === state.currentPagePath && state.canvas) {
-        state.canvas.restoreSnapshot({ html: content });
-        state.structure = normalizeStructure(state.canvas.getStructure?.());
-        state.lastSnapshot = safeCaptureSnapshot();
-      }
-      updateTopbarAndIndicators();
-      renderPagesList();
-      renderStructureTree();
+      await writeAiPageDraft(p, String(args.content ?? ''));
       return { ok: true, path: p };
     }
 
     default:
+      if (isRecipeTool(name)) {
+        await flushAutosaveIfNeeded();
+        return runRecipe(name, args, buildRecipeCtx());
+      }
       return { ok: false, error: `Nieznane narzędzie Asystenta AI: ${name}` };
   }
+}
+
+async function writeAiPageDraft(p, content, opts = {}) {
+  const existingDraft = state.pageDrafts[p];
+  const entry = getPageEntry(p);
+  const parsed = new DOMParser().parseFromString(content, 'text/html');
+  const nextDraft = {
+    html: content,
+    title: opts.title || parsed.title || entry.title || p,
+    description:
+      opts.description ||
+      parsed.querySelector('meta[name="description"]')?.getAttribute('content') ||
+      entry.description ||
+      '',
+    label: opts.label || existingDraft?.label || entry.label || p,
+    group: opts.group || existingDraft?.group || entry.group || inferPageGroup(p),
+    isNew: Boolean(existingDraft?.isNew || !state.manifest?.pages?.some((m) => m.path === p)),
+    deleted: false,
+  };
+  await savePageDraft(p, nextDraft);
+  state.pageDrafts[p] = nextDraft;
+  if (p === state.currentPagePath && state.canvas) {
+    state.canvas.restoreSnapshot({ html: content });
+    state.structure = normalizeStructure(state.canvas.getStructure?.());
+    state.lastSnapshot = safeCaptureSnapshot();
+  }
+  updateTopbarAndIndicators();
+  renderPagesList();
+  renderStructureTree();
+}
+
+// Interfejs dla przepisów AI (panel/ai-recipes/README.md)
+function buildRecipeCtx() {
+  const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
+  return {
+    listPages: () =>
+      getAllPagesMerged()
+        .filter((p) => !p.deleted)
+        .map((p) => ({ path: p.path, label: p.label, title: p.title, group: p.group })),
+    readPage: async (p) => (await readPageHtmlForSiteTool(clean(p))) || null,
+    writePage: (p, html, opts) => writeAiPageDraft(clean(p), String(html ?? ''), opts || {}),
+    deletePage: (p) => executeAiTool('delete_page', { pagePath: clean(p) }),
+    getGlobals: () => JSON.parse(JSON.stringify(normalizeGlobalsObj(getActiveGlobals()))),
+    setGlobals: async (g) => {
+      const next = normalizeGlobalsObj(g);
+      await saveGlobalsDraft(next);
+      state.globalsDraft = next;
+      applyGlobalsPreview(next);
+      updateTopbarAndIndicators();
+    },
+    parse: (html) => new DOMParser().parseFromString(String(html || ''), 'text/html'),
+    serialize: (doc) => '<!doctype html>\n' + doc.documentElement.outerHTML,
+    rebaseUrls: (html, fromPath, toPath) => rebaseRelativeUrlsInHtml(html, fromPath, toPath),
+    slugify: (t) => slugifyPath(String(t || '')),
+    wireOfferTiles: (o) => wireOfferTilesAcrossSite(o),
+    reloadCurrent: async () => {
+      const cur = state.currentPagePath;
+      const stillThere = getAllPagesMerged().some((p) => p.path === cur && !p.deleted);
+      await loadPage(stillThere ? cur : 'index.html', { skipFlush: true });
+    },
+  };
 }
 
 // ============================================================================
