@@ -26,10 +26,16 @@ const UNDO_TOOL = {
   parameters: { type: 'object', properties: {} },
 };
 
-export const RECIPE_TOOLS = [...MODULES.flatMap((m) => m.tools || []), UNDO_TOOL];
-
+// Ta sama nazwa narzędzia w kilku modułach: wygrywa moduł późniejszy w MODULES (np. blocks.js przejmuje dodaj_blok z knowledge.js).
 const TOOL_OWNER = new Map();
-for (const m of MODULES) for (const t of m.tools || []) TOOL_OWNER.set(t.name, m);
+const TOOL_DECL = new Map();
+for (const m of MODULES) for (const t of m.tools || []) {
+  TOOL_OWNER.set(t.name, m);
+  TOOL_DECL.delete(t.name);
+  TOOL_DECL.set(t.name, t);
+}
+
+export const RECIPE_TOOLS = [...TOOL_DECL.values(), UNDO_TOOL];
 
 export function isRecipeTool(name) {
   return name === UNDO_TOOL.name || TOOL_OWNER.has(name);
