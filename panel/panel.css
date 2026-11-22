@@ -3183,6 +3183,16 @@ body.is-simple-mode .topbar {
   gap: 0.75rem;
 }
 
+/* Szybki podgląd Komputer / Tablet / Telefon zawsze widoczny w górnym pasku (także w trybie prostym) */
+body.is-simple-mode .topbar .btn-segmented.viewport-switch {
+  display: inline-flex !important;
+}
+@media (max-width: 1500px) {
+  body.is-simple-mode .viewport-switch span {
+    display: none;
+  }
+}
+
 body.is-simple-mode .page-switcher {
   min-width: 150px;
   padding: 0.35rem 0.7rem;
