@@ -1,4 +1,6 @@
 ﻿// Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
+import { pagePath } from './add-offer.js?v=turbo2-b';
+import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=spojnosc1';
 
 function normPath(p) {
   let s = String(p || '').trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
@@ -152,7 +154,7 @@ function findGridSections(doc) {
 
 function matchSection(sekcjaQuery, sections) {
   const q = normText(sekcjaQuery);
-  const exact = sections.filter((s) => normText(s.label) === q || normText(s.key) === q);
+  const exact = sections.filter((s) => normText(s.label) === q || normText(s.key) === q || normText(s.selector) === q);
   if (exact.length === 1) return { match: exact[0] };
 
   const byLabel = sections.filter((s) => normText(s.label).includes(q));
@@ -177,6 +179,8 @@ async function resolveLinkTarget(rawLink, hostPagePath, pages) {
   const linkBase = (hashIdx >= 0 ? raw.slice(0, hashIdx) : raw).trim();
   const hashPart = hashIdx >= 0 ? raw.slice(hashIdx) : '';
 
+  const relativeMatch = pages.find((page) => page.path === pagePath(linkBase, hostPagePath));
+  if (relativeMatch) return { href: toRel(relativeMatch.path, hostPagePath) + hashPart, targetPage: relativeMatch };
   const found = resolvePage(linkBase, pages);
   if (found.match) {
     return { href: toRel(found.match.path, hostPagePath) + hashPart, targetPage: found.match };
@@ -268,7 +272,7 @@ export const tools = [
   {
     name: 'dodaj_kafelek',
     description:
-      'Dodaje nowy kafelek (kartę lub pigułkę) w istniejącej siatce kafelków na wskazanej stronie, klonując sąsiedni kafelek i podmieniając tekst, link i zdjęcie. Gdy na stronie jest kilka sekcji z kafelkami i nie podano sekcji — pyta o wybór. Gdy link wskazuje nieistniejącą stronę — pyta, czy ją utworzyć.',
+      'Dodaje kafelek do wskazanej sekcji. Gdy sekcja jest grupą stron, tworzy albo dostosowuje stronę docelową i podpina ją wszędzie według reguł grupy. Gdy brakuje sekcji albo strona pod podanym adresem jeszcze nie istnieje, pyta.',
     parameters: {
       type: 'object',
       properties: {
@@ -296,6 +300,8 @@ export const tools = [
           type: 'string',
           description: 'Opcjonalna ścieżka do zdjęcia (np. „img/products/okno.webp”).',
         },
+        rodzic: { type: 'string', description: 'Opcjonalny rodzic produktu lub podkategorii, gdy grupa nie wskazuje jednego.' },
+        utworzStrone: { type: 'boolean', description: 'Ustaw true, gdy klient zgodzi się utworzyć stronę pod nieistniejącym odnośnikiem.' },
       },
       required: ['strona', 'tytul'],
     },
@@ -339,6 +345,13 @@ export async function run(name, args, ctx) {
 
   const doc = hostPage.doc;
   const sections = findGridSections(doc);
+  const groups = await recipeGroups(ctx);
+  for (const group of groups.filter((rule) => rule.hostPage === hostPage.path)) {
+    for (const el of groupElements(doc, group)) {
+      if (sections.some((section) => section.el === el)) continue;
+      sections.push({ el, key: group.selector, label: group.label, selector: group.selector });
+    }
+  }
   if (sections.length === 0) {
     return {
       ok: false,
@@ -347,10 +360,14 @@ export async function run(name, args, ctx) {
   }
 
   let chosenSection = sections[0];
+  let chosenGroups = [];
   if (args.sekcja && String(args.sekcja).trim()) {
+    const exact = findRecipeGroups(groups, { host: hostPage.path, query: args.sekcja, doc });
     const matched = matchSection(args.sekcja, sections);
     if (matched.match) {
       chosenSection = matched.match;
+    } else if (exact.length === 1) {
+      chosenSection = sections.find((section) => groupElements(doc, exact[0]).includes(section.el));
     } else {
       const list = matched.ambiguous || sections;
       return {
@@ -359,6 +376,7 @@ export async function run(name, args, ctx) {
         options: list.map((s) => s.label),
       };
     }
+    chosenGroups = exact.filter((group) => groupElements(doc, group).includes(chosenSection.el));
   } else if (sections.length > 1) {
     return {
       ok: false,
@@ -374,6 +392,41 @@ export async function run(name, args, ctx) {
       needsAnswer: `Znalazłem kilka stron pasujących do linku „${linkRes.raw}”. Którą podpiąć?`,
       options: linkRes.ambiguous.slice(0, 8).map((p) => `${p.displayLabel} (${p.path})`),
     };
+  }
+  const groupMatches = chosenGroups.length ? chosenGroups : findRecipeGroups(groups, { host: hostPage.path, doc, section: chosenSection });
+  if (groupMatches.length > 1) {
+    return { ok: false, needsAnswer: 'Wybierz grupę, do której ma trafić kafelek.', options: groupOptions(groupMatches) };
+  }
+  if (groupMatches.length === 1) {
+    const group = groupMatches[0];
+    if (linkRes.missing && args.utworzStrone !== true) {
+      return {
+        ok: false,
+        needsAnswer: `Strona „${linkRes.missing}” jeszcze nie istnieje. Czy utworzyć stronę rodzaju „${group.rules.targetKind}” i podpiąć ją w całej grupie?`,
+        options: ['Utwórz i podepnij stronę', 'Wskaż istniejącą stronę'],
+      };
+    }
+    const sameName = !args.link && pages.find((page) => normText(page.displayLabel) === normText(tytul));
+    const target = linkRes.targetPage?.path || sameName?.path;
+    if (!target && !linkRes.missing && args.link) {
+      return { ok: false, needsAnswer: `Kafelki w grupie „${group.label}” prowadzą do podstron witryny. Którą podstronę podpiąć?`, options: group.members.map((member) => member.target).filter(Boolean) };
+    }
+    const wasMember = group.members.some((member) => member.target === target);
+    return addGroupMember(ctx, group, { ...args, target, nazwa: tytul }, groups, async (staged, hostDoc, links, path) => {
+      const container = groupElements(hostDoc, group).find((element) => element.contains(links[0]));
+      const card = [...container.children].find((element) => element.contains(links[0]));
+      if (!card) return;
+      const title = card.querySelector('h3, h4, h2')?.textContent || links[0].textContent;
+      const alias = wasMember && normText(title.replace(/[↗→›]/gu, '')) !== normText(tytul);
+      const tile = alias ? card.cloneNode(true) : card;
+      const rawImg = String(args.zdjecie || '').trim();
+      const imgRel = rawImg && (/^(?:https?:|data:)/i.test(rawImg) ? rawImg : toRel(normPath(rawImg), hostPage.path));
+      const href = pagePath(linkRes.href, hostPage.path) === path ? linkRes.href : links[0].getAttribute('href');
+      const saved = tile.outerHTML;
+      updateClonedTile(tile, { tytul, opis: args.opis, href, imgRel, hasCustomImage: Boolean(rawImg) });
+      if (alias) container.append(tile);
+      if (alias || tile.outerHTML !== saved) await staged.writePage(hostPage.path, staged.serialize(hostDoc));
+    });
   }
   if (linkRes.missing) {
     return {
