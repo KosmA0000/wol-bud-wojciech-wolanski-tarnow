@@ -8030,9 +8030,13 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
     }
     botBubble.hidden = false;
 
+    const okSteps = Array.from(toolPillsById.values())
+      .filter(({ pill }) => !pill?.classList.contains('is-error'))
+      .map(({ label }) => label?.textContent || '')
+      .filter(Boolean);
     state.ai.history.push(
       { role: 'user', text: userMessage },
-      { role: 'assistant', text: replyText }
+      { role: 'assistant', text: okSteps.length ? `${replyText}\n[Wykonane kroki: ${okSteps.slice(-8).join('; ')}]` : replyText }
     );
     if (state.ai.history.length > 24) {
       state.ai.history = state.ai.history.slice(-24);
@@ -8084,6 +8088,25 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       }
       botBubble.hidden = false;
     }
+    // Przerwana rozmowa też trafia do historii — inaczej następna wiadomość odpowiada na wcześniejsze, stare pytanie.
+    const doneSteps = Array.from(toolPillsById.values())
+      .map(({ pill, label }) => `${label?.textContent || ''}${pill?.classList.contains('is-error') ? ' (błąd)' : ''}`)
+      .filter(Boolean);
+    const interruptedNote = `[Przerwane: ${isAbort ? 'zatrzymane przez klienta' : err?.message || 'błąd'}.${
+      doneSteps.length ? ` Zdążyłem wykonać: ${doneSteps.join('; ')}.` : ' Nic nie zostało zmienione.'
+    } Jeśli klient napisze „dalej” albo powtórzy prośbę — dokończ TĘ prośbę.]`;
+    state.ai.history.push({ role: 'user', text: userMessage }, { role: 'assistant', text: interruptedNote });
+    if (state.ai.history.length > 24) state.ai.history = state.ai.history.slice(-24);
+    state.ai.chatEntries.push(
+      { role: 'user', text: userMessage, targets: usedPinnedTargets.map((t) => ({ uid: t.uid, label: t.label })) },
+      {
+        role: 'assistant',
+        text: isAbort ? 'Zatrzymano wykonywanie polecenia.' : `⚠️ ${err?.message || 'Błąd połączenia z AI.'}`,
+        tools: Array.from(toolPillsById.values()).map(({ pill, label }) => ({ label: label?.textContent || '', ok: !pill?.classList.contains('is-error') })),
+      }
+    );
+    if (state.ai.chatEntries.length > 40) state.ai.chatEntries = state.ai.chatEntries.slice(-40);
+    persistAiChat();
     await flushAutosaveIfNeeded();
   } finally {
     state.ai.isRunning = false;
