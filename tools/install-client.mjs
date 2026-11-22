@@ -28,9 +28,12 @@ const PANEL_ENGINE_FILES = Object.freeze([
   'storage.js',
   'publish.js',
   'ai-agent.js',
+  'ai-prompt.js',
   'sanitizer.js',
   'seo.js',
 ]);
+
+const PANEL_ENGINE_DIRS = Object.freeze(['ai-recipes']);
 
 const HOSTING_SECURITY_FILES = Object.freeze([
   { src: '_common.php', dest: 'panel/_common.php' },
@@ -1036,6 +1039,17 @@ export async function installClient(options) {
     } else {
       summary.missingPanelFiles.push(`panel/${filename}`);
       summary.warnings.push(`Brak pliku źródłowego panel/${filename} w repozytorium szablonu.`);
+    }
+  }
+
+  // Przepisy Asystenta AI (katalog panel/ai-recipes/: łańcuchy zmian, wiedza o stronie, cofanie)
+  for (const dir of PANEL_ENGINE_DIRS) {
+    const srcDir = path.join(srcPanelDir, dir);
+    if (await isDirectory(srcDir)) {
+      await copyDirectoryRecursive(srcDir, path.join(destPanelDir, dir));
+      summary.copiedPanelFiles.push(`panel/${dir}/`);
+    } else {
+      summary.warnings.push(`Brak katalogu źródłowego panel/${dir} w repozytorium szablonu.`);
     }
   }
 

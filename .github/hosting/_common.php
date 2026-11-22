@@ -21,7 +21,7 @@ const CMS_AUTH_MAX_FAILURES = 5;          // maks. 5 nieudanych prób na IP
 const CMS_AUTH_WINDOW_SECONDS = 900;      // okno 15 minut
 const CMS_AUTH_LOCKOUT_SECONDS = 900;     // blokada 15 minut
 const CMS_AUDIT_MAX_BYTES = 5 * 1024 * 1024; // 5 MB przed rotacją
-const CMS_AUTO_BACKUPS_KEEP = 10;         // liczba zachowywanych automatycznych kopii
+const CMS_AUTO_BACKUPS_KEEP = 3;          // liczba zachowywanych automatycznych kopii całej witryny (historia pojedynczych stron jest osobno, skompresowana)
 
 const CMS_BACKUP_ID_REGEX = '/\A(?:original|(?:auto|manual)-\d{8}-\d{6}(?:-[a-f0-9]{4})?)\z/';
 const CMS_BACKUP_EXCLUDED_TOP_DIRS = ['panel', '.git', '.github', 'cgi-bin', 'img', 'node_modules'];
@@ -1523,4 +1523,113 @@ function restoreBackupSnapshot(string $siteRoot, string $privateDir, string $bac
         flock($lockHandle, LOCK_UN);
         fclose($lockHandle);
     }
+}
+
+// ============================================================================
+// HISTORIA POJEDYNCZYCH STRON (oszczędna): przed nadpisaniem/usunięciem strony
+// zapisuje jej poprzednią wersję skompresowaną gzip (ok. 5–10 KB), tylko zmienione
+// strony, maks. CMS_PAGE_HISTORY_KEEP wersji na stronę. Zdjęć nie kopiuje.
+// Oryginał = jedna nieusuwalna kopia z pierwszego uruchomienia (cms-backups/original).
+// ============================================================================
+
+const CMS_PAGE_HISTORY_KEEP = 10;
+
+function pageHistoryDir(string $privateDir, string $relPath): string {
+    $root = ensureBackupsRoot($privateDir) . DIRECTORY_SEPARATOR . 'pages';
+    return $root . DIRECTORY_SEPARATOR . substr(hash('sha256', $relPath), 0, 32);
+}
+
+function normalizePageHistoryPath(string $relPath): ?string {
+    $p = ltrim(str_replace('\', '/', trim($relPath)), '/');
+    if ($p === '' || str_contains($p, '..') || !preg_match('/\A[a-z0-9_\-\/.]+\.html\z/i', $p)) {
+        return null;
+    }
+    return $p;
+}
+
+/** Zapisuje obecną (opublikowaną) wersję strony do historii, zanim zostanie nadpisana lub usunięta. */
+function savePageHistory(string $siteRoot, string $privateDir, string $relPath): void {
+    $p = normalizePageHistoryPath($relPath);
+    if ($p === null) {
+        return;
+    }
+    $abs = $siteRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $p);
+    if (!is_file($abs) || is_link($abs)) {
+        return;
+    }
+    $data = @file_get_contents($abs);
+    if ($data === false) {
+        return;
+    }
+    $dir = pageHistoryDir($privateDir, $p);
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
+        return;
+    }
+    @file_put_contents($dir . DIRECTORY_SEPARATOR . 'path.txt', $p, LOCK_EX);
+    // Bez duplikatów: ta sama treść co ostatnia zapisana wersja -> pomiń
+    $existing = glob($dir . DIRECTORY_SEPARATOR . '*.html.gz') ?: [];
+    rsort($existing, SORT_STRING);
+    if ($existing) {
+        $last = @gzdecode((string) @file_get_contents($existing[0]));
+        if ($last === $data) {
+            return;
+        }
+    }
+    $id = gmdate('Ymd-His') . '-' . bin2hex(random_bytes(2));
+    $gz = gzencode($data, 9);
+    if ($gz !== false) {
+        @file_put_contents($dir . DIRECTORY_SEPARATOR . $id . '.html.gz', $gz, LOCK_EX);
+    }
+    $existing = glob($dir . DIRECTORY_SEPARATOR . '*.html.gz') ?: [];
+    rsort($existing, SORT_STRING);
+    foreach (array_slice($existing, CMS_PAGE_HISTORY_KEEP) as $old) {
+        @unlink($old);
+    }
+}
+
+/** Lista wersji strony: najnowsza pierwsza + informacja, czy jest w oryginale. */
+function listPageHistory(string $privateDir, string $relPath): array {
+    $p = normalizePageHistoryPath($relPath);
+    if ($p === null) {
+        throw new RuntimeException('Nieprawidłowa ścieżka strony.', 400);
+    }
+    $out = [];
+    $dir = pageHistoryDir($privateDir, $p);
+    $files = is_dir($dir) ? (glob($dir . DIRECTORY_SEPARATOR . '*.html.gz') ?: []) : [];
+    rsort($files, SORT_STRING);
+    foreach ($files as $f) {
+        $id = basename($f, '.html.gz');
+        if (preg_match('/\A(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})/', $id, $m)) {
+            $out[] = ['id' => $id, 'createdAt' => "{$m[1]}-{$m[2]}-{$m[3]}T{$m[4]}:{$m[5]}:{$m[6]}Z", 'sizeBytes' => filesize($f) ?: 0];
+        }
+    }
+    $orig = ensureBackupsRoot($privateDir) . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $p);
+    return ['versions' => $out, 'hasOriginal' => is_file($orig)];
+}
+
+/** Treść wybranej wersji strony ('original' albo id z listy). */
+function readPageVersion(string $privateDir, string $relPath, string $versionId): string {
+    $p = normalizePageHistoryPath($relPath);
+    if ($p === null) {
+        throw new RuntimeException('Nieprawidłowa ścieżka strony.', 400);
+    }
+    if ($versionId === 'original') {
+        $orig = ensureBackupsRoot($privateDir) . DIRECTORY_SEPARATOR . 'original' . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $p);
+        if (!is_file($orig)) {
+            throw new RuntimeException('Tej strony nie było w oryginalnej wersji witryny.', 404);
+        }
+        return (string) file_get_contents($orig);
+    }
+    if (!preg_match('/\A\d{8}-\d{6}-[a-f0-9]{4}\z/', $versionId)) {
+        throw new RuntimeException('Nieprawidłowy identyfikator wersji.', 400);
+    }
+    $f = pageHistoryDir($privateDir, $p) . DIRECTORY_SEPARATOR . $versionId . '.html.gz';
+    if (!is_file($f)) {
+        throw new RuntimeException('Nie znaleziono tej wersji strony.', 404);
+    }
+    $html = @gzdecode((string) file_get_contents($f));
+    if ($html === false) {
+        throw new RuntimeException('Wersja strony jest uszkodzona.', 500);
+    }
+    return $html;
 }

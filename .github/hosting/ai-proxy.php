@@ -17,12 +17,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/_common.php';
 
 const AI_MAX_REQUEST_BYTES = 512 * 1024; // 512 KB
-const AI_RATE_LIMIT_MAX = 30;            // maks. 30 zapytań
+const AI_RATE_LIMIT_MAX = 120;           // maks. 120 zapytań (jedno polecenie klienta to kilka rund narzędzi)
 const AI_RATE_LIMIT_WINDOW = 60;         // w oknie 60 sekund na IP
 const AI_CURL_CONNECT_TIMEOUT = 15;      // 15 s na połączenie
 const AI_CURL_TIMEOUT = 45;              // 45 s na odpowiedź modelu
 const AI_MAX_MESSAGES = 120;
-const AI_MAX_TOOLS = 60;
+const AI_MAX_TOOLS = 120;
 
 const AI_SUPPORTED_PROVIDERS = ['gemini', 'openai'];
 const AI_DEFAULT_MODELS = [

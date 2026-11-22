@@ -150,6 +150,13 @@ $_SESSION['cms_csrf'] = $csrfToken;
 
 auditLog($privateDir, 'login_ok', ['user' => 'editor']);
 
+// Oryginał = witryna dokładnie taka, jaka jest na hostingu przy pierwszym logowaniu (jedna, nieusuwalna kopia)
+try {
+    ensureOriginalBackup($paths['siteRoot'] ?? dirname(__DIR__), $privateDir);
+} catch (Throwable) {
+    // Brak kopii nie blokuje logowania; zostanie utworzona przy pierwszej publikacji
+}
+
 reply(200, [
     'authenticated' => true,
     'csrfToken' => $csrfToken,

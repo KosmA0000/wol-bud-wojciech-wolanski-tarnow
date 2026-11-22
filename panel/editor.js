@@ -3136,8 +3136,32 @@ function showPageHistoryMenu(anchorEl) {
 
 const pageHistoryCache = new Map();
 
+function backupsEndpointUrl(params) {
+  const url = new URL(config.backupsEndpoint || './backups.php', location.href);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return url;
+}
+
+async function fetchHostingPage(params) {
+  const res = await fetch(backupsEndpointUrl(params), {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', ...(state.auth.csrfToken ? { 'X-CMS-CSRF-Token': state.auth.csrfToken } : {}) },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `Historia niedostępna (HTTP ${res.status}).`);
+  return data;
+}
+
 async function fetchPageVersions(pagePath) {
   if (pageHistoryCache.has(pagePath)) return pageHistoryCache.get(pagePath);
+  if (config.mode === 'hosting') {
+    // Na hostingu serwer trzyma poprzednie wersje stron (przed każdą publikacją), więc wszystkie są „wcześniejsze”.
+    const data = await fetchHostingPage({ page: pagePath });
+    const list = [{ sha: 'current' }, ...(data.versions || []).map((v) => ({ sha: v.id, date: v.createdAt }))];
+    pageHistoryCache.set(pagePath, list);
+    return list;
+  }
   const url = `https://api.github.com/repos/${config.repository}/commits?path=${encodeURIComponent(pagePath)}&sha=${encodeURIComponent(config.branch || 'main')}&per_page=6`;
   const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
   if (!res.ok) throw new Error(`Historia niedostępna (HTTP ${res.status}).`);
@@ -3148,12 +3172,18 @@ async function fetchPageVersions(pagePath) {
 
 async function restorePageFromSha(sha, label) {
   const pagePath = state.currentPagePath;
-  const raw = `https://raw.githubusercontent.com/${config.repository}/${sha}/${pagePath.split('/').map(encodeURIComponent).join('/')}`;
-  const res = await fetch(raw, { cache: 'no-store' });
-  if (!res.ok) {
-    throw new Error(res.status === 404 ? `Ta strona nie istniała w wersji „${label}”.` : `Nie udało się pobrać wersji (HTTP ${res.status}).`);
+  let html;
+  if (config.mode === 'hosting') {
+    html = (await fetchHostingPage({ page: pagePath, version: sha })).html;
+  } else {
+    const raw = `https://raw.githubusercontent.com/${config.repository}/${sha}/${pagePath.split('/').map(encodeURIComponent).join('/')}`;
+    const res = await fetch(raw, { cache: 'no-store' });
+    if (!res.ok) {
+      throw new Error(res.status === 404 ? `Ta strona nie istniała w wersji „${label}”.` : `Nie udało się pobrać wersji (HTTP ${res.status}).`);
+    }
+    html = await res.text();
   }
-  const html = await res.text();
+  if (!html) throw new Error(`Brak treści wersji „${label}”.`);
   if (!window.confirm(`Przywrócić tę stronę do wersji: ${label}?\nTrafi do szkicu — zobaczysz ją przed publikacją, a „Odrzuć zmiany” wraca do obecnej wersji opublikowanej.`)) return;
   await flushAutosaveIfNeeded();
   await writeAiPageDraft(pagePath, html);
@@ -3167,10 +3197,10 @@ function addPageHistoryItems(menu, place, { withSeparator = true } = {}) {
   addContextMenuItem(menu, '↺ Wróć do ostatniej opublikowanej wersji', () => handleDiscardCurrentPage(), {
     hint: hasDraft ? 'Odrzuca wszystkie nieopublikowane zmiany na tej stronie' : 'Brak nieopublikowanych zmian — strona już jest w tej wersji',
   });
-  const baseline = String(siteProfile.baselineCommitSha || '').trim();
+  const baseline = config.mode === 'hosting' ? 'original' : String(siteProfile.baselineCommitSha || '').trim();
   if (baseline) {
-    addContextMenuItem(menu, '⟲ Wróć do oryginału', () => restorePageFromSha(baseline, 'oryginał (przed panelem)'), {
-      hint: 'Wersja strony sprzed pierwszych zmian w panelu',
+    addContextMenuItem(menu, '⟲ Wróć do oryginału', () => restorePageFromSha(baseline, 'oryginał'), {
+      hint: config.mode === 'hosting' ? 'Strona taka, jaka była przy pierwszym uruchomieniu na hostingu' : 'Wersja strony sprzed pierwszych zmian w panelu',
     });
   }
   const holder = document.createElement('div');

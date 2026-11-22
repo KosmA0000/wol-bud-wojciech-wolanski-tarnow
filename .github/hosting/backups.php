@@ -50,6 +50,24 @@ if (!$config['found']) {
 
 requireAuthenticated($config, $method === 'POST', $privateDir);
 
+// Historia pojedynczej strony: GET ?page=<ścieżka> (lista) albo ?page=<ścieżka>&version=<id|original> (treść HTML)
+if ($method === 'GET' && isset($_GET['page'])) {
+    try {
+        ensureOriginalBackup($siteRoot, $privateDir);
+        $pagePath = (string) $_GET['page'];
+        if (isset($_GET['version'])) {
+            $html = readPageVersion($privateDir, $pagePath, (string) $_GET['version']);
+            reply(200, ['page' => $pagePath, 'version' => (string) $_GET['version'], 'html' => $html]);
+        }
+        reply(200, ['page' => $pagePath] + listPageHistory($privateDir, $pagePath));
+    } catch (RuntimeException $e) {
+        $code = $e->getCode();
+        reply(($code >= 400 && $code < 600) ? $code : 500, ['error' => $e->getMessage()]);
+    } catch (Throwable) {
+        reply(500, ['error' => 'Nie udało się odczytać historii strony.']);
+    }
+}
+
 if ($method === 'GET') {
     try {
         ensureOriginalBackup($siteRoot, $privateDir);

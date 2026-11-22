@@ -355,6 +355,9 @@ try {
     // 3. Atomowy zapis wszystkich plików
     $writtenCount = 0;
     foreach ($orderedFiles as $file) {
+        if (str_ends_with(strtolower($file['path']), '.html')) {
+            savePageHistory($siteRoot, $privateDir, $file['path']);
+        }
         writeFileAtomically($siteRoot, $file['path'], $file['bytes']);
         $writtenCount++;
     }
@@ -373,6 +376,7 @@ try {
         if ($resolvedTarget === false || !isPathInsideRoot($siteRoot, $resolvedTarget)) {
             throw new RuntimeException('Ścieżka usuwania wykracza poza katalog witryny.', 403);
         }
+        savePageHistory($siteRoot, $privateDir, $relativePath);
         if (!unlink($resolvedTarget)) {
             throw new RuntimeException('Nie udało się usunąć pliku: ' . $relativePath, 500);
         }
