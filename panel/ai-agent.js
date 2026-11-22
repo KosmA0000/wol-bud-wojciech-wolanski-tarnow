@@ -1208,6 +1208,12 @@ export async function runAiTurn({
       let result;
       let ok = true;
       try {
+        if (READ_ONLY_TOOLS.has(tc.name) && readStreak >= 4) {
+          // Twarda blokada: po 4 odczytach z rzędu kolejne nie są wykonywane — AI ma działać albo zapytać klienta
+          throw new Error(
+            'ODCZYT ZABLOKOWANY przez panel: masz już wszystkie potrzebne informacje (WIEDZA O STRONIE, KATALOG SEKCJI i poprzednie odczyty). Teraz wykonaj zmianę jednym przepisem albo zadaj klientowi jedno krótkie pytanie z 2–4 opcjami.'
+          );
+        }
         result = await toolExecutor(tc.name, args);
         if (result?.ok === false || result?.error) ok = false;
       } catch (e) {
@@ -1220,7 +1226,7 @@ export async function runAiTurn({
       // Hamulec: po 5 odczytach z rzędu bez żadnej zmiany każemy działać albo zapytać (zamiast analizować w kółko)
       readStreak = READ_ONLY_TOOLS.has(tc.name) ? readStreak + 1 : 0;
       let payload = result;
-      if (readStreak >= 5 && !brakeSent && result && typeof result === 'object') {
+      if (readStreak >= 3 && !brakeSent && result && typeof result === 'object') {
         brakeSent = true;
         payload = {
           ...result,
