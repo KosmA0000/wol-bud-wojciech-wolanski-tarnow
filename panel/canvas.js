@@ -786,6 +786,7 @@ export function connectCanvas(doc, options = {}) {
     onDragTargetEnd: typeof options.onDragTargetEnd === 'function' ? options.onDragTargetEnd : () => {},
     onNavigate: typeof options.onNavigate === 'function' ? options.onNavigate : () => {},
     onContextMenu: typeof options.onContextMenu === 'function' ? options.onContextMenu : null,
+    onAiPickPress: typeof options.onAiPickPress === 'function' ? options.onAiPickPress : null,
   };
 
   let browseMode = Boolean(options.browseMode);
@@ -3843,6 +3844,7 @@ export function connectCanvas(doc, options = {}) {
   function setAiPickMode(enabled) {
     aiPickMode = Boolean(enabled);
     doc.body?.classList.toggle('cms-ai-pick-mode', aiPickMode);
+    if (!aiPickMode) callbacks.onAiPickPress?.(false);
     doc.querySelectorAll('[data-cms-ui="ai-pick-banner"]').forEach((n) => n.remove());
     if (!aiPickMode) {
       clearAiPickVisuals();
@@ -4473,6 +4475,7 @@ export function connectCanvas(doc, options = {}) {
         boxEl: null,
         dragging: false,
       };
+      callbacks.onAiPickPress?.(true);
       return;
     }
 
@@ -4587,6 +4590,7 @@ export function connectCanvas(doc, options = {}) {
 
   function onPointerUp(e) {
     if (marqueeState) {
+      callbacks.onAiPickPress?.(false);
       const st = marqueeState;
       const payloads = [];
       const seenUids = new Set();

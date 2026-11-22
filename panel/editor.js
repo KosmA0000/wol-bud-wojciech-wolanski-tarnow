@@ -53,7 +53,7 @@ import {
   connectCanvas,
   extractButtonStylesFromDoc,
   extractReusableSectionsFromDoc,
-} from './canvas.js?v=20261122-turbo6';
+} from './canvas.js?v=20261122-turbo9';
 import {
   DEFAULT_AI_SETTINGS,
   AI_MODELS,
@@ -1360,6 +1360,7 @@ async function loadPage(pagePath, { focusSectionId = null, skipFlush = false, fr
       onRequestAddSection: handleRequestAddSection,
       onRequestAddItem: handleRequestAddItem,
       onRequestGlobals: (opts) => openGlobalsDialog(opts),
+      onAiPickPress: (pressed) => setAiDrawerPeek(pressed),
       onContextMenu: (info) => {
         const r = frame.getBoundingClientRect();
         const scale = r.width / (frame.contentWindow?.innerWidth || r.width) || 1;
@@ -8148,8 +8149,24 @@ function pinAiTargets(targets = [], { openDrawer = true } = {}) {
   requestAnimationFrame(() => $('ai-input')?.focus());
 }
 
+// Tryb zaznaczania dla AI: przy wciśnięciu myszy panel AI chowa się (widać i da się zaznaczyć całą stronę), po puszczeniu wraca.
+function setAiDrawerPeek(hidden) {
+  const drawer = $('ai-drawer');
+  if (!drawer) return;
+  drawer.style.transition = 'opacity .12s ease, transform .12s ease';
+  drawer.style.opacity = hidden ? '0' : '';
+  drawer.style.transform = hidden ? 'translateX(24px)' : '';
+  drawer.style.pointerEvents = hidden ? 'none' : '';
+  if (hidden) {
+    const restore = () => setAiDrawerPeek(false);
+    window.addEventListener('pointerup', restore, { once: true });
+    window.addEventListener('blur', restore, { once: true });
+  }
+}
+
 function setAiPickModeUi(enabled) {
   state.ai.pickMode = Boolean(enabled);
+  if (!state.ai.pickMode) setAiDrawerPeek(false);
   state.canvas?.setAiPickMode?.(state.ai.pickMode);
   const btn = $('ai-pick-fragment-btn');
   if (btn) {
