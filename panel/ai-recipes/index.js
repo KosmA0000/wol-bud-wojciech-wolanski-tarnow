@@ -8,11 +8,15 @@ import * as contact from './contact.js?v=turbo3';
 import * as remove from './remove.js?v=turbo3';
 import * as addTile from './add-tile.js?v=turbo3';
 import * as analog from './analog.js?v=turbo3';
-import * as knowledge from './knowledge.js?v=turbo4';
+import * as knowledge from './knowledge.js?v=turbo5';
+import * as blocks from './blocks.js?v=turbo5';
+import * as pages from './pages.js?v=turbo5';
+import * as offerMove from './offer-move.js?v=turbo5';
+import * as tiles from './tiles.js?v=turbo5';
 
 export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
 
-const MODULES = [inspect, analog, knowledge, addOffer, rename, contact, remove, addTile];
+const MODULES = [inspect, analog, knowledge, blocks, addOffer, pages, rename, contact, offerMove, remove, addTile, tiles];
 
 const UNDO_TOOL = {
   name: 'cofnij_cala_operacje',
