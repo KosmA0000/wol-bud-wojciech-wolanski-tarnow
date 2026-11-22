@@ -148,6 +148,20 @@ function isRedirectDoc(doc) {
   return Boolean(getRefreshMeta(doc));
 }
 
+function getDocTitle(doc) {
+  const titleEl = doc.querySelector('title');
+  return (titleEl?.textContent || doc.title || '').replace(/\s+/g, ' ').trim();
+}
+
+function setDocTitle(doc, nextTitle) {
+  const titleEl = doc.querySelector('title');
+  if (titleEl) {
+    titleEl.textContent = nextTitle;
+  } else {
+    doc.title = nextTitle;
+  }
+}
+
 function buildRedirectHtml(fromPath, toPath) {
   const rel = toRelativeUrl(toPath, fromPath);
   return (
@@ -257,6 +271,21 @@ function pageSlugFromPath(path) {
   return last.replace(/\.html?$/i, '');
 }
 
+function extractDocName(doc, pageEntry) {
+  const h1 = doc.querySelector('main h1') || doc.querySelector('h1');
+  const h1Text =
+    h1 && !h1.querySelector('.mask')
+      ? h1.textContent.replace(/\s+/g, ' ').trim()
+      : '';
+  return (
+    h1Text ||
+    stripTitleSuffix(getDocTitle(doc)) ||
+    (pageEntry?.label && pageEntry.label !== pageEntry.path ? pageEntry.label : '') ||
+    pageEntry?.path ||
+    ''
+  );
+}
+
 function replaceCaseInsensitive(text, oldStr, newStr) {
   if (!oldStr || typeof text !== 'string') return text;
   const re = new RegExp(escapeRegExp(oldStr), 'gi');
@@ -290,10 +319,11 @@ function replaceTextPreservingChildren(el, newText, trailingSpaceIfHasChild = fa
   return true;
 }
 
-async function readAllPages(pages, ctx) {
-  const htmlByPath = new Map();
-  for (let i = 0; i < pages.length; i += CONCURRENCY) {
-    const batch = pages.slice(i, i + CONCURRENCY);
+async function readAllPages(pages, ctx, existingMap = null) {
+  const htmlByPath = existingMap ? new Map(existingMap) : new Map();
+  const toRead = pages.filter((p) => p && p.path && !htmlByPath.has(p.path));
+  for (let i = 0; i < toRead.length; i += CONCURRENCY) {
+    const batch = toRead.slice(i, i + CONCURRENCY);
     const results = await Promise.all(batch.map((p) => ctx.readPage(p.path)));
     batch.forEach((p, idx) => {
       if (typeof results[idx] === 'string') {
@@ -305,14 +335,27 @@ async function readAllPages(pages, ctx) {
 }
 
 async function resolveTargetPage(query, pages, ctx) {
-  const raw = String(query || '').trim();
-  if (!raw) {
-    return { error: 'Podaj nazwę lub ścieżkę strony do zmiany.' };
-  }
-
   const candidatesAll = pages.filter(
     (p) => p && p.path && p.path !== 'panel' && !p.path.startsWith('panel/')
   );
+
+  const raw = String(query || '').trim();
+  if (!raw) {
+    const htmlByPath = await readAllPages(candidatesAll, ctx);
+    const activeLabels = [];
+    for (const p of candidatesAll) {
+      const html = htmlByPath.get(p.path);
+      if (!html) continue;
+      const doc = ctx.parse(html);
+      if (isRedirectDoc(doc)) continue;
+      const name = extractDocName(doc, p);
+      if (name && !activeLabels.includes(name)) activeLabels.push(name);
+    }
+    return {
+      needsAnswer: 'Którą stronę chcesz zmienić?',
+      options: activeLabels,
+    };
+  }
 
   const cleanPath = normalizeRepoPath(
     raw.replace(/^https?:\/\/[^/]+/i, '').replace(/[?#].*$/, '')
@@ -328,57 +371,94 @@ async function resolveTargetPage(query, pages, ctx) {
     const withIndex = `${cleanPath}/index.html`.toLowerCase();
     matches = candidatesAll.filter((p) => p.path.toLowerCase() === withIndex);
   }
-  // 3. Slug katalogu / pliku
+  // 3. Slug katalogu / pliku (odfiltruj od razu strony przekierowań)
+  let htmlByPath = new Map();
   if (!matches.length && cleanPath) {
     const cleanSlug = cleanPath.toLowerCase();
-    matches = candidatesAll.filter(
+    const slugMatches = candidatesAll.filter(
       (p) => pageSlugFromPath(p.path).toLowerCase() === cleanSlug
     );
+    if (slugMatches.length) {
+      htmlByPath = await readAllPages(slugMatches, ctx, htmlByPath);
+      matches = slugMatches.filter((p) => {
+        const html = htmlByPath.get(p.path);
+        return !html || !isRedirectDoc(ctx.parse(html));
+      });
+    }
   }
-  // 4. Dokładna etykieta lub tytuł bez sufiksu
+  // 4. Dokładna etykieta lub tytuł z metadanych
   if (!matches.length && cleanNorm) {
     matches = candidatesAll.filter(
       (p) =>
-        normText(p.label) === cleanNorm ||
-        normText(stripTitleSuffix(p.title)) === cleanNorm
+        (p.label && p.label !== p.path && normText(p.label) === cleanNorm) ||
+        (p.title && normText(stripTitleSuffix(p.title)) === cleanNorm)
     );
   }
-  // 5. Dopasowanie częściowe
+
+  // 5. Fallback przez odczyt HTML (<h1> i <title>), gdy metadane listPages nie mają nazw lub trafiły tylko przekierowania
   if (!matches.length && cleanNorm) {
-    matches = candidatesAll.filter(
-      (p) =>
-        normText(p.path).includes(cleanNorm) ||
-        normText(p.label).includes(cleanNorm) ||
-        normText(stripTitleSuffix(p.title)).includes(cleanNorm)
+    htmlByPath = await readAllPages(candidatesAll, ctx, htmlByPath);
+    const parsedActive = [];
+    for (const p of candidatesAll) {
+      const html = htmlByPath.get(p.path);
+      if (!html) continue;
+      const doc = ctx.parse(html);
+      if (isRedirectDoc(doc)) continue;
+      const h1El = doc.querySelector('main h1') || doc.querySelector('h1');
+      const h1 =
+        h1El && !h1El.querySelector('.mask')
+          ? h1El.textContent.replace(/\s+/g, ' ').trim()
+          : '';
+      const ttl = stripTitleSuffix(getDocTitle(doc));
+      parsedActive.push({ p, h1, ttl });
+    }
+
+    // 5a. Dokładne dopasowanie po <h1> lub <title>
+    const exactHtml = parsedActive.filter(
+      (x) => normText(x.h1) === cleanNorm || normText(x.ttl) === cleanNorm
     );
+    if (exactHtml.length) {
+      matches = exactHtml.map((x) => x.p);
+    } else {
+      // 5b. Dopasowanie częściowe po ścieżce, <h1>, <title> lub etykiecie
+      const partialHtml = parsedActive.filter(
+        (x) =>
+          normText(x.h1).includes(cleanNorm) ||
+          normText(x.ttl).includes(cleanNorm) ||
+          normText(x.p.path).includes(cleanNorm) ||
+          normText(x.p.label).includes(cleanNorm)
+      );
+      matches = partialHtml.map((x) => x.p);
+    }
   }
 
   if (!matches.length) {
     return { error: `Nie znaleziono strony pasującej do „${raw}”.` };
   }
   if (matches.length === 1) {
-    return { page: matches[0] };
+    return { page: matches[0], htmlByPath };
   }
 
   // Odrzuć strony przekierowania przy wieloznaczności
-  const htmlMap = await readAllPages(matches, ctx);
-  const active = matches.filter((p) => {
-    const html = htmlMap.get(p.path);
-    if (!html) return true;
-    const doc = ctx.parse(html);
-    return !isRedirectDoc(doc);
+  htmlByPath = await readAllPages(matches, ctx, htmlByPath);
+  const parsedPool = matches.map((p) => {
+    const html = htmlByPath.get(p.path);
+    const doc = html ? ctx.parse(html) : null;
+    return { p, doc, isRedir: doc ? isRedirectDoc(doc) : false };
   });
+  const active = parsedPool.filter((x) => !x.isRedir);
 
   if (active.length === 1) {
-    return { page: active[0] };
+    return { page: active[0].p, htmlByPath };
   }
 
-  const pool = active.length ? active : matches;
+  const pool = active.length ? active : parsedPool;
   return {
     needsAnswer: `Znaleziono kilka stron pasujących do „${raw}”. Którą dokładnie chcesz zmienić?`,
-    options: pool
-      .slice(0, 8)
-      .map((p) => `${p.label || stripTitleSuffix(p.title) || p.path} (${p.path})`),
+    options: pool.slice(0, 8).map(({ p, doc }) => {
+      const name = doc ? extractDocName(doc, p) : p.label || p.path;
+      return name && name !== p.path ? `${name} (${p.path})` : p.path;
+    }),
   };
 }
 
@@ -475,7 +555,9 @@ function updateDocReferences(doc, pagePath, opts) {
 
     // 1. Menu główne / stopka / pigułki kategorii / pasek boczny
     if (
-      a.closest('nav#site-menu, nav.menu-panel, footer .footer-links, .cat-quick-nav, aside.subpage-sidebar .sidebar-links') ||
+      a.closest(
+        'nav#site-menu, nav.menu-panel, footer .footer-links, .cat-quick-nav, aside.subpage-sidebar .sidebar-links'
+      ) ||
       a.classList.contains('cat-nav-pill')
     ) {
       if (replaceTextPreservingChildren(a, newName)) changed = true;
@@ -515,7 +597,7 @@ function updateDocReferences(doc, pagePath, opts) {
         }
       }
     }
-    // 5. Kafelki i karty oferty/kategorii/produktów
+    // 5. Kafelki i karty oferty/kategorii/produktów (zachowaj <a href> w .cat-prod-title!)
     else {
       const card = a.closest(
         '.home-cat-card, .cat-prod-card, .subcat-card, .home-featured-product'
@@ -524,8 +606,9 @@ function updateDocReferences(doc, pagePath, opts) {
         const titleEl = card.querySelector(
           'h2, h3, h4, .cat-prod-title, .subcat-title'
         );
-        if (titleEl && titleEl.textContent.trim() !== newName) {
-          titleEl.textContent = newName;
+        const targetTitleEl = titleEl?.querySelector('a') || titleEl;
+        if (targetTitleEl && targetTitleEl.textContent.trim() !== newName) {
+          targetTitleEl.textContent = newName;
           changed = true;
         }
         card.querySelectorAll('img[alt]').forEach((img) => {
@@ -636,21 +719,6 @@ export async function run(name, args = {}, ctx) {
   const nowaNazwaArg = String(args.nowaNazwa || '').trim();
   const nowyAdresArg = String(args.nowyAdres || '').trim();
 
-  if (!strona) {
-    return {
-      ok: false,
-      needsAnswer: 'Którą stronę chcesz zmienić (podaj nazwę lub ścieżkę)?',
-      options: [],
-    };
-  }
-  if (!nowaNazwaArg && !nowyAdresArg) {
-    return {
-      ok: false,
-      needsAnswer: `Co chcesz zmienić na stronie „${strona}”? Podaj nową nazwę lub nowy adres.`,
-      options: [],
-    };
-  }
-
   const pages = ctx.listPages();
   const resolvedTarget = await resolveTargetPage(strona, pages, ctx);
   if (resolvedTarget.error || resolvedTarget.needsAnswer) {
@@ -659,10 +727,13 @@ export async function run(name, args = {}, ctx) {
 
   const target = resolvedTarget.page;
   const oldPath = target.path;
-  const targetHtml = await ctx.readPage(oldPath);
+  let preloadedMap = resolvedTarget.htmlByPath || new Map();
+
+  const targetHtml = preloadedMap.get(oldPath) || (await ctx.readPage(oldPath));
   if (!targetHtml) {
     return { ok: false, error: `Nie udało się odczytać strony ${oldPath}.` };
   }
+  preloadedMap.set(oldPath, targetHtml);
 
   const targetDoc = ctx.parse(targetHtml);
   if (isRedirectDoc(targetDoc)) {
@@ -672,13 +743,15 @@ export async function run(name, args = {}, ctx) {
     };
   }
 
-  const h1El = targetDoc.querySelector('h1');
-  const h1Text =
-    h1El && !h1El.querySelector('.mask')
-      ? h1El.textContent.replace(/\s+/g, ' ').trim()
-      : '';
-  const oldName =
-    h1Text || String(target.label || '').trim() || stripTitleSuffix(targetDoc.title) || oldPath;
+  const oldName = extractDocName(targetDoc, target);
+  if (!nowaNazwaArg && !nowyAdresArg) {
+    return {
+      ok: false,
+      needsAnswer: `Co chcesz zmienić dla strony „${oldName}”?`,
+      options: ['Zmień nazwę', 'Zmień adres (URL)', 'Zmień nazwę i adres'],
+    };
+  }
+
   const newName = nowaNazwaArg || oldName;
   const isRename = newName !== oldName;
 
@@ -700,7 +773,8 @@ export async function run(name, args = {}, ctx) {
     if (isMove) {
       const conflict = pages.find((p) => p.path === newPath);
       if (conflict) {
-        const conflictHtml = await ctx.readPage(conflict.path);
+        const conflictHtml =
+          preloadedMap.get(conflict.path) || (await ctx.readPage(conflict.path));
         const conflictDoc = conflictHtml ? ctx.parse(conflictHtml) : null;
         if (!conflictDoc || !isRedirectDoc(conflictDoc)) {
           return {
@@ -715,6 +789,8 @@ export async function run(name, args = {}, ctx) {
   if (!isRename && !isMove) {
     return {
       ok: true,
+      oldPath,
+      pagePath: oldPath,
       summary: `Strona „${oldName}” ma już tę nazwę i adres — nic nie zmieniono.`,
       changedPages: [],
     };
@@ -740,7 +816,7 @@ export async function run(name, args = {}, ctx) {
   const allNonPanel = pages.filter(
     (p) => p.path && p.path !== 'panel' && !p.path.startsWith('panel/')
   );
-  const htmlByPath = await readAllPages(allNonPanel, ctx);
+  const htmlByPath = await readAllPages(allNonPanel, ctx, preloadedMap);
   const changedPages = [];
 
   // 1. Zapis strony docelowej i jej zagnieżdżonych podstron + przekierowania pod starym adresem
@@ -770,19 +846,21 @@ export async function run(name, args = {}, ctx) {
     });
 
     if (srcPath === oldPath && isRename) {
-      const h1 = doc.querySelector('h1');
+      const h1 = doc.querySelector('main h1') || doc.querySelector('h1');
       if (h1 && !h1.querySelector('.mask')) {
         h1.textContent = newName;
       }
 
-      const rawTitle = doc.title || '';
+      const rawTitle = getDocTitle(doc);
+      let nextTitle;
       if (normText(rawTitle).includes(normText(oldName))) {
-        doc.title = replaceCaseInsensitive(rawTitle, oldName, newName);
+        nextTitle = replaceCaseInsensitive(rawTitle, oldName, newName);
       } else if (rawTitle.includes(' | ')) {
-        doc.title = `${newName} | ${rawTitle.split(' | ').slice(1).join(' | ')}`;
+        nextTitle = `${newName} | ${rawTitle.split(' | ').slice(1).join(' | ')}`;
       } else {
-        doc.title = `${newName} | WOL-BUD Tarnów`;
+        nextTitle = `${newName} | WOL-BUD Tarnów`;
       }
+      setDocTitle(doc, nextTitle);
 
       const metaDesc = doc.querySelector('meta[name="description"]');
       if (metaDesc) {
@@ -803,12 +881,13 @@ export async function run(name, args = {}, ctx) {
       updateAttrsContainingName(doc, oldName, newName);
     }
 
+    const finalTitle = getDocTitle(doc);
     const metaDescVal =
       doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
 
     await ctx.writePage(dstPath, ctx.serialize(doc), {
       label: srcPath === oldPath ? newName : entry.label,
-      title: doc.title,
+      title: finalTitle,
       description: metaDescVal,
       group: entry.group,
     });
@@ -855,7 +934,7 @@ export async function run(name, args = {}, ctx) {
     if (pageChanged) {
       await ctx.writePage(p.path, ctx.serialize(doc), {
         label: p.label,
-        title: doc.title,
+        title: getDocTitle(doc),
         group: p.group,
       });
       changedPages.push(p.path);
@@ -913,6 +992,8 @@ export async function run(name, args = {}, ctx) {
 
   return {
     ok: true,
+    oldPath,
+    pagePath: newPath,
     changedPages: uniqueChanged,
     summary: `Gotowe: ${actions.join(' oraz ')}. Zaktualizowałem łącznie ${uniqueChanged.length} stron (nagłówki, okruszki, kafelki, pigułki, pasek boczny, nawigację produktów${globalsChanged ? ' oraz menu/stopkę' : ''}). Polecenie „cofnij” przywraca całą operację.`,
   };

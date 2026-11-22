@@ -93,6 +93,10 @@ function isRedirectDoc(doc) {
   return false;
 }
 
+function getDocTitle(doc) {
+  return (doc.querySelector('title')?.textContent || doc.title || '').replace(/\s+/g, ' ').trim();
+}
+
 function normalizePhoneCore(raw) {
   const digits = String(raw || '').replace(/\D+/g, '');
   if (!digits) return '';
@@ -188,8 +192,8 @@ function walkTextNodes(root, fn) {
 
 function detectSalonKey(salonArg, adresArg) {
   const explicit = normText(salonArg);
-  if (explicit === 'tarnow') return 'tarnow';
-  if (explicit === 'radlow') return 'radlow';
+  if (explicit.includes('tarnow')) return 'tarnow';
+  if (explicit.includes('radlow')) return 'radlow';
 
   const addrNorm = normText(adresArg);
   const mentionsTarnow = addrNorm.includes('tarnow') || addrNorm.includes('33-100');
@@ -210,6 +214,7 @@ async function readSalonInfoFromIndex(salonKey, ctx) {
 
   const doc = ctx.parse(indexHtml);
   const cityNorm = normText(info.city);
+  let foundSidebarStreet = false;
 
   for (const p of doc.querySelectorAll('.sidebar-store p')) {
     const txt = p.textContent.replace(/\s+/g, ' ').trim();
@@ -217,7 +222,10 @@ async function readSalonInfoFromIndex(salonKey, ctx) {
       const idx = txt.indexOf(':');
       if (idx >= 0) {
         const street = txt.slice(idx + 1).trim();
-        if (street) info.street = street;
+        if (street) {
+          info.street = street;
+          foundSidebarStreet = true;
+        }
       }
       break;
     }
@@ -227,12 +235,30 @@ async function readSalonInfoFromIndex(salonKey, ctx) {
     const title = item.querySelector('.kt-store-title')?.textContent || '';
     const addr = item.querySelector('.kt-store-addr')?.textContent?.replace(/\s+/g, ' ').trim() || '';
     if (normText(title).includes(cityNorm) || normText(addr).includes(cityNorm)) {
-      if (addr) info.full = addr;
+      if (addr) {
+        info.full = addr;
+        if (!foundSidebarStreet) {
+          const streetMatch = addr.split(/[,(]/)[0]?.trim();
+          if (streetMatch) info.street = streetMatch;
+        }
+      }
       break;
     }
   }
 
   return info;
+}
+
+async function detectEmailFromIndex(ctx) {
+  const indexHtml = await ctx.readPage('index.html');
+  if (!indexHtml) return '';
+  const doc = ctx.parse(indexHtml);
+  for (const a of doc.querySelectorAll('a[href^="mailto:"], a[href^="MAILTO:"]')) {
+    const href = a.getAttribute('href') || '';
+    const addr = href.slice(7).split('?')[0].trim();
+    if (addr && addr.includes('@')) return addr;
+  }
+  return '';
 }
 
 function parseNewAddress(rawAdres, salonInfo) {
@@ -354,22 +380,22 @@ export async function run(name, args = {}, ctx) {
   const oldPhoneCore = normalizePhoneCore(oldTelSource);
   const oldPhoneRegex = nextPhone ? buildPhoneRegex(oldTelSource) : null;
 
-  const oldEmailSource =
+  let oldEmailSource =
     typeof args.staryEmail === 'string' && args.staryEmail.trim()
       ? args.staryEmail.trim().replace(/^mailto:/i, '').trim()
-      : globals.email || 'biuro@wol-bud.com.pl';
+      : String(globals.email || '').trim();
+  if (!oldEmailSource && nextEmail) {
+    oldEmailSource = (await detectEmailFromIndex(ctx)) || 'biuro@wol-bud.com.pl';
+  }
   const oldEmailRegex = nextEmail ? buildEmailRegex(oldEmailSource) : null;
 
   const oldFullAddrRegex =
     addrPlan?.oldFull
       ? new RegExp(escapeRegExp(addrPlan.oldFull), 'gi')
       : null;
-  const oldStreetAddrRegex =
-    addrPlan?.oldStreet && addrPlan.oldStreet !== addrPlan.oldFull
-      ? new RegExp(escapeRegExp(addrPlan.oldStreet), 'gi')
-      : addrPlan?.oldStreet
-        ? new RegExp(escapeRegExp(addrPlan.oldStreet), 'gi')
-        : null;
+  const oldStreetAddrRegex = addrPlan?.oldStreet
+    ? new RegExp(escapeRegExp(addrPlan.oldStreet), 'gi')
+    : null;
 
   const pages = ctx
     .listPages()
@@ -511,7 +537,7 @@ export async function run(name, args = {}, ctx) {
     if (pageChanged) {
       await ctx.writePage(p.path, ctx.serialize(doc), {
         label: p.label,
-        title: doc.title,
+        title: getDocTitle(doc),
         group: p.group,
       });
       changedPages.push(p.path);
@@ -521,7 +547,10 @@ export async function run(name, args = {}, ctx) {
   // D. Aktualizacja globals
   let globalsChanged = false;
   const isMainPhone =
-    nextPhone && oldPhoneCore === normalizePhoneCore(globals.phoneDisplay);
+    nextPhone &&
+    (!args.staryTelefon ||
+      !globals.phoneDisplay ||
+      oldPhoneCore === normalizePhoneCore(globals.phoneDisplay));
   if (isMainPhone) {
     if (globals.phoneDisplay !== nextPhone.display) {
       globals.phoneDisplay = nextPhone.display;
@@ -545,9 +574,12 @@ export async function run(name, args = {}, ctx) {
     }
   }
 
+  const currentGlobalEmail = String(globals.email || '').trim().toLowerCase();
   const isMainEmail =
     nextEmail &&
-    oldEmailSource.toLowerCase() === String(globals.email || '').trim().toLowerCase();
+    (!args.staryEmail ||
+      !currentGlobalEmail ||
+      oldEmailSource.toLowerCase() === currentGlobalEmail);
   if (isMainEmail && globals.email !== nextEmail) {
     globals.email = nextEmail;
     globalsChanged = true;
