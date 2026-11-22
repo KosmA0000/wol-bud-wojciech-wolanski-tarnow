@@ -192,7 +192,7 @@ async function resolveLinkTarget(rawLink, hostPagePath, pages) {
   return { missing: raw };
 }
 
-function updateClonedTile(clone, { tytul, opis, href, imgRel, hasCustomImage }) {
+function updateClonedTile(clone, { tytul, opis, href, imgRel, hasCustomImage, removeIds = true }) {
   // 1. Tytuł
   if (clone.classList.contains('home-extra-category')) {
     const spans = clone.querySelectorAll('span');
@@ -264,8 +264,10 @@ function updateClonedTile(clone, { tytul, opis, href, imgRel, hasCustomImage }) 
     img.closest('picture')?.querySelectorAll('source').forEach((s) => s.remove());
     img.setAttribute('alt', tytul);
   }
-  clone.removeAttribute('id');
-  clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+  if (removeIds) {
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+  }
 }
 
 export const tools = [
@@ -346,10 +348,12 @@ export async function run(name, args, ctx) {
   const doc = hostPage.doc;
   const sections = findGridSections(doc);
   const groups = await recipeGroups(ctx);
-  for (const group of groups.filter((rule) => rule.hostPage === hostPage.path)) {
-    for (const el of groupElements(doc, group)) {
-      if (sections.some((section) => section.el === el)) continue;
-      sections.push({ el, key: group.selector, label: group.label, selector: group.selector });
+  if (args.sekcja || !sections.length) {
+    for (const group of groups.filter((rule) => rule.hostPage === hostPage.path)) {
+      for (const el of groupElements(doc, group)) {
+        if (sections.some((section) => section.el === el)) continue;
+        sections.push({ el, key: group.selector, label: group.label || group.selector, selector: group.selector });
+      }
     }
   }
   if (sections.length === 0) {
@@ -423,9 +427,11 @@ export async function run(name, args, ctx) {
       const imgRel = rawImg && (/^(?:https?:|data:)/i.test(rawImg) ? rawImg : toRel(normPath(rawImg), hostPage.path));
       const href = pagePath(linkRes.href, hostPage.path) === path ? linkRes.href : links[0].getAttribute('href');
       const saved = tile.outerHTML;
-      updateClonedTile(tile, { tytul, opis: args.opis, href, imgRel, hasCustomImage: Boolean(rawImg) });
+      updateClonedTile(tile, { tytul, opis: args.opis, href, imgRel, hasCustomImage: Boolean(rawImg), removeIds: alias });
       if (alias) container.append(tile);
-      if (alias || tile.outerHTML !== saved) await staged.writePage(hostPage.path, staged.serialize(hostDoc));
+      if (!alias && tile.outerHTML === saved) return;
+      await staged.writePage(hostPage.path, staged.serialize(hostDoc));
+      return `${alias ? 'Dodano' : 'Uzupełniono'} kafelek „${tytul}” na stronie „${hostPage.displayLabel}”.`;
     });
   }
   if (linkRes.missing) {

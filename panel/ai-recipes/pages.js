@@ -205,11 +205,12 @@ export async function addGroupMember(ctx, group, args, groups, updateMember) {
     const existing = hostDoc && linksInGroup(hostDoc, group)
       .filter((link) => pagePath(link.getAttribute('data-desktop-href') || link.getAttribute('href'), group.hostPage) === target);
     if (!existing?.length) return { ok: false, error: `Brakuje odnośnika do „${args.nazwa}” w grupie „${group.label}”.` };
-    if (updateMember) await updateMember(staged, hostDoc, existing, target);
+    const memberSummary = updateMember && await updateMember(staged, hostDoc, existing, target);
+    const summary = [created?.summary, linked.changedPages?.length ? linked.summary : '', memberSummary].filter(Boolean).join(' ');
     return {
       ...linked,
       pagePath: target,
-      summary: [created?.summary, linked.summary].filter(Boolean).join(' '),
+      summary: summary || linked.summary,
     };
   });
 }
