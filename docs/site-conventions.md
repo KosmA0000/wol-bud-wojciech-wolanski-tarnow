@@ -3,6 +3,8 @@
 Źródło: pomiar Testera (Z-001, `panel-v2 @ e5651c3`, pliki w `~/OpenBot/Shared/wolbud/rekonesans/`) i decyzje użytkownika z 2026-11-22 (`docs/decisions.md`, D-001…D-003).
 Ten dokument to wzorzec dla mapy dróg dojścia w kodzie, walidatora i przepisów. Gdy kod i ten dokument się różnią, błąd jest w kodzie albo trzeba zmienić decyzję.
 
+**Zasada nadrzędna (D-009, wymaganie użytkownika):** drogi dojścia to tylko jeden przykład. Każda operacja, z panelu i od AI, aktualizuje wszystkie miejsca, które zależą od zmienianej rzeczy: przy tworzeniu, zmianie adresu, zmianie nazwy, przeniesieniu, zmianie kolejności, ukryciu, usunięciu i zmianie danych firmy. Pełna lista zależności jest w sekcji 7. Model AI niczego z niej nie pamięta: wylicza ją przepis z modelu strony, a walidator sprawdza, że żadne odwołanie nie zostało stare.
+
 ## 1. Typy stron
 
 | Typ | Ścieżka | Głębokość / prefiks | Liczba dziś |
@@ -89,3 +91,22 @@ Nowe sekcje i elementy powstają tylko z katalogu komponentów (`rekonesans/kata
 - Okruszki do poprawienia według sekcji 4: `kategorie/drewniane` (usuwana), `nasze-sklepy` (`#kontakt` → `#nasze-sklepy`), `promocje/cieply-montaz…` (pod Usługami → pod Promocjami), wszystkie podkategorie i produkty (dochodzi Oferta i rodzic).
 - Pasek `.cat-quick-nav` i sidebar: „Żaluzje i plisy” wypada (podkategoria, D-001); zostaje 8 kategorii głównych + Usługi.
 - `<link rel="canonical">`: 0/54. Decyzja w kontrakcie SEO (faza 1).
+
+## 7. Zależności każdej zmiany (D-009)
+
+Pomiar wstępny (Główny agent, `e5651c3`): telefon występuje 740 razy w 54 plikach; nazwa „Rolety zewnętrzne” 28 razy w 8 plikach (tytuł, h1, okruszki produktów, kafel, pigułka, karty, opisy); adres `produkty/adaptacyjne/` jest w karcie kategorii i w `product-nav-bar` dwóch sąsiednich produktów. Pełną mapę zależności mierzy Tester (Z-006, `rekonesans/zaleznosci.*`); do tego czasu tabela jest minimum, nie kompletem.
+
+| Operacja | Co musi się zmienić razem z nią |
+|---|---|
+| utwórz stronę dowolnego typu | wszystkie drogi dojścia z sekcji 3; okruszki według sekcji 4; regiony (menu, stopka, pasek, sidebar) z poprawnym prefiksem głębokości; `product-nav-bar` sąsiadów (produkt); sitemap; manifest; SEO (title, description) |
+| zmień adres (slug, folder) | każdy `href` do starego adresu na wszystkich stronach (w regionach i w treści, także z kotwicą `#…`); `data-desktop-href`; cele istniejących przekierowań wskazujących stary adres (bez łańcuchów); nowe przekierowanie ze starego adresu; ścieżki względne w samej stronie i w stronach dzieci, gdy zmienia się głębokość; sitemap; manifest; site-globals (menu, stopka) |
+| zmień nazwę / tytuł | `<title>`, `h1`, etykieta w menu, stopce, kaflu, pigułce, karcie, pasku, sidebarze, okruszkach dzieci, „Wszystkie z kategorii”, `alt` i `aria-label` z nazwą, manifest. Wzmianki w zwykłym tekście treści: lista do potwierdzenia, nie zmiana automatyczna |
+| przenieś (zmień rodzica) | okruszki strony i jej dzieci; karta u starego rodzica usunięta, u nowego dodana; `product-nav-bar` w obu kategoriach; `homeDisplay` przy zmianie poziomu (kategoria ↔ podkategoria) |
+| zmień kolejność | kolejność kart u rodzica i `product-nav-bar` (poprzedni / następny) wszystkich sąsiadów |
+| ukryj | jak usuń dla dróg dojścia (strona nieosiągalna publicznie), bez kasowania pliku; sitemap i manifest bez niej |
+| usuń stronę | wszystkie drogi dojścia i odwołania sprzątnięte; dzieci przeniesione albo blokada z pytaniem; przekierowanie ze starego adresu do rodzica; sitemap; manifest |
+| zmień id sekcji / usuń sekcję | każdy link `#id` z innych stron (np. home → `promocje/…#pelny-opis-montazu`), kotwice mobilne menu (tych nie wolno usuwać) |
+| zmień dane firmy (telefon, e-mail, adres, godziny, Facebook, logo) | site-globals i każde wystąpienie na wszystkich stronach: tekst, `tel:`, `mailto:`, linki map, `aria-label`, stopka, sidebar, dymki kontaktu, strona Kontakt i Nasze sklepy |
+| podmień / usuń zdjęcie | każde użycie pliku (src, srcset, galerie, `og:image`), `alt`; plik usuwany dopiero, gdy nieużywany |
+
+Walidator ma niezmiennik „spójność odwołań”: każdy link wewnętrzny, etykieta regionu i wartość danych firmy na stronie zgadza się z modelem; stara wartość w dowolnym miejscu to błąd. Bank stress testu ma kategorię „zmień wszędzie” (adres, nazwa, przeniesienie, usunięcie, dane firmy), liczoną do zbioru krytycznego.
