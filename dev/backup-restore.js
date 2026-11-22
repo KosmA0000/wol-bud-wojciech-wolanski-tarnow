@@ -6,6 +6,7 @@ import { HttpError } from './http-util.js';
 import { BACKUP_ID_RE, backupsRoot, ensureOriginal, createSnapshot } from './backup-store.js';
 import { scanHtml } from './html-scan.js';
 import { writeFileAtomic, deleteFileSafe } from './fs-write.js';
+import { validateWritePath } from './safe-path.js';
 
 const MANIFEST = 'assets/cms-manifest.json';
 
@@ -24,14 +25,18 @@ function listFiles(dir) {
   return out.sort();
 }
 
+/** Czy ścieżkę z manifestu wolno usunąć: te same reguły co usuwanie w api.php (L-020). @param {unknown} p */
+function isDeletablePage(p) {
+  if (typeof p !== 'string' || !p.toLowerCase().endsWith('.html')) return false;
+  try { validateWritePath(p, { isDeletion: true }); return true; } catch { return false; }
+}
+
 /** Ścieżki podstron z bieżącego manifestu (do sprzątnięcia stron dodanych po kopii). @param {string} siteRoot */
 function manifestPages(siteRoot) {
   try {
     const data = JSON.parse(fs.readFileSync(path.join(siteRoot, 'assets', 'cms-manifest.json'), 'utf8'));
     if (!Array.isArray(data?.pages)) return [];
-    return data.pages.map((p) => p?.path).filter((p) => typeof p === 'string' && /\.html$/i.test(p)
-      && p.toLowerCase() !== 'index.html' && !p.includes('..') && !p.startsWith('/')
-      && !/^(assets|panel)\//i.test(p) && /^[a-zA-Z0-9/._-]+$/.test(p));
+    return data.pages.map((p) => p?.path).filter(isDeletablePage);
   } catch {
     return [];
   }
@@ -50,7 +55,7 @@ function readSnapshot(filesRoot) {
       const err = scanHtml(bytes.toString('utf8'));
       if (err) throw new HttpError(500, `Plik w kopii nie przeszedł weryfikacji bezpieczeństwa (${rel}): ${err}`);
     }
-    if (rel === MANIFEST) manifest = bytes;
+    if (lower === MANIFEST) manifest = bytes;
     else toWrite.set(rel, bytes);
   }
   if (toWrite.size === 0 && !manifest) throw new HttpError(500, 'Wybrana kopia zapasowa jest pusta i nie może zostać przywrócona.');

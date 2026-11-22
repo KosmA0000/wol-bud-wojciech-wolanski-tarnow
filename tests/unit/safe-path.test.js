@@ -40,7 +40,7 @@ test('zapis: rozszerzenia spoza białej listy są odrzucane', () => {
 
 test('zapis: dozwolone ścieżki przechodzą bez zmian', () => {
   for (const p of ['index.html', 'oferta/okna/index.html', 'assets/cms-manifest.json', 'img/a_b-1.webp', 'sitemap.xml',
-    'robots.txt', 'assets/extra.css', 'favicon.ico', 'img/x.JPG']) {
+    'robots.txt', 'img/x.JPG']) {
     assert.equal(validateWritePath(p), p);
   }
 });

@@ -51,8 +51,10 @@ async function handleDev(req, res, ctx, pathname) {
 /** @param {any} req @param {any} res @param {any} ctx @param {URL} url */
 function serveFiles(req, res, ctx, url) {
   if (req.method !== 'GET' && req.method !== 'HEAD') throw new HttpError(405, 'Niedozwolona metoda HTTP. Oczekiwano GET.');
-  const isPanel = url.pathname === '/panel' || url.pathname.startsWith('/panel/');
-  if (url.pathname === '/panel/config.js' && url.searchParams.get('source') !== '1') {
+  // L-019: na Windows /panel/Config.js i /PANEL/index.html to te same pliki, więc porównujemy małymi literami.
+  const lowerPath = url.pathname.toLowerCase();
+  const isPanel = lowerPath === '/panel' || lowerPath.startsWith('/panel/');
+  if (lowerPath === '/panel/config.js' && url.searchParams.get('source') !== '1') {
     res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(LOCAL_CONFIG_JS);
     return;
@@ -62,7 +64,8 @@ function serveFiles(req, res, ctx, url) {
   const hit = resolveStatic(root, rel);
   if (!hit) return sendText(res, 404, 'Nie znaleziono.');
   if ('redirect' in hit) return sendText(res, 301, 'Przeniesiono.', { Location: `${url.pathname}/${url.search}` });
-  const isPanelIndex = isPanel && path.basename(hit.file) === 'index.html' && path.dirname(hit.file) === root;
+  const isPanelIndex = isPanel && path.basename(hit.file).toLowerCase() === 'index.html'
+    && path.dirname(hit.file).toLowerCase() === path.resolve(root).toLowerCase();
   sendFile(res, hit.file, isPanelIndex ? injectLocalMeta : undefined);
 }
 

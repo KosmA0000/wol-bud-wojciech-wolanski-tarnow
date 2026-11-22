@@ -42,6 +42,23 @@ function decodeFile(item) {
 }
 
 /**
+ * L-019: na Windows (i na hostingu bez rozróżniania wielkości liter) img/A.webp i img/a.webp to ten sam plik.
+ * Paczka nie może zawierać dwóch takich ścieżek ani zapisu i usunięcia różniących się tylko wielkością liter.
+ * @param {string[]} files @param {string[]} deletions
+ */
+function assertNoCaseCollisions(files, deletions) {
+  const seen = new Map();
+  for (const p of [...files, ...deletions]) {
+    const key = p.toLowerCase();
+    const prev = seen.get(key);
+    if (prev !== undefined && prev !== p) {
+      throw new HttpError(400, `Ścieżki różnią się tylko wielkością liter: ${prev} i ${p}`);
+    }
+    seen.set(key, p);
+  }
+}
+
+/**
  * Sprawdza pola żądania publikacji i zwraca plan zapisu: pliki (manifest osobno, na koniec) i usunięcia.
  * @param {Record<string, any>} req
  */
@@ -69,8 +86,9 @@ export function preparePublish(req) {
     const f = decodeFile(item);
     prepared.set(f.path, f.bytes);
   }
-  const toDelete = [...new Set(deletions.map((d) => validateWritePath(d, { isDeletion: true })))]
-    .filter((d) => !prepared.has(d));
+  const checkedDeletions = deletions.map((d) => validateWritePath(d, { isDeletion: true }));
+  assertNoCaseCollisions([...prepared.keys()], checkedDeletions);
+  const toDelete = [...new Set(checkedDeletions)].filter((d) => !prepared.has(d));
   const manifest = prepared.get(MANIFEST_PATH) ?? null;
   prepared.delete(MANIFEST_PATH);
   return { files: [...prepared].map(([path, bytes]) => ({ path, bytes })), manifest, deletions: toDelete, expectedRevision, nextRevision };

@@ -5,5 +5,6 @@
 - cli.test.js — validate, check:size i argumenty serwera
 - content.test.js — skaner HTML, kontrola treści, formaty Gemini i OpenAI
 - helpers.js — mini-strona tymczasowa i serwer testowy
+- path-rules.test.js — wielkość liter (L-019), nazwy zarezerwowane Windows (L-020), typy plików (D-010)
 - safe-path.test.js — ochrona ścieżek zapisu i odczytu
 - sandbox.test.js — kopia, reset i izolacja piaskownic

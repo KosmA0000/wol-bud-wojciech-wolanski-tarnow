@@ -37,6 +37,7 @@ Endpointy: `/panel/api.php`, `/panel/backups.php`, `/panel/auth.php`, `/panel/ai
 - publish-prepare.js — walidacja i dekodowanie paczki publikacji
 - rate-limit.js — limit zapytań w oknie przesuwnym
 - router.js — kontrola Host/Origin i rozdział żądań
+- path-rules.js — reguły ścieżek: małe litery poza img/, nazwy zarezerwowane Windows, typy plików i ich miejsca (D-010)
 - safe-path.js — ochrona ścieżek zapisu, biała lista rozszerzeń
 - sandbox.js — tworzenie, reset i izolacja piaskownic per port
 - server.js — punkt wejścia npm run dev

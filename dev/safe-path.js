@@ -1,13 +1,14 @@
-// Ochrona ścieżek zapisu i usuwania (reguły validateSafePath z api.php + biała lista rozszerzeń karty Z-002).
+// Ochrona ścieżek zapisu i usuwania (reguły validateSafePath z api.php + typy plików według D-010).
 import fs from 'node:fs';
 import path from 'node:path';
 import { HttpError } from './http-util.js';
+import { checkWindowsSegments, checkCase, checkTypeLocation } from './path-rules.js';
 
 /**
- * Rozszerzenia, które wolno zapisać. svg wyłączone: może nieść skrypt (XSS), a skaner regexowy
- * z PHP da się obejść. js wyłączone: zapis kodu wykonywanego na stronie omija sanityzację HTML.
+ * Rozszerzenia, które wolno zapisać (D-010; miejsce każdego typu sprawdza checkTypeLocation). svg wyłączone:
+ * może nieść skrypt (XSS). js i css wyłączone: panel ich nie zapisuje, a kod na stronie omija sanityzację HTML.
  */
-export const ALLOWED_EXTENSIONS = Object.freeze(['html', 'css', 'json', 'xml', 'txt', 'webp', 'jpg', 'jpeg', 'png', 'ico']);
+export const ALLOWED_EXTENSIONS = Object.freeze(['html', 'json', 'xml', 'txt', 'webp', 'jpg', 'jpeg', 'png']);
 export const FORBIDDEN_TOP_DIRS = Object.freeze(['panel', '.github', '.git', 'cgi-bin', 'backups', 'cms-backups', 'node_modules']);
 export const FORBIDDEN_EXACT_PATHS = Object.freeze([
   'assets/site.js', 'assets/site.css', 'assets/home-page.js', 'assets/home-content.js', 'assets/home-content.css',
@@ -38,6 +39,8 @@ export function validateWritePath(p, { isDeletion = false } = {}) {
   if (segments.some((s) => s === '' || s === '.' || s.startsWith('.'))) {
     throw new HttpError(403, `Niedozwolony segment ścieżki (pliki lub katalogi ukryte): ${p}`);
   }
+  checkWindowsSegments(segments, p);
+  checkCase(p);
   const lower = p.toLowerCase();
   if (FORBIDDEN_TOP_DIRS.includes(segments[0].toLowerCase())) {
     throw new HttpError(403, `Zapis i usuwanie w tym katalogu są zabronione: ${p}`);
@@ -52,6 +55,7 @@ export function validateWritePath(p, { isDeletion = false } = {}) {
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
     throw new HttpError(403, `Niedozwolone rozszerzenie pliku: ${p}`);
   }
+  checkTypeLocation(lower, p);
   if (isDeletion) checkDeletion(lower, p);
   return p;
 }
