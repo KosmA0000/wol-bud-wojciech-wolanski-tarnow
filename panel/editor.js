@@ -61,8 +61,8 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo3';
-import { isRecipeTool, runRecipe } from './ai-recipes/index.js?v=20261122-turbo3';
+} from './ai-agent.js?v=20261122-turbo4';
+import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo4';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -7552,7 +7552,10 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
     const result = await runAiTurn({
       userMessage,
       history: historySnapshot,
-      contextSummary: buildAiContextSummary(),
+      contextSummary: [
+        await getSiteKnowledgeText(buildRecipeCtx()).catch(() => ''),
+        buildAiContextSummary(),
+      ].filter(Boolean).join('\n\n'),
       settings: state.ai.settings,
       csrfToken: state.auth.csrfToken || '',
       confirmBeforeEdit: Boolean(state.ai.confirmBeforeEdit),

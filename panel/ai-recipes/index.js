@@ -8,8 +8,11 @@ import * as contact from './contact.js?v=turbo3';
 import * as remove from './remove.js?v=turbo3';
 import * as addTile from './add-tile.js?v=turbo3';
 import * as analog from './analog.js?v=turbo3';
+import * as knowledge from './knowledge.js?v=turbo4';
 
-const MODULES = [inspect, analog, addOffer, rename, contact, remove, addTile];
+export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
+
+const MODULES = [inspect, analog, knowledge, addOffer, rename, contact, remove, addTile];
 
 const UNDO_TOOL = {
   name: 'cofnij_cala_operacje',
@@ -63,6 +66,7 @@ async function undoLast(ctx) {
     restored.push(path);
   }
   if (op.globals) await ctx.setGlobals(op.globals);
+  knowledge.invalidateKnowledge();
   await ctx.reloadCurrent?.();
   return { ok: true, undone: op.name, restoredPages: restored, restoredMenu: Boolean(op.globals) };
 }
@@ -79,6 +83,7 @@ export async function runRecipe(name, args, ctx) {
     result = { ok: false, error: e?.message || String(e) };
   }
   if (op.pages.size || op.globals) {
+    knowledge.invalidateKnowledge();
     undoStack.push(op);
     if (undoStack.length > 20) undoStack.shift();
     await ctx.reloadCurrent?.();

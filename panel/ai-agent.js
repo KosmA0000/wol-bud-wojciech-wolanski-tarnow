@@ -1,5 +1,5 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo3';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo3';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo4';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo4';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
