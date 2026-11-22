@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo5';
+} from './ai-agent.js?v=20261122-turbo10';
 import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo5';
 
 // ============================================================================
@@ -7807,6 +7807,7 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       csrfToken: state.auth.csrfToken || '',
       confirmBeforeEdit: Boolean(state.ai.confirmBeforeEdit),
       forceExecute: Boolean(forceExecute),
+      images: getPinnedShotsForAi(usedPinnedTargets),
       toolExecutor: executeAiTool,
       onToolCall: (callInfo) => {
         const id = callInfo?.id || `${callInfo?.name || 'tool'}_${toolPillsById.size}`;
@@ -8060,6 +8061,67 @@ function restoreAiChat() {
   }
 }
 
+// Zrzuty zaznaczonych elementów dla AI — TYLKO w pamięci karty (nigdzie nie zapisywane),
+// kasowane po usunięciu celu, „Wyczyść cele”, wyczyszczeniu czatu albo odświeżeniu panelu.
+const aiShots = new Map();
+const shotKey = (t) => `${t.pagePath || ''}|${t.uid}`;
+let html2canvasPromise = null;
+
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (!html2canvasPromise) {
+    html2canvasPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.onload = () => resolve(window.html2canvas);
+      s.onerror = () => {
+        html2canvasPromise = null;
+        reject(new Error('Nie udało się wczytać narzędzia zrzutów.'));
+      };
+      document.head.append(s);
+    });
+  }
+  return html2canvasPromise;
+}
+
+async function captureTargetShot(t) {
+  if (!t?.uid || t.pagePath !== state.currentPagePath) return;
+  const doc = $('preview')?.contentDocument;
+  const el = doc?.querySelector(`[data-cms-uid="${CSS.escape(t.uid)}"]`);
+  if (!el) return;
+  try {
+    const h2c = await loadHtml2Canvas();
+    const rect = el.getBoundingClientRect();
+    const scale = Math.min(1, 900 / Math.max(1, rect.width), 1400 / Math.max(1, rect.height));
+    const canvas = await h2c(el, {
+      backgroundColor: '#ffffff',
+      scale: Math.max(0.3, scale),
+      useCORS: true,
+      logging: false,
+      ignoreElements: (n) => n?.hasAttribute?.('data-cms-ui'),
+    });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+    if (dataUrl.length > 1_000_000) return; // za duży zrzut — AI dostanie sam opis elementu
+    aiShots.set(shotKey(t), dataUrl);
+    renderAiTargetChips();
+  } catch (err) {
+    console.warn('Zrzut elementu dla AI nie powiódł się:', err);
+  }
+}
+
+function getPinnedShotsForAi(targets) {
+  return (targets || [])
+    .map((t) => aiShots.get(shotKey(t)))
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((url) => ({ mimeType: 'image/jpeg', data: url.split(',')[1] }));
+}
+
+function clearAiShots(targets = null) {
+  if (!targets) aiShots.clear();
+  else for (const t of targets) aiShots.delete(shotKey(t));
+}
+
 function renderAiTargetChips() {
   const host = $('ai-target-chips');
   if (!host) return;
@@ -8076,6 +8138,15 @@ function renderAiTargetChips() {
     const label = document.createElement('span');
     label.className = 'ai-target-chip-label';
     label.textContent = `🎯 ${t.label}`;
+    const shot = aiShots.get(shotKey(t));
+    if (shot) {
+      const thumb = document.createElement('img');
+      thumb.src = shot;
+      thumb.alt = '';
+      thumb.title = 'Zrzut tego fragmentu trafi do AI razem z wiadomością (tylko na czas rozmowy)';
+      thumb.style.cssText = 'height:22px;max-width:44px;object-fit:cover;border-radius:4px;margin-right:6px;vertical-align:middle;border:1px solid #ddd';
+      label.prepend(thumb);
+    }
     label.addEventListener('click', () => {
       if (t.pagePath === state.currentPagePath && t.uid) {
         state.canvas?.selectByUid?.(t.uid, { scroll: true });
@@ -8108,6 +8179,7 @@ function renderAiTargetChips() {
     rm.setAttribute('aria-label', `Usuń cel: ${t.label}`);
     rm.addEventListener('click', () => {
       state.ai.pinnedTargets = (state.ai.pinnedTargets || []).filter((x) => x.uid !== t.uid);
+      clearAiShots([t]);
       renderAiTargetChips();
     });
 
@@ -8122,6 +8194,7 @@ function renderAiTargetChips() {
     clearAll.textContent = 'Wyczyść cele';
     clearAll.addEventListener('click', () => {
       state.ai.pinnedTargets = [];
+      clearAiShots();
       renderAiTargetChips();
     });
     host.append(clearAll);
@@ -8140,6 +8213,7 @@ function pinAiTargets(targets = [], { openDrawer = true } = {}) {
   }
   state.ai.pinnedTargets = existing.slice(-6);
   renderAiTargetChips();
+  for (const t of list) captureTargetShot(t);
 
   if (openDrawer && !state.ai.open) {
     setAiDrawerOpen(true);
@@ -8183,6 +8257,7 @@ function clearAiChat() {
   state.ai.history = [];
   state.ai.chatEntries = [];
   state.ai.pinnedTargets = [];
+  clearAiShots();
   renderAiTargetChips();
   try {
     localStorage.removeItem(AI_CHAT_STORAGE_KEY);

@@ -16,7 +16,30 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/_common.php';
 
-const AI_MAX_REQUEST_BYTES = 512 * 1024; // 512 KB
+const AI_MAX_REQUEST_BYTES = 3 * 1024 * 1024; // 3 MB (wiadomość może zawierać do 3 zrzutów zaznaczonych elementów)
+
+/** Zrzuty ekranu zaznaczonych elementów: maks. 3, JPEG/PNG/WebP, każdy do ~800 KB base64. */
+function sanitizeMessageImages(mixed $images): array {
+    if (!is_array($images)) {
+        return [];
+    }
+    $out = [];
+    foreach (array_slice($images, 0, 3) as $img) {
+        if (!is_array($img)) {
+            continue;
+        }
+        $mime = is_string($img['mimeType'] ?? null) ? strtolower(trim($img['mimeType'])) : '';
+        $data = is_string($img['data'] ?? null) ? trim($img['data']) : '';
+        if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            continue;
+        }
+        if ($data === '' || strlen($data) > 800 * 1024 || preg_match('/\A[A-Za-z0-9+\/=]+\z/', $data) !== 1) {
+            continue;
+        }
+        $out[] = ['mimeType' => $mime, 'data' => $data];
+    }
+    return $out;
+}
 const AI_RATE_LIMIT_MAX = 120;           // maks. 120 zapytań (jedno polecenie klienta to kilka rund narzędzi)
 const AI_RATE_LIMIT_WINDOW = 60;         // w oknie 60 sekund na IP
 const AI_CURL_CONNECT_TIMEOUT = 15;      // 15 s na połączenie
@@ -368,8 +391,12 @@ function buildGeminiPayload(string $systemPrompt, array $messages, array $tools)
 
         if ($role === 'user') {
             $text = is_string($msg['content'] ?? null) ? $msg['content'] : '';
-            if ($text !== '') {
-                appendGeminiTurn($contents, 'user', [['text' => $text]]);
+            $parts = $text !== '' ? [['text' => $text]] : [];
+            foreach (sanitizeMessageImages($msg['images'] ?? null) as $img) {
+                $parts[] = ['inlineData' => ['mimeType' => $img['mimeType'], 'data' => $img['data']]];
+            }
+            if ($parts) {
+                appendGeminiTurn($contents, 'user', $parts);
             }
             continue;
         }
@@ -571,9 +598,19 @@ function buildOpenAiPayload(string $systemPrompt, array $messages, array $tools,
         $role = is_string($msg['role'] ?? null) ? strtolower(trim($msg['role'])) : '';
 
         if ($role === 'user') {
+            $userText = is_string($msg['content'] ?? null) ? $msg['content'] : '';
+            $userImages = sanitizeMessageImages($msg['images'] ?? null);
+            if ($userImages) {
+                $content = [['type' => 'text', 'text' => $userText]];
+                foreach ($userImages as $img) {
+                    $content[] = ['type' => 'image_url', 'image_url' => ['url' => 'data:' . $img['mimeType'] . ';base64,' . $img['data']]];
+                }
+            } else {
+                $content = $userText;
+            }
             $openAiMessages[] = [
                 'role' => 'user',
-                'content' => is_string($msg['content'] ?? null) ? $msg['content'] : '',
+                'content' => $content,
             ];
             continue;
         }

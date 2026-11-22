@@ -1,5 +1,5 @@
 import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo5';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo5';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo10';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1021,14 +1021,16 @@ export async function runAiTurn({
   onToolCall,
   onToolResult,
   signal,
+  images = [], // [{ mimeType, data (base64) }] — zrzuty zaznaczonych elementów strony
 }) {
   const s = { ...DEFAULT_AI_SETTINGS, ...(settings || loadAiSettings()) };
   const isLocalProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
   const useDirectGemini = !isLocalProxy && s.provider !== 'proxy' && Boolean(s.apiKey);
+  const cleanImages = (Array.isArray(images) ? images : []).filter((im) => im?.data && im?.mimeType).slice(0, 3);
 
   const messages = [
     ...history.slice(-12).map((m) => ({ role: m.role, content: m.text })),
-    { role: 'user', content: userMessage },
+    { role: 'user', content: userMessage, ...(cleanImages.length ? { images: cleanImages } : {}) },
   ];
   const systemText = [AI_SYSTEM_PROMPT, contextSummary].filter(Boolean).join('\n\n');
   const tools = ALL_TOOLS.map((t) => ({
@@ -1059,7 +1061,13 @@ export async function runAiTurn({
           }
           geminiContents.push({ role: 'model', parts });
         } else {
-          geminiContents.push({ role: 'user', parts: [{ text: String(m.content || '') }] });
+          geminiContents.push({
+            role: 'user',
+            parts: [
+              { text: String(m.content || '') },
+              ...(m.images || []).map((im) => ({ inlineData: { mimeType: im.mimeType, data: im.data } })),
+            ],
+          });
         }
       }
       const gTools = [{ functionDeclarations: toGeminiFunctionDeclarations(ALL_TOOLS) }];
