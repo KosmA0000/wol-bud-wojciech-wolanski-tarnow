@@ -106,7 +106,7 @@ function resolvePage(query, pages) {
 }
 
 const KNOWN_GRIDS = [
-  { selector: '.home-catalog-grid', key: 'kategorie', label: 'Kategorie produktów (główna siatka kafelków)' },
+  { selector: '.home-catalog-grid', key: 'kategorie', label: 'Kategorie produktów (główna siatka kafelków)', primary: true },
   { selector: '.home-extra-categories', key: 'dodatkowe', label: 'Dodatkowe kategorie (pigułki)' },
   { selector: '.home-featured-grid', key: 'polecane', label: 'Polecane produkty (Warto sprawdzić)' },
   { selector: '.home-services-grid', key: 'uslugi', label: 'Usługi montażowe i serwisowe' },
@@ -125,7 +125,7 @@ function findGridSections(doc) {
       usedEls.add(el);
       const heading = el.closest('section')?.querySelector('h2, h3')?.textContent?.trim();
       const label = heading ? `${def.label} — „${heading}”` : def.label;
-      sections.push({ el, key: def.key, label, selector: def.selector });
+      sections.push({ ...def, el, label });
     }
   }
 
@@ -152,10 +152,39 @@ function findGridSections(doc) {
   return sections;
 }
 
-function matchSection(sekcjaQuery, sections) {
+function pickSection(candidates, region) {
+  if (candidates.length === 1) return { match: candidates[0] };
+  if (!region) {
+    const parent = candidates[0].el.closest('section');
+    if (!parent || candidates.some(({ el }) => el.closest('section') !== parent)) return { ambiguous: candidates };
+  }
+  const primary = candidates.filter((section) => section.primary);
+  const grids = primary.length ? primary : candidates;
+  const largest = Math.max(...grids.map(({ el }) => el.children.length));
+  const leaders = grids.filter(({ el }) => el.children.length === largest);
+  return leaders.length === 1 ? { match: leaders[0] } : { ambiguous: leaders };
+}
+
+function matchSection(sekcjaQuery, sections, doc) {
   const q = normText(sekcjaQuery);
   const exact = sections.filter((s) => normText(s.label) === q || normText(s.key) === q || normText(s.selector) === q);
-  if (exact.length === 1) return { match: exact[0] };
+  if (exact.length) return pickSection(exact);
+
+  const id = q.replace(/^#/, '');
+  const offerAlias = id === 'oferta' || id === 'offer';
+  const region = doc.getElementById(id) || (offerAlias && doc.getElementById(id === 'oferta' ? 'offer' : 'oferta'));
+  const byId = region ? sections.filter(({ el }) => region.contains(el)) : [];
+  if (byId.length) return pickSection(byId, region);
+  if (offerAlias) {
+    const catalog = sections.filter((section) => section.primary);
+    if (catalog.length) return pickSection(catalog);
+  }
+
+  const byHeading = sections.filter(({ el }) => {
+    const heading = el.closest('section')?.querySelector('h2, h3');
+    return heading && normText(heading.textContent) === q;
+  });
+  if (byHeading.length) return pickSection(byHeading);
 
   const byLabel = sections.filter((s) => normText(s.label).includes(q));
   if (byLabel.length === 1) return { match: byLabel[0] };
@@ -367,10 +396,10 @@ export async function run(name, args, ctx) {
   let chosenGroups = [];
   if (args.sekcja && String(args.sekcja).trim()) {
     const exact = findRecipeGroups(groups, { host: hostPage.path, query: args.sekcja, doc });
-    const matched = matchSection(args.sekcja, sections);
+    const matched = matchSection(args.sekcja, sections, doc);
     if (matched.match) {
       chosenSection = matched.match;
-    } else if (exact.length === 1) {
+    } else if (!matched.ambiguous && exact.length === 1) {
       chosenSection = sections.find((section) => groupElements(doc, exact[0]).includes(section.el));
     } else {
       const list = matched.ambiguous || sections;
