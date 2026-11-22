@@ -934,6 +934,8 @@ const ALL_TOOLS = (() => {
   });
 })();
 
+const KNOWN_TOOL_NAMES = new Set(ALL_TOOLS.map((t) => t.name));
+
 export function getAiTools() {
   return ALL_TOOLS;
 }
@@ -1009,6 +1011,60 @@ export async function checkProxyStatus(proxyUrl = './ai-proxy.php') {
   } catch {
     return { available: false, configured: false };
   }
+}
+
+// Model czasem myli nazwy narzędzi (literówki, mieszanka polsko-angielska, np. „add_kafelek”).
+// Zamiast błędu dopasowujemy najbliższe istniejące narzędzie.
+const TOKEN_ALIASES = {
+  add: 'dodaj', insert: 'dodaj', create: 'dodaj', new: 'dodaj', remove: 'usun', delete: 'usun', del: 'usun',
+  change: 'zmien', update: 'zmien', edit: 'zmien', set: 'zmien', rename: 'zmien_nazwe', move: 'przenies',
+  reorder: 'kolejnosc', order: 'kolejnosc', hide: 'ukryj', show: 'ukryj', undo: 'cofnij', revert: 'cofnij',
+  tile: 'kafelek', card: 'kafelek', kafelka: 'kafelek', kafelki: 'kafelek', block: 'blok', section: 'blok',
+  sekcja: 'blok', sekcje: 'blok', sekcji: 'blok', page: 'podstrone', strona: 'strone', offer: 'oferty',
+  item: 'pozycje', product: 'pozycje', category: 'pozycje', contact: 'kontaktowe', phone: 'kontaktowe',
+  find: 'znajdz', check: 'sprawdz', links: 'powiazania', analog: 'analogiczne', similar: 'analogiczne',
+};
+
+function toolTokens(name) {
+  return String(name || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/ł/g, 'l')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .flatMap((t) => (TOKEN_ALIASES[t] || t).split('_'));
+}
+
+function editDistance(a, b) {
+  const dp = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i += 1) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const tmp = dp[j];
+      dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return dp[b.length];
+}
+
+function resolveToolName(name, knownNames) {
+  if (knownNames.has(name)) return { name, exact: true };
+  const lower = String(name || '').toLowerCase();
+  if (knownNames.has(lower)) return { name: lower, exact: false };
+  const want = new Set(toolTokens(name));
+  const scored = [...knownNames].map((k) => {
+    const have = new Set(toolTokens(k));
+    const inter = [...want].filter((t) => have.has(t)).length;
+    const jaccard = inter / (new Set([...want, ...have]).size || 1);
+    return { k, jaccard, dist: editDistance(lower, k) };
+  });
+  scored.sort((x, y) => y.jaccard - x.jaccard || x.dist - y.dist);
+  const best = scored[0];
+  if (best && (best.jaccard >= 0.5 || best.dist <= 3)) return { name: best.k, exact: false };
+  return { name: null, suggestions: scored.slice(0, 5).map((s) => s.k) };
 }
 
 function waitWithAbort(ms, signal) {
@@ -1214,7 +1270,16 @@ export async function runAiTurn({
             'ODCZYT ZABLOKOWANY przez panel: masz już wszystkie potrzebne informacje (WIEDZA O STRONIE, KATALOG SEKCJI i poprzednie odczyty). Teraz wykonaj zmianę jednym przepisem albo zadaj klientowi jedno krótkie pytanie z 2–4 opcjami.'
           );
         }
-        result = await toolExecutor(tc.name, args);
+        const resolved = resolveToolName(tc.name, KNOWN_TOOL_NAMES);
+        if (!resolved.name) {
+          throw new Error(
+            `Narzędzie „${tc.name}” nie istnieje. Najbliższe istniejące: ${resolved.suggestions.join(', ')}. Wywołaj właściwe (patrz JAK WYKONAĆ).`
+          );
+        }
+        result = await toolExecutor(resolved.name, args);
+        if (!resolved.exact && result && typeof result === 'object') {
+          result = { ...result, uwagaPanelu: `Narzędzie „${tc.name}” nie istnieje — panel użył „${resolved.name}”. Następnym razem wołaj „${resolved.name}”.` };
+        }
         if (result?.ok === false || result?.error) ok = false;
       } catch (e) {
         ok = false;

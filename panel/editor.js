@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo19';
+} from './ai-agent.js?v=20261122-turbo21';
 import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo15';
 
 // ============================================================================
