@@ -4,14 +4,14 @@ import { AiGuardrailTracker, sanitizeUrl, assertSafeSerializedHtml } from './san
 import { generateSitemapXml, generateRobotsTxt, resolveSiteBaseUrl } from './seo.js?v=20261121-17';
 import {
   initStorage,
-  savePageDraft,
+  savePageDraft as storageSavePageDraft,
   getPageDraft,
   deletePageDraft,
   getAllPageDrafts,
   savePendingImage,
   getAllPendingImages,
   deletePendingImage,
-  saveGlobalsDraft,
+  saveGlobalsDraft as storageSaveGlobalsDraft,
   getGlobalsDraft,
   deleteGlobalsDraft,
   saveCredential,
@@ -428,6 +428,76 @@ async function fetchPublishedHtml(pagePath) {
   }
 }
 
+// ============================================================================
+// LICZNIK ZMIAN = REALNE RÓŻNICE WZGLĘDEM OPUBLIKOWANEJ WERSJI
+// Każdy zapis szkicu przechodzi tędy. Jeśli szkic jest identyczny z wersją opublikowaną
+// (po cofnięciu, resecie, przywróceniu, odrzuceniu, AI — obojętnie skąd), szkic znika i nie liczy się.
+// ============================================================================
+const publishedHtmlCache = new Map();
+
+async function getPublishedHtmlCached(pagePath) {
+  if (publishedHtmlCache.has(pagePath)) return publishedHtmlCache.get(pagePath);
+  const html = await fetchPublishedHtml(pagePath);
+  if (html !== null) publishedHtmlCache.set(pagePath, html);
+  return html;
+}
+
+function clearPublishedHtmlCache() {
+  publishedHtmlCache.clear();
+}
+
+const draftCheckTimers = new Map();
+
+async function savePageDraft(pagePath, draft) {
+  const res = await storageSavePageDraft(pagePath, draft);
+  scheduleDraftDiffCheck(pagePath);
+  return res;
+}
+
+function scheduleDraftDiffCheck(pagePath) {
+  clearTimeout(draftCheckTimers.get(pagePath));
+  draftCheckTimers.set(
+    pagePath,
+    setTimeout(() => {
+      draftCheckTimers.delete(pagePath);
+      checkDraftAgainstPublished(pagePath).catch(() => {});
+    }, 350)
+  );
+}
+
+async function checkDraftAgainstPublished(pagePath) {
+  const draft = state.pageDrafts[pagePath];
+  if (!draft || draft.isNew || draft.deleted || typeof draft.html !== 'string') return false;
+  const published = await getPublishedHtmlCached(pagePath);
+  if (published === null || state.pageDrafts[pagePath] !== draft) return false;
+  if (normalizeHtmlForCompare(published) !== normalizeHtmlForCompare(draft.html)) return false;
+  await deletePageDraft(pagePath);
+  delete state.pageDrafts[pagePath];
+  if (pagePath === state.currentPagePath) state.currentPageDirty = false;
+  updateTopbarAndIndicators();
+  renderPagesList();
+  return true;
+}
+
+async function saveGlobalsDraft(globals) {
+  const res = await storageSaveGlobalsDraft(globals);
+  setTimeout(async () => {
+    try {
+      if (!state.globalsDraft || !state.publishedGlobals) return;
+      const a = JSON.stringify(normalizeGlobalsObj(state.globalsDraft));
+      const b = JSON.stringify(normalizeGlobalsObj(state.publishedGlobals));
+      if (a === b) {
+        await deleteGlobalsDraft();
+        state.globalsDraft = null;
+        updateTopbarAndIndicators();
+      }
+    } catch {
+      // porównanie jest tylko optymalizacją licznika
+    }
+  }, 350);
+  return res;
+}
+
 let pruneRunning = null;
 async function pruneUnchangedDrafts() {
   if (pruneRunning) return pruneRunning;
@@ -436,7 +506,7 @@ async function pruneUnchangedDrafts() {
     for (const [path, draft] of Object.entries(state.pageDrafts || {})) {
       if (!draft || draft.isNew || draft.deleted || typeof draft.html !== 'string') continue;
       if (path === state.currentPagePath && state.currentPageDirty) continue;
-      const published = await fetchPublishedHtml(path);
+      const published = await getPublishedHtmlCached(path);
       if (published === null) continue;
       if (normalizeHtmlForCompare(published) === normalizeHtmlForCompare(draft.html)) {
         await deletePageDraft(path);
@@ -3078,6 +3148,7 @@ async function handleClearAllDrafts() {
   await clearAllDrafts();
   clearPersistedUndoRedo();
   state.pageDrafts = {};
+    clearPublishedHtmlCache();
   state.pendingImages = {};
   state.globalsDraft = null;
   state.currentPageDirty = false;
@@ -3367,6 +3438,7 @@ async function discardAllDraftsEverywhere() {
   await clearAllDrafts();
   clearPersistedUndoRedo();
   state.pageDrafts = {};
+    clearPublishedHtmlCache();
   state.pendingImages = {};
   state.globalsDraft = null;
   state.currentPageDirty = false;
@@ -4396,6 +4468,7 @@ async function handlePublishSubmit(e) {
     }
     state.globalsDraft = null;
     state.pageDrafts = {};
+    clearPublishedHtmlCache();
     state.pendingImages = {};
     state.pendingRevision = null;
     state.currentPageDirty = false;
@@ -4747,6 +4820,7 @@ async function handleRestoreBackup(item, triggerBtn) {
     await clearAllDrafts();
     clearPersistedUndoRedo();
     state.pageDrafts = {};
+    clearPublishedHtmlCache();
     state.pendingImages = {};
     state.globalsDraft = null;
     state.currentPageDirty = false;
