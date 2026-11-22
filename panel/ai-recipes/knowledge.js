@@ -1,6 +1,7 @@
 // Wiedza o stronie podawana AI w każdej wiadomości: AI wie od razu, jak strona jest zbudowana
 // i jak wykonać zmianę, bez czytania plików. Generowana z prawdziwych stron, odświeżana po każdej operacji.
 // Eksportuje też wspólne pomocniki bloków (używa ich blocks.js).
+import { groupRulesText } from './consistency.js?v=turbo15';
 
 export const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
 
@@ -131,6 +132,7 @@ export const HOW_TO = [
   '- zwykła poprawka tekstu / zdjęcia / linku w jednym miejscu → narzędzia edycji panelu (update_element_text, update_element_image, update_element_link).',
   '- „cofnij”, „nie tak”, „przywróć” → cofnij_cala_operacje (cofa całą ostatnią operację naraz).',
   '- tylko gdy czegoś brakuje w tej wiedzy: sprawdz_powiazania (gdzie coś występuje), znajdz_analogiczne (jak zbudowane są strony tego rodzaju), read_file.',
+  'Spójność: po każdym przepisie sprawdź pole „niespojnosci” w wyniku; niepuste → wykonaj ich „fix” (najczęściej dolacz_do_grupy) albo napraw_spojnosc, i dopiero wtedy kończ.',
   'Ścieżki bierz z DRZEWA OFERTY. Treść (teksty, ceny, opinie, zdjęcia) tylko od klienta — nic nie wymyślaj.',
 ];
 
@@ -203,6 +205,11 @@ export async function getSiteKnowledgeText(ctx) {
     const where = e.pages.slice(0, 3).join(', ') + (e.pages.length > 3 ? ` (+${e.pages.length - 3})` : '');
     lines.push(`- ${e.label} — ${where}`);
   }
+
+  // 4. Reguły grup: czego wymaga każda grupa od nowego elementu (z consistency.js)
+  try {
+    lines.push('', await groupRulesText(ctx));
+  } catch {}
 
   lines.push('', ...HOW_TO);
 
