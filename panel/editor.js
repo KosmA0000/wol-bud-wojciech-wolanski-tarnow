@@ -61,7 +61,7 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo21';
+} from './ai-agent.js?v=20261122-turbo23';
 import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=20261122-turbo15';
 
 // ============================================================================
@@ -8095,8 +8095,11 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
         updateToolsSummaryText(false);
         if (!entry) return;
         entry.pill.classList.remove('is-running');
-        entry.pill.classList.add(ok ? 'is-done' : 'is-error');
-        entry.icon.textContent = ok ? '✓' : '✕';
+        // Pytanie przepisu (needsAnswer) to nie błąd — pokazujemy je jako „❓ potrzebna odpowiedź”
+        const isQuestion = Boolean(resInfo?.result?.needsAnswer);
+        entry.pill.classList.add(ok || isQuestion ? 'is-done' : 'is-error');
+        entry.icon.textContent = ok ? '✓' : isQuestion ? '❓' : '✕';
+        if (isQuestion) entry.pill.title = String(resInfo.result.needsAnswer);
         if (!ok && resInfo?.result?.error) {
           entry.pill.title = String(resInfo.result.error);
         }

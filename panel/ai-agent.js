@@ -1305,6 +1305,16 @@ export async function runAiTurn({
         name: tc.name,
         content: JSON.stringify(payload),
       });
+      // Przepis pyta klienta (needsAnswer): kończymy turę i pokazujemy pytanie, zamiast pozwolić AI wołać w kółko
+      if (result && typeof result === 'object' && result.needsAnswer && !result.ok) {
+        const opts = Array.isArray(result.options) ? result.options.slice(0, 8) : [];
+        const reply = [
+          String(result.needsAnswer).replace(/\s+/g, ' ').trim(),
+          ...opts.map((o, n) => `${n + 1}. ${String(o).replace(/\s+/g, ' ').trim()}`),
+          opts.length ? '\nOdpisz numerem albo własnymi słowami.' : '',
+        ].filter(Boolean).join('\n');
+        return { reply, toolLog };
+      }
     }
   }
 
