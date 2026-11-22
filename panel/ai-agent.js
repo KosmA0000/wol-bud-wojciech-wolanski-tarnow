@@ -1,5 +1,5 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo2';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo2';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=20261122-turbo3';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=20261122-turbo3';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -348,14 +348,13 @@ export const AI_TOOLS = Object.freeze([
   {
     name: 'create_page',
     description:
-      'Tworzy nową podstronę z gotowego szablonu, od razu otwiera ją w edytorze i zwraca jej pagePath oraz początkową strukturę sekcji.',
+      'Tworzy nową podstronę (NIE kategorię/produkt — do tego dodaj_pozycje_oferty) jako KOPIĘ istniejącej analogicznej strony (np. inna promocja dla nowej promocji). Najpierw znajdz_analogiczne. Kopiuje układ i style wzoru, podmienia nagłówek, tytuł i opis; resztę tekstów wzoru trzeba potem zmienić na treść od klienta.',
     parameters: {
       type: 'object',
       properties: {
-        templateId: {
+        sourcePage: {
           type: 'string',
-          enum: ['blank', 'promo', 'category', 'product', 'info', 'duplicate'],
-          description: 'Szablon nowej podstrony (domyślnie "info" lub dopasowany do treści).',
+          description: 'Ścieżka analogicznej strony-wzoru, np. promocje/rolety-zima/index.html. Brak = panel weźmie siostrzaną stronę z tego samego folderu.',
         },
         heading: {
           type: 'string',
@@ -924,10 +923,12 @@ const FILE_TOOLS = [
 ];
 
 // Model dostaje: przepisy (całe łańcuchy zmian) + narzędzia starego panelu + odczyt plików. Bez write_file.
+// Bez narzędzi z wbudowanymi szablonami panelu (wymyślony wygląd i treść-wypełniacz): nowe rzeczy tylko jako kopia analogicznych miejsc.
+const BANNED_TOOLS = new Set(['add_section', 'add_text_block', 'insert_custom_section', 'update_section_html', 'write_file']);
 const ALL_TOOLS = (() => {
   const seen = new Set();
   return [...RECIPE_TOOLS, ...AI_TOOLS, ...FILE_TOOLS].filter((t) => {
-    if (!t?.name || seen.has(t.name)) return false;
+    if (!t?.name || seen.has(t.name) || BANNED_TOOLS.has(t.name)) return false;
     seen.add(t.name);
     return true;
   });

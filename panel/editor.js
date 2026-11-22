@@ -61,8 +61,8 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
-} from './ai-agent.js?v=20261122-turbo2';
-import { isRecipeTool, runRecipe } from './ai-recipes/index.js?v=20261122-turbo2';
+} from './ai-agent.js?v=20261122-turbo3';
+import { isRecipeTool, runRecipe } from './ai-recipes/index.js?v=20261122-turbo3';
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -5469,20 +5469,10 @@ function buildAiContextSummary() {
     selectedUid: state.selectedDescriptor?.uid || null,
     pinnedTargetsByUser: pinnedSummary.length > 0 ? pinnedSummary : undefined,
     sections,
-    availableSectionTemplates: (SECTION_TEMPLATES || []).map((t) => ({
-      id: t.id,
-      name: t.name,
-      category: t.category,
-    })),
     availableButtonStylesOnCurrentPage: (state.canvas?.getAvailableButtonStyles?.() || []).map((b) => ({
       styleId: b.styleId,
       label: b.label,
       exampleText: b.exampleText,
-    })),
-    availablePageTemplates: (PAGE_TEMPLATES || []).map((t) => ({
-      id: t.id,
-      name: t.name,
-      defaultFolder: t.defaultFolder,
     })),
     menuCount: globals.menu?.length || 0,
     totalPagesCount: getAllPagesMerged().filter((p) => !p.deleted).length,
@@ -5633,6 +5623,14 @@ async function executeAiTool(name, rawArgs = {}) {
     }
     return null;
   };
+
+  if (['add_section', 'add_text_block', 'insert_custom_section', 'update_section_html', 'write_file'].includes(name)) {
+    return {
+      ok: false,
+      error:
+        'To narzędzie wstawia wymyślony wygląd lub tekst-wypełniacz i jest wyłączone. Nową sekcję skopiuj z analogicznej strony: znajdz_analogiczne → clone_site_component (sourcePage + sectionIndex), potem zmień teksty na treść od klienta.',
+    };
+  }
 
   switch (name) {
     // 1. get_page_structure
@@ -6149,7 +6147,28 @@ async function executeAiTool(name, rawArgs = {}) {
       const heading = String(args.heading || '').trim();
       if (!heading) return { ok: false, error: 'Podaj nagłówek nowej podstrony (heading).' };
 
-      const reqTplId = String(args.templateId || 'info').trim();
+      // AI: tylko kopia analogicznej istniejącej strony, nigdy wbudowany szablon panelu.
+      const aiFolder = String(args.folder ?? '').trim().replace(/^\/+|\/+$/g, '');
+      if (/^(kategorie|produkty)(\/|$)/.test(aiFolder) || ['category', 'product'].includes(args.templateId)) {
+        return { ok: false, error: 'Kategorie, podkategorie i produkty dodawaj przepisem dodaj_pozycje_oferty (kopiuje analogiczną stronę i podpina kafelki, pigułki, menu).' };
+      }
+      const livePages = getAllPagesMerged().filter((p) => !p.deleted);
+      let sourcePage = String(args.sourcePage || '').trim().replace(/^\.?\/+/, '');
+      if (sourcePage && !sourcePage.endsWith('.html')) sourcePage = `${sourcePage.replace(/\/+$/, '')}/index.html`;
+      if (!sourcePage) {
+        const sibling = livePages.find((p) => aiFolder && p.path.startsWith(`${aiFolder}/`) && p.path !== `${aiFolder}/index.html`)
+          || livePages.find((p) => aiFolder && p.path.startsWith(`${aiFolder}/`));
+        sourcePage = sibling?.path || '';
+      }
+      const sourceHtml = sourcePage ? await readPageHtmlForSiteTool(sourcePage) : '';
+      if (!sourceHtml) {
+        return {
+          ok: false,
+          error: `Brak analogicznej strony-wzoru${sourcePage ? ` „${sourcePage}”` : ''}. Wywołaj znajdz_analogiczne i podaj sourcePage (istniejąca strona tego samego rodzaju). Nie twórz strony z szablonu.`,
+        };
+      }
+      const dupSource = { path: sourcePage, html: sourceHtml };
+      const reqTplId = 'duplicate';
       const tpl =
         reqTplId === 'duplicate'
           ? null
@@ -6160,7 +6179,7 @@ async function executeAiTool(name, rawArgs = {}) {
       const folderRaw =
         args.folder !== undefined && args.folder !== null
           ? String(args.folder).trim().replace(/^\/+|\/+$/g, '')
-          : tpl?.defaultFolder ?? 'promocje';
+          : dupSource.path.split('/').slice(0, -2).join('/');
 
       const slug = slugifyPath(String(args.slug || heading).trim()) || `strona-${Date.now().toString(36)}`;
       const newPath = folderRaw ? `${folderRaw}/${slug}/index.html` : `${slug}/index.html`;
@@ -6182,10 +6201,9 @@ async function executeAiTool(name, rawArgs = {}) {
       const globals = getActiveGlobals();
 
       let html = '';
-      if (reqTplId === 'duplicate' && state.canvas) {
+      if (reqTplId === 'duplicate') {
         await flushAutosaveIfNeeded();
-        const sourceHtml = safeSerializeHtml();
-        const rebased = rebaseRelativeUrlsInHtml(sourceHtml, state.currentPagePath, newPath);
+        const rebased = rebaseRelativeUrlsInHtml(dupSource.html, dupSource.path, newPath);
         const parser = new DOMParser();
         const doc = parser.parseFromString(rebased, 'text/html');
         doc.title = title;
@@ -6198,6 +6216,11 @@ async function executeAiTool(name, rawArgs = {}) {
         metaDesc.setAttribute('content', description);
         const h1 = doc.querySelector('h1');
         if (h1) h1.textContent = heading;
+        const crumb = doc.querySelector('.breadcrumbs [aria-current]');
+        if (crumb) crumb.textContent = heading;
+        const leadEl = doc.querySelector('.subpage-lead');
+        if (leadEl && lead) leadEl.textContent = lead;
+        doc.querySelector('link[rel="canonical"]')?.remove();
         html = '<!doctype html>\n' + doc.documentElement.outerHTML;
       } else {
         html = tpl.createPageHtml({
@@ -6623,12 +6646,6 @@ async function executeAiTool(name, rawArgs = {}) {
           cssClass,
           exampleText,
           foundOnPage,
-        })),
-        sectionTemplates: (SECTION_TEMPLATES || []).map((t) => ({
-          templateId: t.id,
-          name: t.name,
-          category: t.category,
-          description: t.description,
         })),
         existingSiteSections: catalog.sections.map(({ sourcePage, sectionIndex, sectionId, label, cssClass, hasCarousel }) => ({
           sourcePage,
@@ -7321,6 +7338,7 @@ async function writeAiPageDraft(p, content, opts = {}) {
 function buildRecipeCtx() {
   const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
   return {
+    currentPage: state.currentPagePath,
     listPages: () =>
       getAllPagesMerged()
         .filter((p) => !p.deleted)
