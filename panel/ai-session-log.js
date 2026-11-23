@@ -146,6 +146,19 @@ export function startAiTrace({ userMessage = '', history = [], contextSummary = 
   };
 }
 
+// Czat dokładnie tak, jak widać go w panelu (z pytaniami, kartami, weryfikacją i przyciskami cofania)
+function visibleChat() {
+  return [...document.querySelectorAll('#ai-messages .ai-msg')].map((m) => ({
+    kto: m.classList.contains('ai-msg--user') ? 'klient' : 'AI',
+    tekst: [...m.querySelectorAll('.ai-msg-bubble')].map((b) => (b.innerText || b.textContent || '').trim()).filter(Boolean).join('\n'),
+    kroki: [...m.querySelectorAll('.ai-tools-list > *')].map((x) => (x.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean),
+    cele: [...m.querySelectorAll('.ai-msg-target-badge')].map((x) => x.textContent.trim()),
+    weryfikacja: m.querySelector('.ai-verified-audit')?.textContent?.trim() || undefined,
+    przyciski: [...m.querySelectorAll('button')].map((b) => b.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean),
+    blad: m.classList.contains('ai-msg--error') || undefined,
+  }));
+}
+
 export async function buildExport() {
   const turns = await allTurns();
   return {
@@ -153,6 +166,7 @@ export async function buildExport() {
     exportedAt: new Date().toISOString(),
     panelUrl: location.href,
     userAgent: navigator.userAgent,
+    czatWidoczny: visibleChat(),
     turns,
   };
 }
