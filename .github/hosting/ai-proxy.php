@@ -49,7 +49,8 @@ const AI_MAX_TOOLS = 120;
 
 const AI_SUPPORTED_PROVIDERS = ['gemini', 'openai'];
 const AI_DEFAULT_MODELS = [
-    'gemini' => 'gemini-3-flash-preview',
+    // Domyślnie Gemini 4 Hydrogen z myśleniem HIGH (decyzja właściciela) — tak samo jak panel z kluczem w przeglądarce
+    'gemini' => 'gemini-4-hydrogen',
     'openai' => 'gpt-4.1-mini',
 ];
 const AI_GEMINI_FALLBACK_MODELS = [
@@ -1067,7 +1068,12 @@ try {
                 . ':generateContent?key='
                 . rawurlencode($apiKey);
 
-            $res = executeUpstreamRequest($url, [], $payload, $apiKey);
+            // Hydrogen zawsze z myśleniem HIGH; modele zapasowe (Flash) bez dodatkowej konfiguracji
+            $body = $payload;
+            if (stripos($candidateModel, 'hydrogen') !== false) {
+                $body['generationConfig'] = ['thinkingConfig' => ['thinkingLevel' => 'HIGH']];
+            }
+            $res = executeUpstreamRequest($url, [], $body, $apiKey);
             if (!empty($res['ok'])) {
                 $usedModel = $candidateModel;
                 $upstreamData = $res['data'];
