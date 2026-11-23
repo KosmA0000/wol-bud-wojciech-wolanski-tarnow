@@ -61,8 +61,10 @@ import {
   saveAiSettings,
   checkProxyStatus,
   runAiTurn,
+  isModelReadTool,
 } from './ai-agent.js?v=turbo26';
-import { isRecipeTool, runRecipe, getSiteKnowledgeText } from './ai-recipes/index.js?v=turbo26';
+import * as aiRecipes from './ai-recipes/index.js?v=turbo26';
+const { isRecipeTool, runRecipe, getSiteKnowledgeText } = aiRecipes;
 
 // ============================================================================
 // DOM HELPERS & CONSTANTS
@@ -207,6 +209,7 @@ const state = {
     confirmBeforeEdit: false,
     isRunning: false,
     abortController: null,
+    pendingCard: null,
   },
 };
 
@@ -1088,19 +1091,6 @@ function syncInspectorTextFieldsFromDescriptor(desc) {
     }
   }
 }
-
-const AI_READ_ONLY_TOOLS = new Set([
-  'get_page_structure',
-  'get_element_details',
-  'get_section_html',
-  'read_page_summary',
-  'search_site_wide',
-  'list_pages',
-  'search_images',
-  'get_globals',
-  'list_backups',
-  'list_site_components',
-]);
 
 function captureAiTurnCheckpoint() {
   return {
@@ -6152,8 +6142,14 @@ function syncUiAfterAiMutation() {
   scheduleAutosave();
 }
 
-async function executeAiTool(name, rawArgs = {}) {
-  const args = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
+async function executeAiTool(name, rawArgs = {}, { fromAssistant = false, clicked = false } = {}) {
+  const { __approvedProposalId, ...unapprovedArgs } = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
+  const args = clicked ? { ...unapprovedArgs, __approvedProposalId } : unapprovedArgs;
+  const readOnly = isModelReadTool(name) || name === 'zaproponuj_zmiane';
+  if (fromAssistant && !readOnly && (!clicked || (!isRecipeTool(name) &&
+      (!aiRecipes.isMutatingPanelTool?.(name) || !aiRecipes.consumeApproval?.(name, args))))) {
+    return { ok: false, error: aiRecipes.GATE_ERROR || 'Najpierw zaproponuj_zmiane. Klient musi kliknąć kartę.', wymagaPropozycji: true };
+  }
 
   // Helper ensuring canvas is ready for page-level DOM tools
   const requireCanvas = () => {
@@ -7837,9 +7833,9 @@ async function executeAiTool(name, rawArgs = {}) {
 
     default:
       if (isRecipeTool(name)) {
-        await flushAutosaveIfNeeded();
-        const recipeResult = await runRecipe(name, args, buildRecipeCtx());
-        await pruneUnchangedDrafts();
+        if (!readOnly) await flushAutosaveIfNeeded();
+        const recipeResult = await runRecipe(name, args, buildRecipeCtx(fromAssistant));
+        if (!readOnly) await pruneUnchangedDrafts();
         return recipeResult;
       }
       return { ok: false, error: `Nieznane narzędzie Asystenta AI: ${name}` };
@@ -7876,15 +7872,16 @@ async function writeAiPageDraft(p, content, opts = {}) {
 }
 
 // Interfejs dla przepisów AI (panel/ai-recipes/README.md)
-function buildRecipeCtx() {
+function buildRecipeCtx(requireApproval = false) {
   const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
   return {
     currentPage: state.currentPagePath,
+    requireApproval,
     listPages: () =>
       getAllPagesMerged()
         .filter((p) => !p.deleted)
         .map((p) => ({ path: p.path, label: p.label, title: p.title, group: p.group })),
-    readPage: async (p) => (await readPageHtmlForSiteTool(clean(p))) || null,
+    readPage: async (p) => state.pageDrafts[clean(p)]?.deleted ? null : (await readPageHtmlForSiteTool(clean(p))) || null,
     writePage: (p, html, opts) => writeAiPageDraft(clean(p), String(html ?? ''), opts || {}),
     deletePage: (p) => executeAiTool('delete_page', { pagePath: clean(p) }),
     getGlobals: () => JSON.parse(JSON.stringify(normalizeGlobalsObj(getActiveGlobals()))),
@@ -7912,7 +7909,334 @@ function buildRecipeCtx() {
 // AI ASSISTANT: CHAT EXECUTION LOOP
 // ============================================================================
 
-async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
+function closeAiCard(message = '') {
+  const card = state.ai.pendingCard;
+  if (!card) return;
+  state.ai.pendingCard = null;
+  card.highlight?.cancel();
+  card.root.querySelectorAll('button').forEach((button) => { button.disabled = true; });
+  if (message) card.status.textContent = message;
+}
+
+function aiCard(parent, isProposal) {
+  const root = document.createElement('div');
+  root.className = 'ai-undo-bar';
+  root.style.display = 'block';
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  root.append(status);
+  parent.append(root);
+  const card = { root, status, isProposal };
+  state.ai.pendingCard = card;
+  return card;
+}
+
+function aiCardButton(parent, label, action) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'ai-confirm-plan-btn';
+  button.textContent = label;
+  button.addEventListener('click', action);
+  parent.append(button);
+  return button;
+}
+
+async function showChoiceCards(container, options, onPick) {
+  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=prop1').catch(() => ({}));
+  if (renderChoiceCards) return renderChoiceCards(container, options, onPick);
+  for (const option of options) {
+    const card = aiCardButton(container, option.label, () => onPick(option.value));
+    if (option.sub) card.title = option.sub;
+    if (option.imageUrl) {
+      const image = document.createElement('img');
+      image.src = option.imageUrl;
+      image.alt = '';
+      image.width = 96;
+      card.prepend(image);
+    }
+  }
+  return container;
+}
+
+function renderAiQuestion(parent, options) {
+  const card = aiCard(parent, false);
+  const values = options.map((option) => {
+    if (option && typeof option === 'object') {
+      return { ...option, label: String(option.label ?? option.value ?? ''), value: option.value ?? option.label };
+    }
+    return { label: String(option), value: String(option) };
+  });
+  void showChoiceCards(card.root, values, (value) => {
+    if (state.ai.pendingCard !== card || state.ai.isRunning) return;
+    const answer = typeof value === 'string' ? value : JSON.stringify(value);
+    closeAiCard('Wybrano odpowiedź.');
+    void sendAiPrompt(answer);
+  });
+}
+
+function aiProposalElement(doc, selector) {
+  if (!doc || !selector) return null;
+  try {
+    const elements = doc.querySelectorAll(selector);
+    return elements.length === 1 ? elements[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+async function aiReferenceShot(reference) {
+  if (!reference?.page || !reference.selector) return '';
+  const page = getAllPagesMerged().find((entry) => entry.path === reference.page && !entry.deleted);
+  if (!page) return '';
+  let frame;
+  try {
+    let doc = $('preview')?.contentDocument;
+    if (reference.page !== state.currentPagePath) {
+      const html = await readPageHtmlForSiteTool(reference.page);
+      if (!html) return '';
+      const source = new DOMParser().parseFromString(html, 'text/html');
+      source.querySelectorAll('base, script, meta[http-equiv], iframe, object, embed').forEach((node) => node.remove());
+      const base = source.createElement('base');
+      base.href = new URL('../' + reference.page, location.href).href;
+      source.head.prepend(base);
+      frame = document.createElement('iframe');
+      frame.setAttribute('sandbox', 'allow-same-origin');
+      frame.setAttribute('aria-hidden', 'true');
+      frame.tabIndex = -1;
+      const width = $('preview')?.clientWidth || 960;
+      frame.style.cssText = 'position:fixed;left:-12000px;top:0;pointer-events:none;border:0;width:' + width + 'px;height:960px';
+      const loaded = new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(false), 5000);
+        frame.addEventListener('load', () => {
+          clearTimeout(timer);
+          resolve(true);
+        }, { once: true });
+      });
+      frame.srcdoc = '<!doctype html>' + source.documentElement.outerHTML;
+      document.body.append(frame);
+      if (!await loaded) return '';
+      doc = frame.contentDocument;
+    }
+    return await snapshotAiElement(aiProposalElement(doc, reference.selector));
+  } catch {
+    return '';
+  } finally {
+    frame?.remove();
+  }
+}
+
+function writeAiProposalResult(text) {
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-msg ai-msg--assistant';
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-msg-bubble ai-md';
+  bubble.textContent = text;
+  wrap.append(bubble);
+  $('ai-messages')?.append(wrap);
+  state.ai.history = [...state.ai.history, { role: 'assistant', text }].slice(-24);
+  state.ai.chatEntries = [...state.ai.chatEntries, { role: 'assistant', text }].slice(-40);
+  persistAiChat();
+  scrollAiMessagesToBottom();
+}
+
+async function applyAiProposal(card, selection, button) {
+  if (state.ai.isRunning || state.isPublishing || state.ai.pendingCard !== card) return;
+  const { proposal, displayedPage, selector, targetMarkup, reference, referenceBefore } = selection;
+  if (!aiRecipes.getProposal || aiRecipes.getProposal(proposal.id) !== proposal) {
+    closeAiCard('Ta propozycja wygasła. Poproś o przygotowanie nowej.');
+    return;
+  }
+  state.ai.isRunning = true;
+  button.disabled = true;
+  const input = $('ai-input');
+  if (input) input.disabled = true;
+  card.status.textContent = 'Sprawdzam miejsce przed zmianą…';
+  let checkpoint;
+  let attempted = false;
+  try {
+    await flushAutosaveIfNeeded();
+    const target = aiProposalElement($('preview')?.contentDocument, selector);
+    if (state.currentPagePath !== displayedPage || target?.outerHTML !== targetMarkup
+        || (reference.page !== displayedPage && await readPageHtmlForSiteTool(reference.page) !== referenceBefore)) {
+      closeAiCard('Miejsce lub wzór uległy zmianie. Poproś o nową propozycję.');
+      return;
+    }
+    if (state.ai.pendingCard !== card || state.isPublishing || !aiRecipes.approveProposal?.(proposal.id)) {
+      closeAiCard('Ta propozycja wygasła. Poproś o przygotowanie nowej.');
+      return;
+    }
+    checkpoint = captureAiTurnCheckpoint();
+    const before = proposal.przebiegNaSucho === false ? await readPageHtmlForSiteTool(displayedPage) : null;
+    const beforeGlobals = JSON.stringify(getActiveGlobals());
+    closeAiCard('Wykonuję zatwierdzoną zmianę…');
+    attempted = true;
+    const result = await executeAiTool(proposal.tool, {
+      ...proposal.args, __approvedProposalId: proposal.id,
+    }, { fromAssistant: true, clicked: true });
+    await flushAutosaveIfNeeded();
+    const verifyCtx = buildRecipeCtx();
+    const audit = await aiRecipes.verifyApplied(verifyCtx, proposal, result);
+    if (result.ok && proposal.przebiegNaSucho === false) {
+      const after = await verifyCtx.readPage(displayedPage);
+      const deleted = proposal.tool === 'delete_element' && proposal.args?.uid;
+      const stillPresent = deleted && $('preview')?.contentDocument?.querySelector(
+        '[data-cms-uid="' + CSS.escape(proposal.args.uid) + '"]');
+      let confirmed = !stillPresent && (after !== before || JSON.stringify(getActiveGlobals()) !== beforeGlobals);
+      if (proposal.tool === 'set_page_meta' && after) {
+        const doc = verifyCtx.parse(after);
+        const { title, description } = proposal.args;
+        confirmed = (title === undefined || doc.title === String(title)) &&
+          (description === undefined || doc.querySelector('meta[name="description"]')?.content === String(description));
+      }
+      if (!confirmed || result.skippedKeys?.length) {
+        audit.ok = false;
+        audit.problems.push('W kodzie strony nie udało się potwierdzić zatwierdzonej zmiany.');
+      } else audit.checks.unshift('Zapisana treść strony lub dane wspólne odpowiadają wykonanej zmianie.');
+    }
+    const details = audit.ok ? audit.checks : audit.problems;
+    const message = (audit.ok ? '✔ Sprawdzone: ' : '⚠️ ') +
+      (details.length ? details.join(' ') : result.summary || 'Sprawdzono wynik operacji.');
+    card.status.textContent = audit.ok ? 'Zmiana sprawdzona po wykonaniu.' : 'Weryfikacja wymaga uwagi.';
+    writeAiProposalResult(message);
+  } catch (error) {
+    closeAiCard();
+    card.status.textContent = attempted ? 'Sprawdzenie zmiany zostało przerwane.' : 'Przerwano przygotowanie zmiany.';
+    writeAiProposalResult('⚠️ ' + (error?.message || 'Nie udało się sprawdzić wyniku.'));
+  } finally {
+    if (attempted && checkpoint && (JSON.stringify(state.pageDrafts) !== JSON.stringify(checkpoint.pageDrafts)
+        || JSON.stringify(state.globalsDraft) !== JSON.stringify(checkpoint.globalsDraft))) {
+      state.aiUndoStack.push(checkpoint);
+      if (state.aiUndoStack.length > 20) state.aiUndoStack.shift();
+      state.aiRedoStack = [];
+      updateUndoRedoButtons();
+    }
+    state.ai.isRunning = false;
+    if (input) input.disabled = false;
+    updateAiUiStatus();
+  }
+}
+
+function renderAiProposal(parent, proposal) {
+  const card = aiCard(parent, true);
+  const choices = document.createElement('div');
+  const details = document.createElement('div');
+  card.root.prepend(choices, details);
+  const variants = Array.isArray(proposal.warianty) ? proposal.warianty : [];
+  const base = aiRecipes.getProposal?.(proposal.id);
+  const distinct = new Map();
+  for (const option of [...variants, { id: proposal.id, label: proposal.opis }]) {
+    const stored = aiRecipes.getProposal?.(option.id);
+    if (!stored) continue;
+    const key = JSON.stringify([stored.tool, stored.args, stored.gdzie, stored.wzor]);
+    if (!distinct.has(key)) distinct.set(key, { label: option.label || stored.opis || 'Propozycja', stored });
+  }
+
+  async function showSelection(selected) {
+    if (state.ai.pendingCard !== card) return;
+    const generation = card.generation = Symbol();
+    const active = () => state.ai.pendingCard === card && card.generation === generation;
+    card.highlight?.cancel();
+    details.replaceChildren();
+    const where = selected.gdzie;
+    const reference = selected.wzor || where;
+    const created = selected.oczekiwane?.created?.includes(where?.page);
+    const destination = created ? reference : where;
+    const whereText = document.createElement('p');
+    whereText.textContent = where?.page ? 'Miejsce zmiany · ' + [where.label, where.page].filter(Boolean).join(' · ') : 'Miejsce zmiany wymaga wskazania.';
+    const description = document.createElement('p');
+    const plannedVerbs = { Dodano: 'Dodam', Usunięto: 'Usunę', Zmieniono: 'Zmienię', Przeniesiono: 'Przeniosę', Zapisano: 'Zapiszę' };
+    description.textContent = (selected.opis || 'Proponowana zmiana')
+      .replace(/^(Dodano|Usunięto|Zmieniono|Przeniesiono|Zapisano)(?=\s)/, (verb) => plannedVerbs[verb]);
+    const plan = document.createElement('ul');
+    for (const step of selected.plan || []) {
+      const item = document.createElement('li');
+      item.textContent = step;
+      plan.append(item);
+    }
+    details.append(whereText, description, plan);
+    const figure = document.createElement('figure');
+    figure.style.margin = '0 0 12px';
+    const caption = document.createElement('figcaption');
+    caption.textContent = (selected.wzor ? 'Wzór · ' : 'Element zmieniany · ') +
+      [reference?.label, reference?.page].filter(Boolean).join(' · ');
+    figure.append(caption);
+    details.append(figure);
+    let review;
+    const removing = /^(usu[nń]|delete_)/i.test(selected.tool);
+    const label = removing ? 'Usuń to'
+      : /^(dodaj|create_|add_|clone_)/i.test(selected.tool) ? 'Wstaw to' : 'Zastosuj zmianę';
+    const approve = aiCardButton(details, label, (event) => {
+      if (!event.isTrusted || !active() || !review) return;
+      void applyAiProposal(card, review, approve);
+    });
+    approve.setAttribute('data-ai-proposal-approve', '');
+    approve.disabled = true;
+    const point = aiCardButton(details, 'Wskaż inne miejsce', () => {
+      closeAiCard('Wskaż miejsce w podglądzie i opisz zmianę.');
+      setAiPickModeUi(true);
+    });
+    const cancel = aiCardButton(details, 'Anuluj', () => closeAiCard('Anulowano propozycję.'));
+    for (const action of [point, cancel]) action.className = 'ai-undo-turn-btn';
+    card.status.textContent = 'Pokazuję miejsce i przygotowuję miniaturę…';
+    try {
+      const page = getAllPagesMerged().find((entry) => entry.path === destination?.page && !entry.deleted);
+      if (!page || !reference?.selector) throw new Error('Wskaż miejsce zmiany w podglądzie, aby przygotować nową propozycję.');
+      if (state.currentPagePath !== page.path) await loadPage(page.path);
+      if (!active()) return;
+      const target = aiProposalElement($('preview')?.contentDocument, destination.selector);
+      if (!target || state.currentPagePath !== page.path || !target.getClientRects().length) {
+        throw new Error('Nie mogę wskazać dokładnego miejsca. Wskaż element na podglądzie.');
+      }
+      const removal = removing && !selected.wzor && selected.oczekiwane?.hosts?.find((host) =>
+        host.page === destination.page && host.selector === destination.selector && host.removed.length === 1);
+      const removedElements = removal ? [...target.children].filter((child) =>
+        child.textContent.replace(/\s+/g, ' ').trim().slice(0, 80) === removal.removed[0]) : [];
+      const highlighted = removedElements.length === 1 ? removedElements[0] : target;
+      highlighted.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+      card.highlight = highlighted.animate([{ outline: '3px solid #186548', outlineOffset: '2px' }], { duration: 60000, fill: 'forwards' });
+      const referenceBefore = reference.page === page.path ? '' : await readPageHtmlForSiteTool(reference.page);
+      const imageUrl = removal && highlighted !== target ? await snapshotAiElement(highlighted) : await aiReferenceShot(reference);
+      if (!active()) return;
+      if (!imageUrl) throw new Error('Miniatura wzoru jest niedostępna. Spróbuj wyświetlić ją ponownie.');
+      const image = document.createElement('img');
+      image.src = imageUrl;
+      image.alt = reference.label || 'Wygląd elementu z podglądu';
+      image.style.cssText = 'display:block;max-width:100%;max-height:210px;object-fit:contain';
+      figure.insertBefore(image, caption);
+      review = { proposal: selected, displayedPage: page.path, selector: destination.selector,
+        targetMarkup: target.outerHTML, reference, referenceBefore };
+      approve.disabled = false;
+      card.status.textContent = created ? 'W podglądzie pokazano wzór nowej strony.' : 'Miejsce zmiany wskazano w podglądzie.';
+    } catch (error) {
+      if (!active()) return;
+      card.status.textContent = error.message;
+      aiCardButton(details, 'Pokaż ponownie', () => { void showSelection(selected); });
+    }
+  }
+
+  if (!base || !distinct.size) {
+    closeAiCard('Ta propozycja wygasła. Poproś o przygotowanie nowej.');
+    return;
+  }
+  if (distinct.size === 1) {
+    void showSelection(base);
+    return;
+  }
+  card.status.textContent = 'Wybierz miejsce i wzór z dostępnych kart.';
+  const cancel = aiCardButton(card.root, 'Anuluj', () => closeAiCard('Anulowano propozycję.'));
+  cancel.className = 'ai-undo-turn-btn';
+  void Promise.all([...distinct.values()].map(async ({ label, stored }) => ({
+    label, sub: [stored.gdzie?.label, stored.gdzie?.page].filter(Boolean).join(' · '),
+    imageUrl: await aiReferenceShot(stored.wzor || stored.gdzie), value: stored,
+  }))).then((options) => {
+    if (state.ai.pendingCard !== card) return;
+    return showChoiceCards(choices, options, (selected) => {
+      if (!state.ai.isRunning) void showSelection(selected);
+    });
+  });
+}
+
+async function sendAiPrompt(rawPrompt) {
   const userMessage = String(rawPrompt || '').trim();
   if (!userMessage || state.ai.isRunning) return;
 
@@ -7924,6 +8248,11 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
 
   const messagesEl = $('ai-messages');
   if (!messagesEl) return;
+  if (state.ai.pendingCard?.isProposal && /^(tak|ok|zgoda|potwierdzam|zatwierdzam)[.!\s]*$/i.test(userMessage)) {
+    showToast('Wybierz zmianę przyciskiem na karcie propozycji.');
+    return;
+  }
+  closeAiCard();
 
   const usedPinnedTargets = (state.ai.pinnedTargets || []).map((t) => ({ ...t }));
 
@@ -8099,12 +8428,10 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       ].filter(Boolean).join('\n\n'),
       settings: state.ai.settings,
       csrfToken: state.auth.csrfToken || '',
-      confirmBeforeEdit: Boolean(state.ai.confirmBeforeEdit),
-      forceExecute: Boolean(forceExecute),
       images: getPinnedShotsForAi(usedPinnedTargets),
       onRetry: ({ attempt, waitMs }) =>
         showToast(`Serwery AI są chwilowo przeciążone — ponawiam za ${Math.round(waitMs / 1000)} s (próba ${attempt}/3)…`, 'warn', waitMs + 1500),
-      toolExecutor: executeAiTool,
+      toolExecutor: (name, args) => executeAiTool(name, args, { fromAssistant: true }),
       onToolCall: (callInfo) => {
         const id = callInfo?.id || `${callInfo?.name || 'tool'}_${toolPillsById.size}`;
         const toolName = callInfo?.name || '';
@@ -8133,7 +8460,7 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
         const id = resInfo?.id;
         const entry = id ? toolPillsById.get(id) : null;
         const ok = resInfo?.ok !== false && resInfo?.result?.ok !== false;
-        if (ok && resInfo?.name && !AI_READ_ONLY_TOOLS.has(resInfo.name)) {
+        if (ok && resInfo?.name && !isModelReadTool(resInfo.name) && !resInfo.result?.proposal) {
           aiDidMutate = true;
         }
         if (ok && (resInfo?.name === 'add_item' || resInfo?.name === 'add_section')) {
@@ -8179,34 +8506,23 @@ async function sendAiPrompt(rawPrompt, { forceExecute = false } = {}) {
       updateToolsSummaryText(true);
       toolsDetails.open = false;
     }
-    const replyText = String(result?.reply || '').trim() || 'Gotowe! Zmiany zostały wprowadzone w szkicu.';
+    const replyText = String(result?.reply || '').trim() || 'Opisz, co chcesz zmienić na stronie.';
     botBubble.innerHTML = renderSimpleMarkdown(replyText);
     attachAiUndoButtonIfMutated();
-    if (result?.awaitingConfirmation && !aiDidMutate) {
-      const confirmBar = document.createElement('div');
-      confirmBar.className = 'ai-undo-bar';
-      const execBtn = document.createElement('button');
-      execBtn.type = 'button';
-      execBtn.className = 'ai-confirm-plan-btn';
-      execBtn.textContent = '✓ Wykonaj ten plan';
-      execBtn.addEventListener('click', () => {
-        if (state.ai.isRunning) return;
-        execBtn.disabled = true;
-        execBtn.textContent = '⏳ Wykonywanie planu…';
-        sendAiPrompt('Tak, wykonaj ten plan dokładnie tak jak opisałeś.', { forceExecute: true });
-      });
-      confirmBar.append(execBtn);
-      botBubble.append(confirmBar);
-    }
     botBubble.hidden = false;
+    if (result?.proposal) renderAiProposal(botBubble, result.proposal);
+    else if (result?.question?.options?.length) renderAiQuestion(botBubble, result.question.options);
 
     const okSteps = Array.from(toolPillsById.values())
       .filter(({ pill }) => !pill?.classList.contains('is-error'))
       .map(({ label }) => label?.textContent || '')
       .filter(Boolean);
+    const historyReply = result?.proposal
+      ? `${replyText}\n[Propozycja czeka na kliknięcie klienta.]`
+      : okSteps.length ? `${replyText}\n[Wykonane kroki: ${okSteps.slice(-8).join('; ')}]` : replyText;
     state.ai.history.push(
       { role: 'user', text: userMessage },
-      { role: 'assistant', text: okSteps.length ? `${replyText}\n[Wykonane kroki: ${okSteps.slice(-8).join('; ')}]` : replyText }
+      { role: 'assistant', text: historyReply }
     );
     if (state.ai.history.length > 24) {
       state.ai.history = state.ai.history.slice(-24);
@@ -8406,6 +8722,23 @@ function loadHtml2Canvas() {
   return html2canvasPromise;
 }
 
+async function snapshotAiElement(el) {
+  if (!el) return '';
+  const rect = el.getBoundingClientRect();
+  if (!rect.width || !rect.height) return '';
+  const h2c = await loadHtml2Canvas();
+  const scale = Math.min(1, 900 / rect.width, 1400 / rect.height);
+  const canvas = await h2c(el, {
+    backgroundColor: '#ffffff',
+    scale,
+    useCORS: true,
+    logging: false,
+    ignoreElements: (node) => node?.hasAttribute?.('data-cms-ui'),
+  });
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+  return dataUrl.length <= 1_000_000 && dataUrl !== 'data:,' ? dataUrl : '';
+}
+
 async function captureTargetShot(t) {
   if (!t?.uid || t.pagePath !== state.currentPagePath) return;
   const doc = $('preview')?.contentDocument;
@@ -8414,18 +8747,8 @@ async function captureTargetShot(t) {
     : doc?.querySelector(`[data-cms-uid="${CSS.escape(t.uid)}"]`);
   if (!el) return;
   try {
-    const h2c = await loadHtml2Canvas();
-    const rect = el.getBoundingClientRect();
-    const scale = Math.min(1, 900 / Math.max(1, rect.width), 1400 / Math.max(1, rect.height));
-    const canvas = await h2c(el, {
-      backgroundColor: '#ffffff',
-      scale: Math.max(0.3, scale),
-      useCORS: true,
-      logging: false,
-      ignoreElements: (n) => n?.hasAttribute?.('data-cms-ui'),
-    });
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
-    if (dataUrl.length > 1_000_000) return; // za duży zrzut — AI dostanie sam opis elementu
+    const dataUrl = await snapshotAiElement(el);
+    if (!dataUrl) return;
     aiShots.set(shotKey(t), dataUrl);
     renderAiTargetChips();
   } catch (err) {
@@ -8575,6 +8898,7 @@ function setAiPickModeUi(enabled) {
 }
 
 function clearAiChat() {
+  closeAiCard();
   if (state.ai.isRunning) {
     state.ai.abortController?.abort();
   }
