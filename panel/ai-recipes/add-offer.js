@@ -12,6 +12,11 @@ export const tools = [{
     required: ['nazwa'],
     properties: {
       nazwa: { type: 'string', description: 'Nazwa nowej pozycji oferty.' },
+      nazwy: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Kilka pozycji tego samego rodzaju naraz (np. dwie podkategorie „Panele winylowe”, „Panele laminowane”) — jedna propozycja i jedno kliknięcie. Wtedy „nazwa” może być pusta.',
+      },
       rodzaj: { type: 'string', enum: KINDS, description: 'Rodzaj pozycji wybrany przez klienta.' },
       rodzic: { type: 'string', description: 'Nazwa lub ścieżka kategorii nadrzędnej dla podkategorii lub produktu.' },
       opis: { type: 'string', description: 'Opis przekazany przez klienta.' },
@@ -240,6 +245,27 @@ export function productButton(sample, path, host, label, direction) {
 
 export async function run(name, args, ctx) {
   if (name !== TOOL_NAME) return { ok: false, error: 'Nieznany przepis: ' + name };
+  // Kilka pozycji naraz: wykonujemy po kolei (w przebiegu na sucho też), wynik jest jeden
+  const many = (Array.isArray(args.nazwy) ? args.nazwy : []).map((n) => String(n || '').trim()).filter(Boolean);
+  if (many.length > 1) {
+    const results = [];
+    for (const nazwa of many) {
+      const r = await run(name, { ...args, nazwy: undefined, nazwa }, ctx);
+      if (!r.ok) {
+        return results.length
+          ? { ...r, error: r.error ? `Dodano: ${results.map((x) => x.nazwa).join(', ')}. Przy „${nazwa}”: ${r.error}` : r.error }
+          : r;
+      }
+      results.push({ nazwa, ...r });
+    }
+    return {
+      ok: true,
+      summary: results.map((r) => r.summary || `Dodano „${r.nazwa}”.`).join(' '),
+      changedPages: [...new Set(results.flatMap((r) => r.changedPages || []))],
+      dodane: results.map((r) => ({ nazwa: r.nazwa, path: r.path || r.page || r.strona })),
+    };
+  }
+  if (many.length === 1 && !args.nazwa) args = { ...args, nazwa: many[0] };
   const title = args.nazwa?.trim();
   const kind = args.rodzaj;
   if (!title) return { ok: false, needsAnswer: 'Jak ma się nazywać nowa pozycja oferty?', options: [] };
@@ -253,7 +279,25 @@ export async function run(name, args, ctx) {
   const path = prefix + '/' + slug + '/index.html';
   const pages = ctx.listPages();
   if (pages.some((page) => page.path === path) || await ctx.readPage(path)) {
-    return { ok: false, error: 'Strona „' + path + '” już istnieje. Podaj inną nazwę.' };
+    // Zamiast gołego „już istnieje” mówimy AI, CZYM ta pozycja już jest — żeby nie zgadywało dalej
+    const home = await ctx.readPage('index.html');
+    const homeDoc = home ? ctx.parse(home) : null;
+    const isMain = !!homeDoc && [...homeDoc.querySelectorAll('a.home-cat-card[href]')].some((a) => pagePath(a.getAttribute('href'), 'index.html') === path);
+    const isExtra = !!homeDoc && [...homeDoc.querySelectorAll('a.home-extra-category[href]')].some((a) => pagePath(a.getAttribute('href'), 'index.html') === path);
+    const status = isMain
+      ? 'JUŻ JEST główną kategorią oferty (duży kafelek w Ofercie na stronie głównej, tak jak Okna PCV czy Drzwi).'
+      : isExtra
+        ? 'Jest dodatkową kategorią (pigułka pod kafelkami Oferty), nie głównym kafelkiem.'
+        : 'Istnieje jako podstrona, ale nie jest kafelkiem w Ofercie na stronie głównej.';
+    return {
+      ok: false,
+      istnieje: { path, glownaKategoria: isMain, dodatkowaKategoria: isExtra },
+      error:
+        `„${title}” już istnieje (${path}). ${status} Nie twórz jej ponownie. ` +
+        (isMain
+          ? 'Jeśli klient prosi, żeby była „główną kategorią”, powiedz mu, że już nią jest, i zapytaj, czy chodzi o coś innego (np. kolejność kafelków).'
+          : 'Jeśli klient chce ją awansować na główny kafelek albo przenieść, zaproponuj przenies_pozycje.'),
+    };
   }
 
   const cache = new Map();

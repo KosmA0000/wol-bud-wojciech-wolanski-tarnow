@@ -2,7 +2,7 @@
 // podkategorie, produkty, menu itd.) z pełną budową ramy strony i obecnością we wszystkich miejscach grupy.
 // Korzysta z ./consistency.js (część A) gdy jest dostępny, a na samodzielnej gałęzi ma zgodny silnik reguł.
 
-import { resolve, loadSite } from './knowledge.js?v=turbo31';
+import { resolve, loadSite } from './knowledge.js?v=turbo32';
 
 const RULE_SHARE = 0.75;
 const BLOCK_SHARE = 0.5;
@@ -425,7 +425,7 @@ async function checkConsistencyFallback(ctx, { pages: only } = {}) {
 }
 
 export async function getConsistency() {
-  for (const spec of ['./consistency.js?v=turbo31', './consistency.js']) {
+  for (const spec of ['./consistency.js?v=turbo32', './consistency.js']) {
     try {
       const mod = await import(spec);
       if (typeof mod.analyzeGroups === 'function' && typeof mod.checkConsistency === 'function') {

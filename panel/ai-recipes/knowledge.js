@@ -1,7 +1,7 @@
 // Wiedza o stronie podawana AI w każdej wiadomości: AI wie od razu, jak strona jest zbudowana
 // i jak wykonać zmianę, bez czytania plików. Generowana z prawdziwych stron, odświeżana po każdej operacji.
 // Eksportuje też wspólne pomocniki bloków (używa ich blocks.js).
-import { groupRulesText } from './consistency.js?v=turbo31';
+import { groupRulesText } from './consistency.js?v=turbo32';
 
 export const clean = (p) => String(p || '').trim().replace(/^\.?\/+/, '');
 
@@ -121,6 +121,8 @@ export const HOW_TO = [
   '- „dodaj stronę / promocję / podstronę informacyjną” → dodaj_podstrone (przez zaproponuj_zmiane; kopia analogicznej strony tego rodzaju, linki tam, gdzie do analogicznych).',
   '- „zrób taką samą stronę jak X” → duplikuj_strone.',
   '- „zmień nazwę / adres strony” → zmien_nazwe_wszedzie. „przenieś produkt / podkategorię do innej kategorii” → przenies_pozycje.',
+  '- „przenieś X do głównych kafelków / zrób z X główną kategorię” (X to podkategoria lub pigułka, np. Rolety zewnętrzne) → przenies_pozycje { strona: X, nowyRodzic: „kategoria główna” }. NIGDY zmien_kafelek — on zmienia tylko tytuł, opis i zdjęcie, nie przenosi.',
+  '- Treść (tytuł, opis) to tekst dla klientów strony. Nigdy nie wpisuj tam opisu swojej operacji („Przenoszę…”, „Dodaję…”).',
   '- „zmień kolejność” (menu, kafelki oferty, podkategorie, produkty) → zmien_kolejnosc (ta sama kolejność wszędzie, gdzie lista występuje).',
   '- „usuń X z oferty / usuń stronę” → usun_pozycje_oferty (po wskazaniu i kliknięciu usuwa cały łańcuch reguł, chyba że klient wyraźnie każe coś zostawić). „schowaj / pokaż X” (bez usuwania) → ukryj_pozycje.',
   'Kafelki:',

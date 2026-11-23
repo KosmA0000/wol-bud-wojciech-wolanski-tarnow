@@ -1,6 +1,6 @@
 // Propozycja przed zmianą: AI niczego nie zmienia samo. Najpierw zaproponuj_zmiane → przebieg na sucho (nakładka ctx w pamięci)
 // → karta dla klienta (gdzie / wzór / plan) → klient KLIKA → panel woła narzędzie z __approvedProposalId → verifyApplied.
-import { checkConsistency } from './consistency.js?v=turbo31';
+import { checkConsistency } from './consistency.js?v=turbo32';
 
 export const PROPOSE_TOOL = {
   name: 'zaproponuj_zmiane',
@@ -14,7 +14,8 @@ export const PROPOSE_TOOL = {
       opis: { type: 'string', description: 'Jedno zdanie po polsku dla klienta: co zostanie zrobione.' },
       warianty: {
         type: 'array',
-        description: 'Tylko przy realnej rozbieżności: inne możliwe wykonania.',
+        description:
+          'Tylko przy realnej rozbieżności: ALTERNATYWNE wykonania tej samej prośby (klient wybierze jedno). NIGDY dla kolejnych kroków ani kilku rzeczy naraz — kilka pozycji tego samego rodzaju podaj w jednym wywołaniu (np. dodaj_pozycje_oferty z „nazwy”: ["A", "B"]).',
         items: {
           type: 'object',
           properties: {
@@ -216,7 +217,12 @@ async function describe(tool, args, ctx, run, opis) {
 
   // GDZIE: strona wskazana w argumentach, potem strona główna, Oferta, pierwsza zmieniona istniejąca strona
   const argPages = Object.values(stripApproval(args)).filter((v) => typeof v === 'string').map((v) => v.replace(/^\.?\/+/, ''));
+  // Najpierw strona, na której klient chce zmianę („strona”/„gdzie”), dopiero potem inne strony z argumentów
+  // (np. „link” — cel kafelka). Testy na żywo: karta „dodaj kafelek Promocje” wskazywała stronę promocji zamiast Oferty.
+  const clean = stripApproval(args) || {};
+  const hostArg = [clean.strona, clean.gdzie, clean.page, clean.pagePath].filter((v) => typeof v === 'string').map((v) => v.replace(/^\.?\/+/, ''));
   const pick =
+    hosts.find((h) => hostArg.includes(h.page) && (h.added.length || h.removed.length)) ||
     hosts.find((h) => argPages.includes(h.page) && (h.added.length || h.removed.length)) ||
     hosts.find((h) => h.page === 'index.html' && h.added.length) ||
     hosts.find((h) => h.page === 'oferta/index.html' && h.added.length) ||
@@ -427,7 +433,8 @@ export async function verifyApplied(ctx, proposal, result) {
       } catch {}
       const scope = txt(box || doc.body);
       const miss = h.added.filter((t) => !scope.includes(t));
-      const still = h.removed.filter((t) => scope.includes(t));
+      // Tekst „usunięty”, który wraca w dodanym elemencie (np. przebudowana ramka strony z tym samym tytułem), nie jest błędem
+      const still = h.removed.filter((t) => scope.includes(t) && !h.added.some((a) => a.includes(t)));
       if (miss.length) problems.push(`Na stronie ${h.page} brakuje dodanego elementu „${miss[0].slice(0, 50)}”.`);
       if (still.length) problems.push(`Na stronie ${h.page} nadal jest „${still[0].slice(0, 50)}”.`);
       if (!miss.length && !still.length && (h.added.length || h.removed.length)) {

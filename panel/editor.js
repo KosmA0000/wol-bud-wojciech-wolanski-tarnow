@@ -62,8 +62,8 @@ import {
   checkProxyStatus,
   runAiTurn,
   isModelReadTool,
-} from './ai-agent.js?v=turbo31';
-import * as aiRecipes from './ai-recipes/index.js?v=turbo31';
+} from './ai-agent.js?v=turbo32';
+import * as aiRecipes from './ai-recipes/index.js?v=turbo32';
 const { isRecipeTool, runRecipe, getSiteKnowledgeText } = aiRecipes;
 
 // ============================================================================
@@ -6142,7 +6142,29 @@ function syncUiAfterAiMutation() {
   scheduleAutosave();
 }
 
-async function executeAiTool(name, rawArgs = {}, { fromAssistant = false, clicked = false } = {}) {
+// AI czasem podaje sekcję jako wewnętrzny identyfikator podglądu („sec-3”), którego przepisy nie znają
+// (zapis sesji: „na sam początek oferty” → sekcja „sec-3” → zbędne pytanie o sekcję). Tłumaczymy go na #id
+// albo nazwę sekcji z bieżącej strony.
+function resolveSectionUidArg(value) {
+  if (typeof value !== 'string' || !/^sec-\d+$/.test(value.trim())) return value;
+  const s = (state.structure || []).find((x) => x.uid === value.trim());
+  return s ? (s.id ? '#' + s.id : s.label || value) : value;
+}
+function normalizeAiSectionArgs(name, args) {
+  if (!args || typeof args !== 'object') return args;
+  const out = { ...args };
+  if ('sekcja' in out) out.sekcja = resolveSectionUidArg(out.sekcja);
+  if (name === 'zaproponuj_zmiane' && out.args && typeof out.args === 'object' && 'sekcja' in out.args) {
+    out.args = { ...out.args, sekcja: resolveSectionUidArg(out.args.sekcja) };
+  }
+  if (name === 'zaproponuj_zmiane' && Array.isArray(out.warianty)) {
+    out.warianty = out.warianty.map((w) => (w?.args && 'sekcja' in w.args ? { ...w, args: { ...w.args, sekcja: resolveSectionUidArg(w.args.sekcja) } } : w));
+  }
+  return out;
+}
+
+async function executeAiTool(name, rawArgsIn = {}, { fromAssistant = false, clicked = false } = {}) {
+  const rawArgs = fromAssistant && !clicked ? normalizeAiSectionArgs(name, rawArgsIn) : rawArgsIn;
   const { __approvedProposalId, ...unapprovedArgs } = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
   const args = clicked ? { ...unapprovedArgs, __approvedProposalId } : unapprovedArgs;
   const readOnly = isModelReadTool(name) || name === 'zaproponuj_zmiane';
@@ -7913,7 +7935,7 @@ function closeAiCard(message = '') {
   const card = state.ai.pendingCard;
   if (!card) return;
   state.ai.pendingCard = null;
-  card.highlight?.cancel();
+  card.highlight?.cancel(); card.refHighlight?.cancel?.();
   card.root.querySelectorAll('button').forEach((button) => { button.disabled = true; });
   if (message) card.status.textContent = message;
 }
@@ -7942,7 +7964,7 @@ function aiCardButton(parent, label, action) {
 }
 
 async function showChoiceCards(container, options, onPick) {
-  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo31').catch(() => ({}));
+  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo32').catch(() => ({}));
   if (renderChoiceCards) return renderChoiceCards(container, options, onPick);
   for (const option of options) {
     const card = aiCardButton(container, option.label, () => onPick(option.value));
@@ -8144,7 +8166,7 @@ function renderAiProposal(parent, proposal) {
     if (state.ai.pendingCard !== card) return;
     const generation = card.generation = Symbol();
     const active = () => state.ai.pendingCard === card && card.generation === generation;
-    card.highlight?.cancel();
+    card.highlight?.cancel(); card.refHighlight?.cancel?.();
     details.replaceChildren();
     const where = selected.gdzie;
     const reference = selected.wzor || where;
@@ -8204,14 +8226,30 @@ function renderAiProposal(parent, proposal) {
       highlighted.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
       card.highlight = highlighted.animate([{ outline: '3px solid #186548', outlineOffset: '2px' }], { duration: 60000, fill: 'forwards' });
       const referenceBefore = reference.page === page.path ? '' : await readPageHtmlForSiteTool(reference.page);
-      const imageUrl = removal && highlighted !== target ? await snapshotAiElement(highlighted) : await aiReferenceShot(reference);
+      const imageUrl = await (removal && highlighted !== target ? snapshotAiElement(highlighted) : aiReferenceShot(reference)).catch(() => '');
       if (!active()) return;
-      if (!imageUrl) throw new Error('Miniatura wzoru jest niedostępna. Spróbuj wyświetlić ją ponownie.');
-      const image = document.createElement('img');
-      image.src = imageUrl;
-      image.alt = reference.label || 'Wygląd elementu z podglądu';
-      image.style.cssText = 'display:block;max-width:100%;max-height:210px;object-fit:contain';
-      figure.insertBefore(image, caption);
+      if (imageUrl) {
+        const image = document.createElement('img');
+        image.src = imageUrl;
+        image.alt = reference.label || 'Wygląd elementu z podglądu';
+        image.style.cssText = 'display:block;max-width:100%;max-height:210px;object-fit:contain';
+        figure.insertBefore(image, caption);
+      } else {
+        // Brak miniatury nie może blokować klienta (testy na żywo: przycisk „Wstaw to” zostawał nieaktywny).
+        // Wzór pokazujemy wtedy w podglądzie: podświetlamy go obok miejsca zmiany, jeśli jest na tej samej stronie.
+        const refEl = reference.page === page.path ? aiProposalElement($('preview')?.contentDocument, reference.selector) : null;
+        if (refEl && refEl !== highlighted) {
+          card.refHighlight?.cancel?.();
+          card.refHighlight = refEl.animate([{ outline: '3px dashed #c47a00', outlineOffset: '2px' }], { duration: 60000, fill: 'forwards' });
+        }
+        const note = document.createElement('p');
+        note.textContent = refEl
+          ? `Miniatura niedostępna — wzór („${reference.label || 'element'}”) podświetlono w podglądzie przerywaną ramką, miejsce zmiany ciągłą.`
+          : `Miniatura niedostępna — miejsce zmiany podświetlono w podglądzie. Wzór: „${reference.label || reference.page}”.`;
+        note.style.cssText = 'margin:0 0 8px;font-size:12px;color:#6b5a2e';
+        figure.insertBefore(note, caption);
+        window.__wolbudAiLog?.event('miniatura_niedostepna', { wzor: reference, miejsce: destination });
+      }
       review = { proposal: selected, displayedPage: page.path, selector: destination.selector,
         targetMarkup: target.outerHTML, reference, referenceBefore };
       approve.disabled = false;
@@ -8428,10 +8466,19 @@ async function sendAiPrompt(rawPrompt) {
   try {
     aiGuardrails.reset();
     const historySnapshot = [...state.ai.history];
+    // Odpowiedź klienta na pytanie narzędzia: dokładamy, które narzędzie pytało i z jakimi danymi
+    const pq = state.ai.pendingQuestion;
+    state.ai.pendingQuestion = null;
+    const questionContext = pq?.tool
+      ? `ODPOWIEDŹ NA PYTANIE NARZĘDZIA: klient odpowiada na pytanie „${pq.pytanie}” zadane przez ${pq.tool} wywołane z argumentami ${JSON.stringify(pq.args || {})}. ` +
+        `Wiadomość klienta to wybrana odpowiedź. Wpisz ją DOSŁOWNIE w brakujący argument${pq.pole ? ` „${pq.pole}”` : ''} (np. „Kategoria główna (awans do oferty głównej)” → nowyRodzic: „kategoria główna”), ` +
+        'zachowaj pozostałe argumenty i przygotuj kartę przez zaproponuj_zmiane. Nie wołaj narzędzia z tymi samymi argumentami co wcześniej.'
+      : '';
     const result = await runAiTurn({
       userMessage,
       history: historySnapshot,
       contextSummary: [
+        questionContext,
         await getSiteKnowledgeText(buildRecipeCtx()).catch(() => ''),
         buildAiContextSummary(),
       ].filter(Boolean).join('\n\n'),
@@ -8521,6 +8568,7 @@ async function sendAiPrompt(rawPrompt) {
     botBubble.hidden = false;
     if (result?.proposal) renderAiProposal(botBubble, result.proposal);
     else if (result?.question?.options?.length) renderAiQuestion(botBubble, result.question.options);
+    state.ai.pendingQuestion = result?.question?.context || null;
 
     const okSteps = Array.from(toolPillsById.values())
       .filter(({ pill }) => !pill?.classList.contains('is-error'))

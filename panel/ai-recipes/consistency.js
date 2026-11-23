@@ -2,7 +2,7 @@
 // wyprowadzone z obecnych członków. Nowy lub zmieniony członek musi je spełniać:
 //   1. rodzaj celu (dokąd prowadzą elementy), 2. budowa celu (szkielet strony-celu), 3. obecność celu (gdzie jeszcze jest wymieniony).
 // Nic nie jest wpisane na sztywno: grupy i reguły liczone są z tego, jak strona jest zbudowana.
-import { resolve, loadSite } from './knowledge.js?v=turbo31';
+import { resolve, loadSite } from './knowledge.js?v=turbo32';
 
 const RULE_SHARE = 0.75; // reguła = cecha co najmniej 3/4 członków (pewna większość)
 const BLOCK_SHARE = 0.5; // blok szkieletu, który ma co najmniej połowa celów

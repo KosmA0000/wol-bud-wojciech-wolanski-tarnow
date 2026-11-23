@@ -1,6 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo31';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo31';
-import { startAiTrace } from './ai-session-log.js?v=turbo31';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo32';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo32';
+import { startAiTrace } from './ai-session-log.js?v=turbo32';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1284,6 +1284,7 @@ async function runAiTurnInner({
 
   let readStreak = 0;
   let brakeSent = false;
+  let textCallRetried = false;
   for (let round = 0; round < 16; round += 1) {
     const data = await callModel();
     const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : [];
@@ -1291,6 +1292,19 @@ async function runAiTurnInner({
     __trace?.model({ round, text, toolCalls: calls });
 
     if (calls.length === 0) {
+      // Model czasem WYPISUJE wywołanie narzędzia jako tekst zamiast je wywołać (zapis sesji z testów:
+      // „zaproponuj_zmiane( tool: "dodaj_pozycje_oferty", args: {...} )” w odpowiedzi, 0 wywołań).
+      // Raz prosimy o prawdziwe wywołanie, zamiast pokazywać klientowi kod.
+      const known = [...KNOWN_TOOL_NAMES].filter((n) => text.includes(n + '(') || text.includes(n + ' ('));
+      if (known.length && !textCallRetried) {
+        textCallRetried = true;
+        messages.push({ role: 'assistant', content: text });
+        messages.push({
+          role: 'user',
+          content: `[Panel] Wypisałeś wywołanie narzędzia (${known.join(', ')}) jako tekst — klient widzi kod, a nic się nie dzieje. Wywołaj to narzędzie naprawdę (function call), bez pisania go w odpowiedzi.`,
+        });
+        continue;
+      }
       return { reply: text || 'Opisz, co chcesz zmienić na stronie.', toolLog };
     }
 
@@ -1364,7 +1378,10 @@ async function runAiTurnInner({
       if (result && typeof result === 'object' && result.needsAnswer && !result.ok) {
         const opts = Array.isArray(result.options) ? result.options.slice(0, 8) : [];
         const reply = String(result.needsAnswer).replace(/\s+/g, ' ').trim();
-        return { reply, question: { options: opts }, toolLog };
+        // Kontekst pytania (które narzędzie i z jakimi danymi pytało) — trafia do następnej tury razem z odpowiedzią
+        // klienta, żeby AI uzupełniło brakujący argument zamiast wołać to samo w kółko (zapis sesji: pętla przy awansie).
+        const inner = tc.name === 'zaproponuj_zmiane' ? { tool: args?.tool, args: args?.args } : { tool: tc.name, args };
+        return { reply, question: { options: opts, context: { ...inner, pytanie: reply, pole: result.pole || null } }, toolLog };
       }
     }
   }

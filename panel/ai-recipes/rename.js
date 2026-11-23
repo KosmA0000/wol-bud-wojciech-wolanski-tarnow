@@ -639,6 +639,17 @@ function updateDocReferences(doc, pagePath, opts) {
     }
   });
 
+  // Nagłówki grup w spisie produktów („Nasze produkty”: .product-group-box > h3/h4) nie są linkami —
+  // zmieniamy je po nazwie (testy na żywo: po zmianie nazwy „Moskitiery” nagłówek grupy zostawał stary).
+  if (isRename && oldNorm) {
+    doc.querySelectorAll('.product-group-box > h3, .product-group-box > h4').forEach((h) => {
+      if (normText(h.textContent) === oldNorm && h.textContent.trim() !== newName) {
+        h.textContent = newName;
+        changed = true;
+      }
+    });
+  }
+
   if (isMove) {
     const canonical = doc.querySelector('link[rel="canonical"]');
     if (canonical) {

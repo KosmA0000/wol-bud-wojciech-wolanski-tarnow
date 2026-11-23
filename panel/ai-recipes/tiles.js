@@ -1,5 +1,5 @@
 // Przepis D3: operacje na kafelkach i widoczności pozycji (zmien_kafelek, usun_kafelek, ukryj_pozycje).
-import { run as runRemove } from './remove.js?v=turbo31';
+import { run as runRemove } from './remove.js?v=turbo32';
 
 const TILE_SELECTOR =
   '.home-cat-card, .home-extra-category, .subcat-card, .cat-prod-card, .home-featured-product, .realization-card, .home-service-item';
@@ -758,7 +758,7 @@ export const tools = [
   {
     name: 'zmien_kafelek',
     description:
-      'Zmienia tytuł, opis lub zdjęcie wybranego kafelka WSZĘDZIE, gdzie prowadzi do tej samej strony (strona główna, Oferta, kategoria nadrzędna, pigułki kategorii).',
+      'Zmienia tytuł, opis lub zdjęcie wybranego kafelka WSZĘDZIE, gdzie prowadzi do tej samej strony (strona główna, Oferta, kategoria nadrzędna, pigułki kategorii). NIE przenosi kafelka do innej sekcji ani nie awansuje podkategorii — do tego służy przenies_pozycje.',
     parameters: {
       type: 'object',
       properties: {
@@ -772,7 +772,7 @@ export const tools = [
         },
         opis: {
           type: 'string',
-          description: 'Opcjonalny nowy krótki opis na kafelku (pusty tekst usuwa opis).',
+          description: 'Opcjonalny nowy krótki opis na kafelku dla klientów strony (pusty tekst usuwa opis). Tylko treść podana lub zatwierdzona przez klienta — nie opis Twojej operacji.',
         },
         zdjecie: {
           type: 'string',

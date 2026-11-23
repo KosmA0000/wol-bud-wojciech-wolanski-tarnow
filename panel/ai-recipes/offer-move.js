@@ -31,7 +31,7 @@ export const tools = [
         nowyRodzic: {
           type: 'string',
           description:
-            'Nazwa lub ścieżka docelowej kategorii/podkategorii, albo „oferta” / „kategoria główna” przy awansie podkategorii.',
+            'Nazwa lub ścieżka docelowej kategorii/podkategorii, albo „kategoria główna” przy awansie podkategorii do głównych kafelków Oferty (NIE puste, NIE „/”).',
         },
         nowyAdres: {
           type: 'string',
@@ -917,12 +917,18 @@ async function runMoveItem(args, ctx) {
       ok: false,
       needsAnswer: `Gdzie przenieść „${item.label}”?`,
       options: opts,
+      pole: 'nowyRodzic',
     };
   }
 
   const normParentArg = normText(rawNowyRodzic);
+  // Awans: „kategoria główna (awans…)”, „oferta”, „/”, „główna” itd. Pusty po normalizacji (np. „/”) też = korzeń,
+  // nigdy dopasowanie do pierwszej z brzegu kategorii (zapis sesji: „/” trafiło w „Bramy garażowe”).
   const wantsPromote =
-    PROMOTE_KEYWORDS.has(normParentArg) || normParentArg.includes('awans');
+    PROMOTE_KEYWORDS.has(normParentArg) ||
+    normParentArg.includes('awans') ||
+    /\bglown/.test(normParentArg) ||
+    !normParentArg.replace(/[^a-z0-9]/g, '');
 
   let newParent = null;
   if (!wantsPromote) {

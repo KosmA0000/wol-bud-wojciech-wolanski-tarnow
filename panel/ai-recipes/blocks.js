@@ -1,7 +1,7 @@
 // Części stron: usuń / przenieś blok, zmień wspólny blok na wszystkich stronach danego rodzaju.
-import { clean, resolve, container, blocksOf, blockLabel, findBlocks, loadSite, fillBlock } from './knowledge.js?v=turbo31';
-import { run as addOrdinaryBlock, tools as knowledgeTools } from './knowledge.js?v=turbo31';
-import { addGroupMember, findRecipeGroups, groupOptions, recipeGroups } from './pages.js?v=turbo31';
+import { clean, resolve, container, blocksOf, blockLabel, findBlocks, loadSite, fillBlock } from './knowledge.js?v=turbo32';
+import { run as addOrdinaryBlock, tools as knowledgeTools } from './knowledge.js?v=turbo32';
+import { addGroupMember, findRecipeGroups, groupOptions, recipeGroups } from './pages.js?v=turbo32';
 
 const KINDS = ['strona główna', 'kategoria', 'podkategoria', 'produkt', 'promocja', 'strona informacyjna'];
 
