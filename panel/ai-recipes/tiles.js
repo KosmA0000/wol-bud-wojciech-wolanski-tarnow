@@ -1,5 +1,5 @@
 // Przepis D3: operacje na kafelkach i widoczności pozycji (zmien_kafelek, usun_kafelek, ukryj_pozycje).
-import { run as runRemove } from './remove.js?v=turbo33';
+import { run as runRemove } from './remove.js?v=turbo34';
 
 const TILE_SELECTOR =
   '.home-cat-card, .home-extra-category, .subcat-card, .cat-prod-card, .home-featured-product, .realization-card, .home-service-item';

@@ -1,6 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo33';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo33';
-import { startAiTrace } from './ai-session-log.js?v=turbo33';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo34';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo34';
+import { startAiTrace } from './ai-session-log.js?v=turbo34';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1165,7 +1165,12 @@ async function runAiTurnInner({
 
   const callModel = async () => {
     if (useDirectGemini) {
-      const model = s.model || 'gemini-4-hydrogen';
+      // Nazwa modelu z ustawień bywa wpisana „po ludzku” („Gemini 3 Flash”, „models/gemini-2.5-flash”) —
+      // Google odrzuca to błędem 400 „unexpected model name format”. Normalizujemy, a niepoprawną pomijamy.
+      const KNOWN_LABELS = { 'gemini-3-flash': 'gemini-3-flash-preview', 'gemini-3.1-pro': 'gemini-3.1-pro-preview', 'gemini-4-hydrogen-(high)': 'gemini-4-hydrogen' };
+      const normModel = String(s.model || '').trim().toLowerCase().replace(/^models\//, '').replace(/\s+/g, '-');
+      const fixedModel = KNOWN_LABELS[normModel] || normModel;
+      const model = /^[a-z0-9][a-z0-9.\-]*$/.test(fixedModel) ? fixedModel : 'gemini-4-hydrogen';
       const geminiContents = [];
       for (const m of messages) {
         if (m.role === 'tool') {
@@ -1226,6 +1231,9 @@ async function runAiTurnInner({
           break;
         }
         lastErrMsg = json?.error?.message ? `HTTP ${res.status}: ${json.error.message}` : `HTTP ${res.status}`;
+        // Zła nazwa modelu (400 „model name format”) — tak jak 404: próbujemy kolejnego modelu z listy
+        const badModelName = res.status === 400 && /model name|model.*not found|is not found/i.test(lastErrMsg);
+        if (badModelName) continue;
         if (res.status !== 404) lastStatus = res.status;
         if (res.status !== 429 && res.status !== 404 && res.status !== 503) {
           // Klucz zapisany w tej przeglądarce jest odrzucany przez Google (np. wyłączone konto usługi przypisane do klucza)
