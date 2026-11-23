@@ -62,8 +62,8 @@ import {
   checkProxyStatus,
   runAiTurn,
   isModelReadTool,
-} from './ai-agent.js?v=turbo30';
-import * as aiRecipes from './ai-recipes/index.js?v=turbo30';
+} from './ai-agent.js?v=turbo31';
+import * as aiRecipes from './ai-recipes/index.js?v=turbo31';
 const { isRecipeTool, runRecipe, getSiteKnowledgeText } = aiRecipes;
 
 // ============================================================================
@@ -7942,7 +7942,7 @@ function aiCardButton(parent, label, action) {
 }
 
 async function showChoiceCards(container, options, onPick) {
-  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=prop1').catch(() => ({}));
+  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo31').catch(() => ({}));
   if (renderChoiceCards) return renderChoiceCards(container, options, onPick);
   for (const option of options) {
     const card = aiCardButton(container, option.label, () => onPick(option.value));
@@ -8098,7 +8098,16 @@ async function applyAiProposal(card, selection, button) {
       (details.length ? details.join(' ') : result.summary || 'Sprawdzono wynik operacji.');
     card.status.textContent = audit.ok ? 'Zmiana sprawdzona po wykonaniu.' : 'Weryfikacja wymaga uwagi.';
     writeAiProposalResult(message);
+    // Zapis sesji AI: wykonanie po kliknięciu klienta (poza turą AI) — narzędzie, dane, wynik i weryfikacja
+    window.__wolbudAiLog?.event('wykonanie', {
+      propozycja: proposal.id,
+      narzedzie: proposal.tool,
+      argumenty: proposal.args,
+      wynik: result,
+      weryfikacja: { ok: audit.ok, sprawdzenia: audit.checks, problemy: audit.problems },
+    });
   } catch (error) {
+    window.__wolbudAiLog?.event('wykonanie_blad', { propozycja: proposal?.id, narzedzie: proposal?.tool, argumenty: proposal?.args, blad: error?.message || String(error) });
     closeAiCard();
     card.status.textContent = attempted ? 'Sprawdzenie zmiany zostało przerwane.' : 'Przerwano przygotowanie zmiany.';
     writeAiProposalResult('⚠️ ' + (error?.message || 'Nie udało się sprawdzić wyniku.'));

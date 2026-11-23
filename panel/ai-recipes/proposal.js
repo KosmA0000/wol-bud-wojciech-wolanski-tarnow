@@ -1,6 +1,6 @@
 // Propozycja przed zmianą: AI niczego nie zmienia samo. Najpierw zaproponuj_zmiane → przebieg na sucho (nakładka ctx w pamięci)
 // → karta dla klienta (gdzie / wzór / plan) → klient KLIKA → panel woła narzędzie z __approvedProposalId → verifyApplied.
-import { checkConsistency } from './consistency.js?v=turbo25';
+import { checkConsistency } from './consistency.js?v=turbo31';
 
 export const PROPOSE_TOOL = {
   name: 'zaproponuj_zmiane',
@@ -227,6 +227,12 @@ async function describe(tool, args, ctx, run, opis) {
   if (pick) {
     const el = pick.added[0] || pick.box;
     gdzie = { page: pick.page, selector: cssPath(pick.box), label: sectionLabel(pick.added[0] || pick.box) || PAGE_NAMES(pick.newDoc, pick.page) };
+    // Usuwanie: wskazujemy konkretny usuwany element (w obecnej wersji strony), nie wspólny kontener —
+    // inaczej warianty „usuń blok Okna / Bramy / Drzwi” podświetlałyby to samo miejsce.
+    if (!pick.added.length && pick.removed.length) {
+      const gone = pick.removed[0];
+      gdzie = { page: pick.page, selector: cssPath(gone), label: sectionLabel(gone) || txt(gone.querySelector('h2, h3, h4, strong, summary, span')) || PAGE_NAMES(pick.newDoc, pick.page) };
+    }
     // WZÓR: istniejący element tego samego rodzaju obok dodanego (z niego przepis klonuje wygląd)
     if (pick.added[0]) {
       const same = [...pick.box.children].filter((c) => !pick.added.includes(c) && sig(c) === sig(el));

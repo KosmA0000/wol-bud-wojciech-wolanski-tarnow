@@ -497,6 +497,29 @@ export async function run(name, args, ctx) {
       }
     }
 
+    // Spisy produktów („Nasze produkty”: .product-group-box > h3/h4 + ul.directory-list-grid): wpisy usuwanych stron
+    // znikają, a puste listy, ich nagłówki h4 i całe puste grupy (np. „Moskitiery”) są usuwane razem z nimi.
+    for (const li of Array.from(doc.querySelectorAll('.directory-list-grid li, .product-group-box li'))) {
+      const a = li.querySelector('a[href]');
+      if (a && toDeleteSet.has(resolveHref(a.getAttribute('href'), pagePath))) {
+        li.remove();
+        changed = true;
+      }
+    }
+    for (const ul of Array.from(doc.querySelectorAll('.directory-list-grid, .product-group-box ul'))) {
+      if (ul.querySelector('li')) continue;
+      const prev = ul.previousElementSibling;
+      if (prev && /^H[4-6]$/.test(prev.tagName)) prev.remove();
+      ul.remove();
+      changed = true;
+    }
+    for (const box of Array.from(doc.querySelectorAll('.product-group-box'))) {
+      if (!box.querySelector('a[href]')) {
+        box.remove();
+        changed = true;
+      }
+    }
+
     // 2. Okruszki
     if (removeBreadcrumbSegment(doc, pagePath, toDeleteSet)) changed = true;
 
