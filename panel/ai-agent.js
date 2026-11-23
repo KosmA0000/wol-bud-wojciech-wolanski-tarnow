@@ -938,7 +938,7 @@ const ALL_TOOLS = (() => {
 const KNOWN_TOOL_NAMES = new Set(ALL_TOOLS.map((t) => t.name));
 
 export function getAiTools() {
-  return ALL_TOOLS;
+  return ALL_TOOLS.filter((tool) => isModelReadTool(tool.name) || tool.name === 'zaproponuj_zmiane');
 }
 
 // Rekurencyjna konwersja JSON Schema -> schemat Gemini (obiekty, tablice, enum).
@@ -980,7 +980,8 @@ function toGeminiFunctionDeclarations(tools) {
   return tools.map((tool) => {
     const decl = { name: tool.name, description: tool.description };
     const props = tool.parameters?.properties;
-    if (props && Object.keys(props).length > 0) decl.parameters = convertSchemaToGemini(tool.parameters);
+    if (tool.name === 'zaproponuj_zmiane') decl.parametersJsonSchema = tool.parameters;
+    else if (props && Object.keys(props).length > 0) decl.parameters = convertSchemaToGemini(tool.parameters);
     return decl;
   });
 }
@@ -1085,6 +1086,18 @@ const READ_ONLY_TOOLS = new Set([
   'search_images', 'list_backups', 'open_page',
 ]);
 
+export const isModelReadTool = (name) => READ_ONLY_TOOLS.has(name);
+
+const PROPOSAL_ARGUMENTS = ALL_TOOLS
+  .filter(({ name }) => !isModelReadTool(name) && !['zaproponuj_zmiane', 'cofnij_cala_operacje', 'undo_last_change'].includes(name))
+  .map(({ name, parameters }) => {
+    const required = parameters?.required || [];
+    const args = Object.entries(parameters?.properties || {}).map(([key, schema]) =>
+      `${key}${required.includes(key) ? '' : '?'}: ${schema.enum?.join('|') || schema.type || 'wartość'}`);
+    return `${name}(${args.join(', ')})`;
+  }).join('\n');
+
+
 // Każda tura AI jest zapisywana do analizy błędów (ai-session-log.js): model, narzędzia, wyniki, czasy, odpowiedź.
 export async function runAiTurn(opts = {}) {
   const s = { ...DEFAULT_AI_SETTINGS, ...(opts.settings || loadAiSettings()) };
@@ -1137,8 +1150,12 @@ async function runAiTurnInner({
     ...history.slice(-12).map((m) => ({ role: m.role, content: m.text })),
     { role: 'user', content: userMessage, ...(cleanImages.length ? { images: cleanImages } : {}) },
   ];
-  const systemText = [AI_SYSTEM_PROMPT, contextSummary].filter(Boolean).join('\n\n');
-  const tools = ALL_TOOLS.map((t) => ({
+  const systemText = [AI_SYSTEM_PROMPT, contextSummary,
+    'Zmianę przygotuj wyłącznie przez zaproponuj_zmiane. Nazwę narzędzia i argumenty wpisz w tool i args. Dalsze wykonanie należy do panelu po kliknięciu klienta.',
+    PROPOSAL_ARGUMENTS,
+  ].filter(Boolean).join('\n\n');
+  const modelTools = getAiTools();
+  const tools = modelTools.map((t) => ({
     type: 'function',
     function: { name: t.name, description: t.description, parameters: t.parameters },
   }));
@@ -1175,7 +1192,7 @@ async function runAiTurnInner({
           });
         }
       }
-      const gTools = [{ functionDeclarations: toGeminiFunctionDeclarations(ALL_TOOLS) }];
+      const gTools = [{ functionDeclarations: toGeminiFunctionDeclarations(modelTools) }];
       const candidateModels = Array.from(
         new Set([model, 'gemini-4-hydrogen', 'gemini-3.1-pro-preview', 'gemini-3.8-flash', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite'].filter(Boolean))
       );
@@ -1274,7 +1291,7 @@ async function runAiTurnInner({
     __trace?.model({ round, text, toolCalls: calls });
 
     if (calls.length === 0) {
-      return { reply: text || 'Gotowe.', toolLog };
+      return { reply: text || 'Opisz, co chcesz zmienić na stronie.', toolLog };
     }
 
     messages.push({
@@ -1299,7 +1316,7 @@ async function runAiTurnInner({
         if (READ_ONLY_TOOLS.has(tc.name) && readStreak >= 4) {
           // Twarda blokada: po 4 odczytach z rzędu kolejne nie są wykonywane — AI ma działać albo zapytać klienta
           throw new Error(
-            'ODCZYT ZABLOKOWANY przez panel: masz już wszystkie potrzebne informacje (WIEDZA O STRONIE, KATALOG SEKCJI i poprzednie odczyty). Teraz wykonaj zmianę jednym przepisem albo zadaj klientowi jedno krótkie pytanie z 2–4 opcjami.'
+            'Panel zatrzymał kolejne odczyty. Przygotuj kartę przez zaproponuj_zmiane albo zadaj jedno pytanie o brakującą informację.'
           );
         }
         const resolved = resolveToolName(tc.name, KNOWN_TOOL_NAMES);
@@ -1307,6 +1324,9 @@ async function runAiTurnInner({
           throw new Error(
             `Narzędzie „${tc.name}” nie istnieje. Najbliższe istniejące: ${resolved.suggestions.join(', ')}. Wywołaj właściwe (patrz JAK WYKONAĆ).`
           );
+        }
+        if (!isModelReadTool(resolved.name) && resolved.name !== 'zaproponuj_zmiane') {
+          throw new Error('Najpierw zaproponuj_zmiane. Klient musi kliknąć kartę.');
         }
         result = await toolExecutor(resolved.name, args);
         if (!resolved.exact && result && typeof result === 'object') {
@@ -1320,6 +1340,9 @@ async function runAiTurnInner({
       const summary = ok ? 'OK' : (result?.error || 'Błąd');
       toolLog.push({ name: tc.name, args, ok, summary });
       await onToolResult?.({ id, name: tc.name, args, ok, summary, result });
+      if (ok && result?.proposal?.id) {
+        return { reply: 'Sprawdź miejsce i wzór, a potem wybierz zmianę w karcie.', proposal: result.proposal, toolLog };
+      }
       // Hamulec: po 5 odczytach z rzędu bez żadnej zmiany każemy działać albo zapytać (zamiast analizować w kółko)
       readStreak = READ_ONLY_TOOLS.has(tc.name) ? readStreak + 1 : 0;
       let payload = result;
@@ -1328,7 +1351,7 @@ async function runAiTurnInner({
         payload = {
           ...result,
           uwagaPanelu:
-            'Masz już dość informacji (WIEDZA O STRONIE i KATALOG SEKCJI). Nie odczytuj więcej. Teraz wykonaj prośbę JEDNYM przepisem (np. dodaj_blok z wzorem z katalogu) albo zadaj klientowi jedno krótkie pytanie z 2–4 opcjami.',
+            'Przygotuj kartę przez zaproponuj_zmiane albo zadaj jedno pytanie o brakującą informację.',
         };
       }
       messages.push({
@@ -1340,15 +1363,11 @@ async function runAiTurnInner({
       // Przepis pyta klienta (needsAnswer): kończymy turę i pokazujemy pytanie, zamiast pozwolić AI wołać w kółko
       if (result && typeof result === 'object' && result.needsAnswer && !result.ok) {
         const opts = Array.isArray(result.options) ? result.options.slice(0, 8) : [];
-        const reply = [
-          String(result.needsAnswer).replace(/\s+/g, ' ').trim(),
-          ...opts.map((o, n) => `${n + 1}. ${String(o).replace(/\s+/g, ' ').trim()}`),
-          opts.length ? '\nOdpisz numerem albo własnymi słowami.' : '',
-        ].filter(Boolean).join('\n');
-        return { reply, toolLog };
+        const reply = String(result.needsAnswer).replace(/\s+/g, ' ').trim();
+        return { reply, question: { options: opts }, toolLog };
       }
     }
   }
 
-  return { reply: 'Zakończono.', toolLog };
+  return { reply: 'Nie udało się przygotować propozycji w tej turze.', toolLog };
 }
