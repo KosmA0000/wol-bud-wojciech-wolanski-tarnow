@@ -1,21 +1,21 @@
 // Katalog przepisów AI: jedno polecenie klienta = cały łańcuch powiązanych zmian.
 // Każdy moduł eksportuje { tools: [{ name, description, parameters }], run(name, args, ctx) }.
 // ctx (budowany w editor.js, buildRecipeCtx) — patrz README.md.
-import * as inspect from './inspect.js?v=turbo29';
-import * as addOffer from './add-offer.js?v=turbo29';
-import * as rename from './rename.js?v=turbo29';
-import * as contact from './contact.js?v=turbo29';
-import * as remove from './remove.js?v=turbo29';
-import * as addTile from './add-tile.js?v=turbo29';
-import * as analog from './analog.js?v=turbo29';
-import * as knowledge from './knowledge.js?v=turbo29';
-import * as blocks from './blocks.js?v=turbo29';
-import * as pages from './pages.js?v=turbo29';
-import * as offerMove from './offer-move.js?v=turbo29';
-import * as tiles from './tiles.js?v=turbo29';
-import * as groupJoin from './group-join.js?v=turbo29';
-import * as repair from './repair.js?v=turbo29';
-import { checkConsistency } from './consistency.js?v=turbo29';
+import * as inspect from './inspect.js?v=turbo30';
+import * as addOffer from './add-offer.js?v=turbo30';
+import * as rename from './rename.js?v=turbo30';
+import * as contact from './contact.js?v=turbo30';
+import * as remove from './remove.js?v=turbo30';
+import * as addTile from './add-tile.js?v=turbo30';
+import * as analog from './analog.js?v=turbo30';
+import * as knowledge from './knowledge.js?v=turbo30';
+import * as blocks from './blocks.js?v=turbo30';
+import * as pages from './pages.js?v=turbo30';
+import * as offerMove from './offer-move.js?v=turbo30';
+import * as tiles from './tiles.js?v=turbo30';
+import * as groupJoin from './group-join.js?v=turbo30';
+import * as repair from './repair.js?v=turbo30';
+import { checkConsistency } from './consistency.js?v=turbo30';
 
 export const getSiteKnowledgeText = knowledge.getSiteKnowledgeText;
 

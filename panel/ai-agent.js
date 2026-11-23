@@ -1,6 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo29';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo29';
-import { startAiTrace } from './ai-session-log.js?v=turbo29';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo30';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo30';
+import { startAiTrace } from './ai-session-log.js?v=turbo30';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 

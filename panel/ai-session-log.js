@@ -5,7 +5,9 @@
 
 const DB_NAME = 'wolbud-ai-session-log';
 const STORE = 'turns';
+const EVENTS = 'events'; // kliknięcia klienta w czacie AI (karty propozycji, wybory, cofanie, zdjęcia, Zatrzymaj)
 const MAX_TURNS = 300;
+const MAX_EVENTS = 2000;
 const CAP_RESULT = 6000;
 const CAP_CONTEXT = 40000;
 
@@ -24,8 +26,12 @@ let dbPromise = null;
 function db() {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id' });
+    const req = indexedDB.open(DB_NAME, 2);
+    req.onupgradeneeded = () => {
+      const names = req.result.objectStoreNames;
+      if (!names.contains(STORE)) req.result.createObjectStore(STORE, { keyPath: 'id' });
+      if (!names.contains(EVENTS)) req.result.createObjectStore(EVENTS, { keyPath: 'id' });
+    };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
@@ -68,11 +74,54 @@ export async function allTurns() {
 export async function clearTurns() {
   const d = await db();
   await new Promise((resolve) => {
-    const tx = d.transaction(STORE, 'readwrite');
+    const tx = d.transaction([STORE, EVENTS], 'readwrite');
     tx.objectStore(STORE).clear();
+    tx.objectStore(EVENTS).clear();
     tx.oncomplete = resolve;
     tx.onerror = resolve;
   });
+}
+
+/** Zapisuje zdarzenie poza turą AI (np. klik w kartę propozycji, wynik wykonania po kliknięciu, weryfikację). */
+export async function logEvent(type, data = {}) {
+  try {
+    const d = await db();
+    const ev = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      at: new Date().toISOString(),
+      page: currentPage(),
+      type: String(type),
+      ...(data && typeof data === 'object' ? JSON.parse(JSON.stringify(data)) : { dane: data }),
+    };
+    for (const k of Object.keys(ev)) ev[k] = typeof ev[k] === 'string' ? cap(ev[k], CAP_RESULT) : ev[k] && typeof ev[k] === 'object' ? cap(ev[k], CAP_RESULT) : ev[k];
+    await new Promise((resolve) => {
+      const tx = d.transaction(EVENTS, 'readwrite');
+      tx.objectStore(EVENTS).put(ev);
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+    const all = await allEvents();
+    if (all.length > MAX_EVENTS) {
+      const tx = d.transaction(EVENTS, 'readwrite');
+      for (const e of all.slice(0, all.length - MAX_EVENTS)) tx.objectStore(EVENTS).delete(e.id);
+    }
+  } catch (e) {
+    console.warn('ai-session-log: zdarzenie nie zapisane', e);
+  }
+}
+
+export async function allEvents() {
+  try {
+    const d = await db();
+    const rows = await new Promise((resolve, reject) => {
+      const req = d.transaction(EVENTS, 'readonly').objectStore(EVENTS).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+    return rows.sort((a, b) => String(a.at).localeCompare(String(b.at)));
+  } catch {
+    return [];
+  }
 }
 
 function currentPage() {
@@ -168,6 +217,7 @@ export async function buildExport() {
     userAgent: navigator.userAgent,
     czatWidoczny: visibleChat(),
     turns,
+    zdarzenia: await allEvents(),
   };
 }
 
@@ -187,7 +237,40 @@ export async function downloadLog() {
 }
 
 if (typeof window !== 'undefined') {
-  window.__wolbudAiLog = { all: allTurns, export: buildExport, download: downloadLog, clear: clearTurns };
+  window.__wolbudAiLog = { all: allTurns, events: allEvents, event: logEvent, export: buildExport, download: downloadLog, clear: clearTurns };
+  // Każde kliknięcie klienta w czacie AI (karty propozycji, warianty, „Cofnij tę zmianę AI”, zdjęcia, Zatrzymaj)
+  // trafia do zapisu, także gdy zmiana wykonuje się po kliknięciu, poza turą AI. Po 2,5 s dopisujemy, co się stało.
+  document.addEventListener(
+    'click',
+    (e) => {
+      const btn = e.target instanceof Element ? e.target.closest('#ai-messages button, #ai-messages [role="button"], #ai-stop') : null;
+      if (!btn) return;
+      const msg = btn.closest('.ai-msg');
+      const card = btn.closest('[data-proposal-id], [data-choice-id], .ai-choice-card, .ai-proposal-card');
+      const label = (btn.textContent || btn.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim();
+      const before = msg ? (msg.innerText || msg.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      logEvent('klik', {
+        przycisk: label,
+        karta: card ? (card.getAttribute('data-proposal-id') || card.getAttribute('data-choice-id') || card.className) : undefined,
+        wiadomoscAI: before.slice(0, 1500),
+        zaufaneKlikniecie: e.isTrusted,
+      });
+      setTimeout(() => {
+        const after = msg ? (msg.innerText || msg.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        const last = [...document.querySelectorAll('#ai-messages .ai-msg')].pop();
+        logEvent('po_kliknieciu', {
+          przycisk: label,
+          zmianaWiadomosci: after !== before ? after.slice(0, 2000) : '(bez zmian)',
+          ostatniaWiadomosc: last && last !== msg ? (last.innerText || last.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 2000) : undefined,
+          licznikOpublikuj: (document.querySelector('#btn-publish, [id*=publish]')?.textContent || '').replace(/\s+/g, ' ').trim(),
+        });
+      }, 2500);
+    },
+    true
+  );
+  // Błędy JavaScript też do zapisu (pomagają zrozumieć, czemu coś się nie wykonało)
+  window.addEventListener('error', (e) => logEvent('blad_js', { tekst: String(e.message || ''), plik: String(e.filename || '').split('/').pop(), linia: e.lineno }));
+  window.addEventListener('unhandledrejection', (e) => logEvent('blad_js', { tekst: String(e.reason?.message || e.reason || '') }));
   const bind = () => {
     const btn = document.getElementById('ai-download-log');
     if (!btn || btn.dataset.bound) return;
