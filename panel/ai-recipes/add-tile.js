@@ -1,6 +1,6 @@
 // Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
-import { pagePath } from './add-offer.js?v=turbo28';
-import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo28';
+import { pagePath } from './add-offer.js?v=turbo29';
+import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo29';
 
 function normPath(p) {
   let s = String(p || '').trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
@@ -313,7 +313,8 @@ export const tools = [
         },
         sekcja: {
           type: 'string',
-          description: 'Opcjonalna nazwa sekcji z kafelkami, jeśli na stronie jest ich kilka (np. „Kategorie produktów”, „Polecane produkty”).',
+          description:
+            'Gdzie klient chce kafelek — ZAWSZE przekaż słowa klienta o miejscu, jeśli je podał (np. „do oferty” → „Oferta”, „Czego szukasz?”, „Polecane produkty”, „usługi”). „Oferta”/„do oferty” oznacza główną siatkę kategorii. Pomiń tylko, gdy klient nie powiedział nic o miejscu.',
         },
         tytul: {
           type: 'string',

@@ -1,5 +1,5 @@
-import { hrefFrom, pagePath, productButton, run as addOffer, setImage } from './add-offer.js?v=turbo28';
-import { kindOf as siteKind, parentOf } from './knowledge.js?v=turbo28';
+import { hrefFrom, pagePath, productButton, run as addOffer, setImage } from './add-offer.js?v=turbo29';
+import { kindOf as siteKind, parentOf } from './knowledge.js?v=turbo29';
 
 const ADD = 'dodaj_podstrone';
 const COPY = 'duplikuj_strone';
