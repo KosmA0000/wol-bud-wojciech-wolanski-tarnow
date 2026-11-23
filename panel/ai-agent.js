@@ -1,6 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo34';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo34';
-import { startAiTrace } from './ai-session-log.js?v=turbo34';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo35';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo35';
+import { startAiTrace } from './ai-session-log.js?v=turbo35';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -912,13 +912,25 @@ const FILE_TOOLS = [
   },
   {
     name: 'read_file',
-    description: 'Czyta surową zawartość pliku strony (HTML/CSS/JS) — tylko odczyt, żeby sprawdzić, jak strona jest zbudowana.',
+    description: 'Czyta zawartość pliku strony.',
     parameters: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Ścieżka pliku, np. index.html, oferta/index.html, assets/site.css' },
+        path: { type: 'string', description: 'Ścieżka pliku, np. index.html, oferta/index.html' },
       },
       required: ['path'],
+    },
+  },
+  {
+    name: 'write_file',
+    description: 'Zapisuje pełną nową zawartość pliku strony (nowy lub istniejący).',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'Ścieżka pliku, np. index.html, promocje/index.html' },
+        content: { type: 'string', description: 'Pełna zawartość pliku.' },
+      },
+      required: ['path', 'content'],
     },
   },
 ];
@@ -935,10 +947,11 @@ const ALL_TOOLS = (() => {
   });
 })();
 
-const KNOWN_TOOL_NAMES = new Set(ALL_TOOLS.map((t) => t.name));
+const KNOWN_TOOL_NAMES = new Set(FILE_TOOLS.map((t) => t.name)); // TRYB PROSTY: tylko narzędzia do plików
 
+// TRYB PROSTY (decyzja właściciela): model nie dostaje żadnych narzędzi — zwykły czat, który widzi plik strony
 export function getAiTools() {
-  return ALL_TOOLS.filter((tool) => isModelReadTool(tool.name) || tool.name === 'zaproponuj_zmiane');
+  return [];
 }
 
 // Rekurencyjna konwersja JSON Schema -> schemat Gemini (obiekty, tablice, enum).
@@ -1150,10 +1163,9 @@ async function runAiTurnInner({
     ...history.slice(-12).map((m) => ({ role: m.role, content: m.text })),
     { role: 'user', content: userMessage, ...(cleanImages.length ? { images: cleanImages } : {}) },
   ];
-  const systemText = [AI_SYSTEM_PROMPT, contextSummary,
-    'Zmianę przygotuj wyłącznie przez zaproponuj_zmiane. Nazwę narzędzia i argumenty wpisz w tool i args. Dalsze wykonanie należy do panelu po kliknięciu klienta.',
-    PROPOSAL_ARGUMENTS,
-  ].filter(Boolean).join('\n\n');
+  // TRYB PROSTY (decyzja właściciela): bez promptu systemowego, bez zasad i bez kontekstu narzuconego przez panel.
+  // Model dostaje tylko rozmowę i 3 narzędzia do plików strony (list_files, read_file, write_file).
+  const systemText = '';
   const modelTools = getAiTools();
   const tools = modelTools.map((t) => ({
     type: 'function',
@@ -1220,7 +1232,7 @@ async function runAiTurnInner({
             body: JSON.stringify({
               ...(systemText ? { systemInstruction: { parts: [{ text: systemText }] } } : {}),
               contents: geminiContents,
-              tools: gTools,
+              ...(modelTools.length ? { tools: gTools } : {}),
               generationConfig: m.includes('hydrogen') ? { thinkingConfig: { thinkingLevel: 'HIGH' } } : {},
             }),
           }
@@ -1280,7 +1292,7 @@ async function runAiTurnInner({
         body: JSON.stringify({
           systemPrompt: systemText,
           messages,
-          tools,
+          tools, // pusta lista w trybie prostym (proxy wymaga pola)
           ...(s.provider && s.provider !== 'proxy' ? { provider: s.provider } : {}),
           ...(s.model ? { model: s.model } : {}),
         }),
@@ -1344,7 +1356,7 @@ async function runAiTurnInner({
       let result;
       let ok = true;
       try {
-        if (READ_ONLY_TOOLS.has(tc.name) && readStreak >= 4) {
+        if (false) { // TRYB PROSTY: bez blokady odczytów
           // Twarda blokada: po 4 odczytach z rzędu kolejne nie są wykonywane — AI ma działać albo zapytać klienta
           throw new Error(
             'Panel zatrzymał kolejne odczyty. Przygotuj kartę przez zaproponuj_zmiane albo zadaj jedno pytanie o brakującą informację.'
@@ -1377,7 +1389,7 @@ async function runAiTurnInner({
       // Hamulec: po 5 odczytach z rzędu bez żadnej zmiany każemy działać albo zapytać (zamiast analizować w kółko)
       readStreak = READ_ONLY_TOOLS.has(tc.name) ? readStreak + 1 : 0;
       let payload = result;
-      if (readStreak >= 3 && !brakeSent && result && typeof result === 'object') {
+      if (false) { // TRYB PROSTY: bez „hamulca” dopisywanego do wyników
         brakeSent = true;
         payload = {
           ...result,

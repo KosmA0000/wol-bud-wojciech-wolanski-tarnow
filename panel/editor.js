@@ -62,8 +62,8 @@ import {
   checkProxyStatus,
   runAiTurn,
   isModelReadTool,
-} from './ai-agent.js?v=turbo34';
-import * as aiRecipes from './ai-recipes/index.js?v=turbo34';
+} from './ai-agent.js?v=turbo35';
+import * as aiRecipes from './ai-recipes/index.js?v=turbo35';
 const { isRecipeTool, runRecipe, getSiteKnowledgeText } = aiRecipes;
 
 // ============================================================================
@@ -6168,7 +6168,8 @@ async function executeAiTool(name, rawArgsIn = {}, { fromAssistant = false, clic
   const { __approvedProposalId, ...unapprovedArgs } = rawArgs && typeof rawArgs === 'object' ? rawArgs : {};
   const args = clicked ? { ...unapprovedArgs, __approvedProposalId } : unapprovedArgs;
   const readOnly = isModelReadTool(name) || name === 'zaproponuj_zmiane';
-  if (fromAssistant && !readOnly && (!clicked || (!isRecipeTool(name) &&
+  // TRYB PROSTY: zapis pliku przez AI działa od razu (bez karty propozycji i kliknięcia)
+  if (fromAssistant && !readOnly && name !== 'write_file' && (!clicked || (!isRecipeTool(name) &&
       (!aiRecipes.isMutatingPanelTool?.(name) || !aiRecipes.consumeApproval?.(name, args))))) {
     return { ok: false, error: aiRecipes.GATE_ERROR || 'Najpierw zaproponuj_zmiane. Klient musi kliknąć kartę.', wymagaPropozycji: true };
   }
@@ -7964,7 +7965,7 @@ function aiCardButton(parent, label, action) {
 }
 
 async function showChoiceCards(container, options, onPick) {
-  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo34').catch(() => ({}));
+  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo35').catch(() => ({}));
   if (renderChoiceCards) return renderChoiceCards(container, options, onPick);
   for (const option of options) {
     const card = aiCardButton(container, option.label, () => onPick(option.value));
@@ -8474,14 +8475,20 @@ async function sendAiPrompt(rawPrompt) {
         `Wiadomość klienta to wybrana odpowiedź. Wpisz ją DOSŁOWNIE w brakujący argument${pq.pole ? ` „${pq.pole}”` : ''} (np. „Kategoria główna (awans do oferty głównej)” → nowyRodzic: „kategoria główna”), ` +
         'zachowaj pozostałe argumenty i przygotuj kartę przez zaproponuj_zmiane. Nie wołaj narzędzia z tymi samymi argumentami co wcześniej.'
       : '';
+    // TRYB PROSTY (decyzja właściciela): bez narzędzi, zasad i promptu systemowego. AI dostaje tylko
+    // listę plików strony i treść otwartej podstrony, jak zwykły czat, któremu pokazuje się plik.
+    void questionContext;
+    const openPath = state.currentPagePath || 'index.html';
+    const openHtml = stripCmsBaseTag(state.pageDrafts[openPath]?.html || safeSerializeHtml() || (await readPageHtmlForSiteTool(openPath)) || '');
+    const fileContext =
+      `Pliki strony: ${getAllPagesMerged().filter((p) => !p.deleted).map((p) => p.path).join(', ')}\n\n` +
+      `Otwarty plik: ${openPath}\n\`\`\`html\n${openHtml}\n\`\`\`\n\n` +
+      // Jedyna informacja techniczna: jak oddać zmieniony plik, żeby panel go zapisał (bez zasad dla AI)
+      `Żeby zmienić plik, odpowiedz jego pełną nową zawartością w bloku \`\`\`html ${openPath}\`\`\` — panel zapisze go automatycznie.`;
     const result = await runAiTurn({
-      userMessage,
+      userMessage: `${fileContext}\n\n${userMessage}`,
       history: historySnapshot,
-      contextSummary: [
-        questionContext,
-        await getSiteKnowledgeText(buildRecipeCtx()).catch(() => ''),
-        buildAiContextSummary(),
-      ].filter(Boolean).join('\n\n'),
+      contextSummary: '',
       settings: state.ai.settings,
       csrfToken: state.auth.csrfToken || '',
       images: getPinnedShotsForAi(usedPinnedTargets),
@@ -8562,7 +8569,29 @@ async function sendAiPrompt(rawPrompt) {
       updateToolsSummaryText(true);
       toolsDetails.open = false;
     }
-    const replyText = String(result?.reply || '').trim() || 'Opisz, co chcesz zmienić na stronie.';
+    let replyText = String(result?.reply || '').trim() || 'Opisz, co chcesz zmienić na stronie.';
+    // TRYB PROSTY: pełny plik HTML w odpowiedzi (```html … </html>```) panel zapisuje jako szkic podstrony.
+    // Ścieżkę bierzemy z nagłówka bloku („```html oferta/index.html”) albo z otwartego pliku.
+    {
+      const saved = [];
+      const blockRe = /```(?:html)?[ \t]*([^\n`]*)\n([\s\S]*?)```/gi;
+      let mBlock;
+      while ((mBlock = blockRe.exec(replyText))) {
+        const code = mBlock[2].trim();
+        if (!/<html[\s>]/i.test(code) || !/<\/html>\s*$/i.test(code)) continue;
+        const hinted = (mBlock[1] || '').trim().replace(/^\/+/, '');
+        const target = /\.html?$/i.test(hinted) ? hinted : openPath;
+        await writeAiPageDraft(target, code);
+        saved.push(target);
+      }
+      if (saved.length) {
+        aiDidMutate = true;
+        replyText = replyText.replace(blockRe, (all, hint, code) =>
+          /<html[\s>]/i.test(code) && /<\/html>\s*$/i.test(code.trim()) ? `📄 *Zapisano w szkicu: ${/\.html?$/i.test((hint || '').trim()) ? hint.trim() : openPath}*` : all
+        );
+        if (saved.includes(state.currentPagePath)) await loadPage(state.currentPagePath, { fromHistory: true, skipFlush: true });
+      }
+    }
     botBubble.innerHTML = renderSimpleMarkdown(replyText);
     attachAiUndoButtonIfMutated();
     botBubble.hidden = false;

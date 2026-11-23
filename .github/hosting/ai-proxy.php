@@ -43,7 +43,7 @@ function sanitizeMessageImages(mixed $images): array {
 const AI_RATE_LIMIT_MAX = 120;           // maks. 120 zapytań (jedno polecenie klienta to kilka rund narzędzi)
 const AI_RATE_LIMIT_WINDOW = 60;         // w oknie 60 sekund na IP
 const AI_CURL_CONNECT_TIMEOUT = 15;      // 15 s na połączenie
-const AI_CURL_TIMEOUT = 45;              // 45 s na odpowiedź modelu
+const AI_CURL_TIMEOUT = 300;             // do 5 min: w trybie prostym AI przepisuje cały plik strony (Hydrogen HIGH)
 const AI_MAX_MESSAGES = 120;
 const AI_MAX_TOOLS = 120;
 
@@ -60,6 +60,7 @@ const AI_GEMINI_FALLBACK_MODELS = [
 ];
 
 sendSecurityHeaders();
+@set_time_limit(330); // PHP nie może przerwać wcześniej niż limit wywołania modelu
 
 function extractAiConfig(array $editorConfig): array {
     if (!$editorConfig['found']) {

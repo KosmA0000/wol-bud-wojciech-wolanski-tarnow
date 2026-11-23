@@ -139,7 +139,8 @@ export function startAiTrace({ userMessage = '', history = [], contextSummary = 
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     startedAt: new Date().toISOString(),
     page: currentPage(),
-    userMessage: String(userMessage || ''),
+    // W trybie prostym wiadomość zawiera cały plik strony — w zapisie zostawiamy tylko końcówkę (prośbę klienta)
+    userMessage: (() => { const t = String(userMessage || ''); return t.length > 4000 ? '[plik strony pominięty w zapisie] … ' + t.slice(-1500) : t; })(),
     historyLength: Array.isArray(history) ? history.length : 0,
     images: Array.isArray(images) ? images.length : 0,
     provider: settings?.provider || '',

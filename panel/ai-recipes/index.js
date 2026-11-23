@@ -1,22 +1,22 @@
 // Katalog przepisów AI: jedno polecenie klienta = cały łańcuch powiązanych zmian.
 // Każdy moduł eksportuje { tools: [{ name, description, parameters }], run(name, args, ctx) }.
 // ctx (budowany w editor.js, buildRecipeCtx) — patrz README.md.
-import * as inspect from './inspect.js?v=turbo34';
-import * as addOffer from './add-offer.js?v=turbo34';
-import * as rename from './rename.js?v=turbo34';
-import * as contact from './contact.js?v=turbo34';
-import * as remove from './remove.js?v=turbo34';
-import * as addTile from './add-tile.js?v=turbo34';
-import * as analog from './analog.js?v=turbo34';
-import * as knowledge from './knowledge.js?v=turbo34';
-import * as blocks from './blocks.js?v=turbo34';
-import * as pages from './pages.js?v=turbo34';
-import * as offerMove from './offer-move.js?v=turbo34';
-import * as tiles from './tiles.js?v=turbo34';
-import * as groupJoin from './group-join.js?v=turbo34';
-import * as repair from './repair.js?v=turbo34';
-import { checkConsistency } from './consistency.js?v=turbo34';
-import * as proposal from './proposal.js?v=turbo34';
+import * as inspect from './inspect.js?v=turbo35';
+import * as addOffer from './add-offer.js?v=turbo35';
+import * as rename from './rename.js?v=turbo35';
+import * as contact from './contact.js?v=turbo35';
+import * as remove from './remove.js?v=turbo35';
+import * as addTile from './add-tile.js?v=turbo35';
+import * as analog from './analog.js?v=turbo35';
+import * as knowledge from './knowledge.js?v=turbo35';
+import * as blocks from './blocks.js?v=turbo35';
+import * as pages from './pages.js?v=turbo35';
+import * as offerMove from './offer-move.js?v=turbo35';
+import * as tiles from './tiles.js?v=turbo35';
+import * as groupJoin from './group-join.js?v=turbo35';
+import * as repair from './repair.js?v=turbo35';
+import { checkConsistency } from './consistency.js?v=turbo35';
+import * as proposal from './proposal.js?v=turbo35';
 
 // Propozycja przed zmianą (PROPOZYCJA.md): panel ustawia ctx.requireApproval = true dla wywołań od AI.
 // Wtedy każde narzędzie zmieniające przechodzi tylko z __approvedProposalId zatwierdzonym kliknięciem klienta.
