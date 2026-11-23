@@ -1,6 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo32';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo32';
-import { startAiTrace } from './ai-session-log.js?v=turbo32';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo33';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo33';
+import { startAiTrace } from './ai-session-log.js?v=turbo33';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1228,6 +1228,15 @@ async function runAiTurnInner({
         lastErrMsg = json?.error?.message ? `HTTP ${res.status}: ${json.error.message}` : `HTTP ${res.status}`;
         if (res.status !== 404) lastStatus = res.status;
         if (res.status !== 429 && res.status !== 404 && res.status !== 503) {
+          // Klucz zapisany w tej przeglądarce jest odrzucany przez Google (np. wyłączone konto usługi przypisane do klucza)
+          if (res.status === 401 || res.status === 403) {
+            throw new Error(
+              'Google odrzuca klucz Gemini zapisany w tej przeglądarce' +
+                (/service account|ACCOUNT_STATE/i.test(lastErrMsg) ? ' (konto usługi przypisane do klucza jest wyłączone)' : '') +
+                '. Otwórz „⚙ Ustawienia” w oknie Asystenta AI, wklej aktualny klucz z Google AI Studio i zapisz. ' +
+                `(${lastErrMsg})`
+            );
+          }
           throw new Error(`Błąd Gemini API (${lastErrMsg})`);
         }
       }

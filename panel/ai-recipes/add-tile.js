@@ -1,6 +1,6 @@
 // Przepis D2: dodaj kafelek w istniejącej siatce kafelków na wskazanej stronie (klonuje sąsiedni kafelek).
-import { pagePath } from './add-offer.js?v=turbo32';
-import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo32';
+import { pagePath } from './add-offer.js?v=turbo33';
+import { addGroupMember, findRecipeGroups, groupElements, groupOptions, recipeGroups } from './pages.js?v=turbo33';
 
 function normPath(p) {
   let s = String(p || '').trim().replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\/+/, '');
@@ -354,7 +354,7 @@ export async function run(name, args, ctx) {
   if (!/home-cat-card|cat-card/.test(String(result.group || ''))) {
     return { ...result, summary: `${result.summary || ''} Kafelek dodano na końcu tej sekcji (ustawianie na początku działa dla głównych kafelków Oferty).`.trim() };
   }
-  const { run: runMove } = await import('./offer-move.js?v=turbo32');
+  const { run: runMove } = await import('./offer-move.js?v=turbo33');
   const moved = await runMove('zmien_kolejnosc', { gdzie: 'kafelki-oferty', kolejnosc: [String(args.tytul || '').trim()] }, ctx);
   return {
     ...result,

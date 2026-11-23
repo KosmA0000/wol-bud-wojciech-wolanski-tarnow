@@ -62,8 +62,8 @@ import {
   checkProxyStatus,
   runAiTurn,
   isModelReadTool,
-} from './ai-agent.js?v=turbo32';
-import * as aiRecipes from './ai-recipes/index.js?v=turbo32';
+} from './ai-agent.js?v=turbo33';
+import * as aiRecipes from './ai-recipes/index.js?v=turbo33';
 const { isRecipeTool, runRecipe, getSiteKnowledgeText } = aiRecipes;
 
 // ============================================================================
@@ -7964,7 +7964,7 @@ function aiCardButton(parent, label, action) {
 }
 
 async function showChoiceCards(container, options, onPick) {
-  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo32').catch(() => ({}));
+  const { renderChoiceCards } = await import('./ai-ui-choices.js?v=turbo33').catch(() => ({}));
   if (renderChoiceCards) return renderChoiceCards(container, options, onPick);
   for (const option of options) {
     const card = aiCardButton(container, option.label, () => onPick(option.value));

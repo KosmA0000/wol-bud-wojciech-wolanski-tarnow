@@ -1,6 +1,6 @@
 // Propozycja przed zmianą: AI niczego nie zmienia samo. Najpierw zaproponuj_zmiane → przebieg na sucho (nakładka ctx w pamięci)
 // → karta dla klienta (gdzie / wzór / plan) → klient KLIKA → panel woła narzędzie z __approvedProposalId → verifyApplied.
-import { checkConsistency } from './consistency.js?v=turbo32';
+import { checkConsistency } from './consistency.js?v=turbo33';
 
 export const PROPOSE_TOOL = {
   name: 'zaproponuj_zmiane',

@@ -87,6 +87,16 @@ function setBreadcrumbs(doc, ancestors, path, title) {
   breadcrumbs.append(separator, current);
 }
 
+// Meta description nowej strony: zamiast samej nazwy („Panele winylowe”) pełne zdanie 110–160 znaków
+// w stylu istniejących stron, tylko z faktów ze strony WOL-BUD (salony w Tarnowie i Radłowie, bezpłatny pomiar).
+function autoDescription(title, ancestors = [], extra = '') {
+  const parent = [...(ancestors || [])].reverse().map((a) => a?.label).find((l) => l && !/^(oferta|strona główna)/i.test(l));
+  const lead = parent ? `${title} – ${parent} w ofercie WOL-BUD Tarnów.` : `${title} w WOL-BUD Tarnów.`;
+  const text = [lead, extra && extra.trim() ? extra.trim().replace(/[.\s]*$/, '.') : '', 'Sprzedaż, doradztwo i montaż. Bezpłatny pomiar, salony w Tarnowie i Radłowie.']
+    .filter(Boolean).join(' ');
+  return text.length > 160 ? text.slice(0, 157).replace(/\s+\S*$/, '') + '…' : text;
+}
+
 function fillPage(doc, { path, title, description, photo, ancestors }) {
   const heading = doc.querySelector('h1');
   const oldHeading = heading.textContent.trim();
@@ -99,7 +109,7 @@ function fillPage(doc, { path, title, description, photo, ancestors }) {
     meta.name = 'description';
     doc.head.append(meta);
   }
-  meta.content = description || title;
+  meta.content = description && description.trim().length >= 50 ? description.trim() : autoDescription(title, ancestors, description);
   for (const property of ['og:title', 'og:description', 'og:image', 'og:url']) {
     doc.querySelector('meta[property="' + property + '"]')?.remove();
   }
