@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "revision": "707ec2c7-27c6-4049-8deb-368eab4b8c59",
-  "generatedAt": "2026-11-20T17:57:23.506Z",
+  "revision": "b59b9ed4-8904-476f-bc60-54f0eefd36c2",
+  "generatedAt": "2026-11-23T11:24:38.642Z",
   "pages": [
     {
       "path": "index.html",
@@ -224,14 +224,14 @@
       "path": "produkty/adaptacyjne/index.html",
       "label": "Aluprof – system adaptacyjny",
       "title": "Aluprof – system adaptacyjny | WOL-BUD Tarnów",
-      "description": "Rolety zewnętrzne w systemie adaptacyjnym przeznaczone są do stosowania w istniejących budynkach. Dzięki bogatej gamie kolorów są doskonałym elementem dekoracyjnym, dopasowanym do wyglądu budynku.",
+      "description": "Rolety zewnętrzne w systemie adaptacyjnym przeznaczone są do stosowania w istniejących budynkach. Dzięki bogatej gamie kolorów są doskonałym elementem dekoracyjnym, dopasowanym do wyglądu budynku.",
       "group": "produkty"
     },
     {
       "path": "produkty/podtynkowe-integro/index.html",
       "label": "Aluprof – system podtynkowy INTEGRO",
       "title": "Aluprof – system podtynkowy INTEGRO | WOL-BUD Tarnów",
-      "description": "Rolety zewnętrzne w systemie podtynkowym INTEGRO przeznaczone są do zastosowania przede wszystkim w nowo wznoszonych budynkach, ale także w obiektach już istniejących. Rolety wkomponowują się w elewację budynku stanowiąc",
+      "description": "Rolety zewnętrzne w systemie podtynkowym INTEGRO przeznaczone są do zastosowania przede wszystkim w nowo wznoszonych budynkach, ale także w obiektach już istniejących. Rolety wkomponowują się w elewację budynku stanowiąc",
       "group": "produkty"
     },
     {
@@ -245,7 +245,7 @@
       "path": "produkty/segmentowe/index.html",
       "label": "Bramy segmentowe",
       "title": "Bramy segmentowe | WOL-BUD Tarnów",
-      "description": "Bramy garażowe segmentowe – charakterystyka",
+      "description": "Bramy garażowe segmentowe – charakterystyka",
       "group": "produkty"
     },
     {
@@ -315,7 +315,7 @@
       "path": "produkty/drzwiowe/index.html",
       "label": "Moskitiery drzwiowe",
       "title": "Moskitiery drzwiowe | WOL-BUD Tarnów",
-      "description": "Drzwi siatkowe wykonane są z profilu walcowanego z aluminium o doskonałych cechach wytrzymałościowych, a kurtyna wykonana jest z szklanego włókna. Drzwi montowane są na zawiasach ze sprężyną, która domyka je samoczynnie.",
+      "description": "Drzwi siatkowe wykonane są z profilu walcowanego z aluminium o doskonałych cechach wytrzymałościowych, a kurtyna wykonana jest z szklanego włókna. Drzwi montowane są na zawiasach ze sprężyną, która domyka je samoczynnie.",
       "group": "produkty"
     },
     {
@@ -329,7 +329,7 @@
       "path": "produkty/moskitiery-plisowane/index.html",
       "label": "Moskitiery plisowane",
       "title": "Moskitiery plisowane | WOL-BUD Tarnów",
-      "description": "Moskitiera plisowana to najnowocześniejsze i najbardziej komfortowe rozwiązanie, które skutecznie chroni Twój dom przed komarami, muchami oraz innymi insektami. Dzięki unikalnej konstrukcji, w której siatka układa się w",
+      "description": "Moskitiera plisowana to najnowocześniejsze i najbardziej komfortowe rozwiązanie, które skutecznie chroni Twój dom przed komarami, muchami oraz innymi insektami. Dzięki unikalnej konstrukcji, w której siatka układa się w ",
       "group": "produkty"
     },
     {
@@ -820,6 +820,13 @@
       "description": "",
       "group": "produkty",
       "redirect": true
+    },
+    {
+      "path": "kategorie/promocje/index.html",
+      "label": "Promocje",
+      "title": "Promocje | WOL-BUD Tarnów",
+      "description": "Sprawdź nasze aktualne promocje i oferty specjalne.",
+      "group": "kategorie"
     }
   ],
   "images": [
