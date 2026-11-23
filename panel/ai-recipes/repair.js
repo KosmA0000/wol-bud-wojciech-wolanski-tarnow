@@ -1,8 +1,8 @@
 // Przepis AI: sprawdza spójność wskazanej strony lub całej witryny i naprawia wykryte braki
 // (najczęściej wywołując dolacz_do_grupy w ramach jednej atomowej operacji możliwej do cofnięcia).
 
-import { loadSite } from './knowledge.js?v=turbo26';
-import { run as runGroupJoin, getConsistency, resolvePageInList } from './group-join.js?v=turbo26';
+import { loadSite } from './knowledge.js?v=turbo27';
+import { run as runGroupJoin, getConsistency, resolvePageInList } from './group-join.js?v=turbo27';
 
 export const tools = [
   {

@@ -1,5 +1,6 @@
-import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo26';
-import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo26';
+import { RECIPE_TOOLS } from './ai-recipes/index.js?v=turbo27';
+import { AI_SYSTEM_PROMPT } from './ai-prompt.js?v=turbo27';
+import { startAiTrace } from './ai-session-log.js?v=turbo27';
 
 const STORAGE_KEY = 'wolbud:cms:ai-settings';
 
@@ -1084,7 +1085,36 @@ const READ_ONLY_TOOLS = new Set([
   'search_images', 'list_backups', 'open_page',
 ]);
 
-export async function runAiTurn({
+// Każda tura AI jest zapisywana do analizy błędów (ai-session-log.js): model, narzędzia, wyniki, czasy, odpowiedź.
+export async function runAiTurn(opts = {}) {
+  const s = { ...DEFAULT_AI_SETTINGS, ...(opts.settings || loadAiSettings()) };
+  const trace = startAiTrace({ ...opts, settings: { provider: s.provider, model: s.model } });
+  try {
+    const out = await runAiTurnInner({
+      ...opts,
+      __trace: trace,
+      onToolCall: async (x) => {
+        trace.toolStart(x);
+        return opts.onToolCall?.(x);
+      },
+      onToolResult: async (x) => {
+        trace.tool(x);
+        return opts.onToolResult?.(x);
+      },
+      onRetry: (x) => {
+        trace.retry(x);
+        return opts.onRetry?.(x);
+      },
+    });
+    trace.end({ reply: out?.reply });
+    return out;
+  } catch (e) {
+    trace.end({ error: e?.name === 'AbortError' ? 'Przerwane przez klienta' : e?.message || String(e) });
+    throw e;
+  }
+}
+
+async function runAiTurnInner({
   userMessage,
   history = [],
   contextSummary = '',
@@ -1096,6 +1126,7 @@ export async function runAiTurn({
   signal,
   images = [], // [{ mimeType, data (base64) }] — zrzuty zaznaczonych elementów strony
   onRetry, // ({ attempt, waitMs }) — informacja dla panelu, że serwery AI są przeciążone i ponawiamy
+  __trace = null,
 }) {
   const s = { ...DEFAULT_AI_SETTINGS, ...(settings || loadAiSettings()) };
   const isLocalProxy = Boolean(document.querySelector('meta[name="cms-local-proxy"]'));
@@ -1240,6 +1271,7 @@ export async function runAiTurn({
     const data = await callModel();
     const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : [];
     const text = typeof data?.text === 'string' ? data.text.trim() : '';
+    __trace?.model({ round, text, toolCalls: calls });
 
     if (calls.length === 0) {
       return { reply: text || 'Gotowe.', toolLog };
